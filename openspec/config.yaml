@@ -1,0 +1,40 @@
+schema: spec-driven
+
+context: |
+  Project: spec-driven-assignment, a microservices monorepo
+  Package manager: pnpm workspaces (pnpm-workspace.yaml). Never use npm or yarn.
+  Node.js 22, TypeScript strict everywhere (all Node packages extend tsconfig.base.json)
+
+  Structure:
+    - apps/web              React 18 + Vite + TypeScript
+    - services/api-gateway  Express; single public entry point on port 4000;
+                            proxies /api/v1/auth/* to the auth service
+    - services/auth         Express on port 4001; registration, login, JWT
+    - packages/database     Sequelize + PostgreSQL connection, models and migrations;
+                            the ONLY package that talks to the database
+    - packages/shared       Zod schemas + TypeScript types for all API contracts
+
+  Package names: @app/shared, @app/database, auth, api-gateway, web
+  Internal deps use the pnpm workspace protocol: "@app/shared": "workspace:*"
+
+  Database: PostgreSQL 16 in Docker (docker-compose.yml), accessed only via Sequelize
+  Config: environment variables, documented in .env.example files; never commit .env
+  API: REST under /api/v1; errors as { error: { code, message } }
+  Testing: Vitest + Supertest for services; Vitest for packages
+  Every service has a GET /health endpoint and its own Dockerfile
+
+rules:
+  proposal:
+    - Explain why, what changes, and a rollback plan
+    - List every new npm package and the reason for it
+    - List any database tables, columns or migrations
+  specs:
+    - Use WHEN/THEN scenarios
+    - Include success and failure scenarios for every requirement
+  design:
+    - Define Zod schemas in packages/shared before service or web code
+    - Only packages/database may import sequelize
+  tasks:
+    - Small tasks, each verifiable with a command or test
+    - Write tests before implementation where code has behavior
+    - Group tasks by package: Root, Shared, Database, Auth, Gateway, Web, Docker
