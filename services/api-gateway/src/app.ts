@@ -1,24 +1,26 @@
-import express, { type Express, type Request, type Response } from "express";
+import express, { type Express } from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import type { HealthResponse } from "@app/shared";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
+import { healthRouter } from "./routes/health.js";
 
-const app: Express = express();
+export interface GatewayConfig {
+  authServiceUrl: string;
+}
 
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || "http://localhost:4001";
+export function createApp(config: GatewayConfig): Express {
+  const app = express();
+  app.disable("x-powered-by");
 
-app.use(express.json());
+  // Answered by the gateway itself, never proxied (FR-SYS-001, FR-SYS-002).
+  app.use(healthRouter());
 
-app.get("/health", (_req: Request, res: Response) => {
-  const response: HealthResponse = { status: "ok" };
-  res.status(200).json(response);
-});
+  // No body parser before the proxy: it would consume the request stream.
+  app.use(
+    "/api/v1/auth",
+    createProxyMiddleware({ target: config.authServiceUrl, changeOrigin: true }),
+  );
 
-app.use(
-  "/api/v1/auth",
-  createProxyMiddleware({
-    target: AUTH_SERVICE_URL,
-    changeOrigin: true,
-  }),
-);
-
-export default app;
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+  return app;
+}

@@ -74,7 +74,7 @@ Rules for every task:
   - `FR-SYS-002: unknown /api/v1 path returns 404 NOT_FOUND`
   - `FR-SYS-001: GET /health is 200 while auth is down`
   - verify: `pnpm --filter api-gateway test` fails
-- [ ] 5.2 Upgrade the gateway to Express 5 with `createApp({ authServiceUrl })`, health routes on `/health` and `/api/v1/health`, a 404 handler and the error middleware. Verify: the 5.1 tests pass with `pnpm --filter api-gateway test`. **[FR-SYS-001, FR-SYS-002]**
+- [x] 5.2 Upgrade the gateway to Express 5 with `createApp({ authServiceUrl })`, health routes on `/health` and `/api/v1/health`, a 404 handler and the error middleware. Verify: the 5.1 tests pass with `pnpm --filter api-gateway test`. **[FR-SYS-001, FR-SYS-002]**
 - [ ] 5.3 Test first, then implement:
   - `FR-SYS-001: /api/v1/auth/* returns 503 SERVICE_UNAVAILABLE without internal details when auth is unreachable`: point `authServiceUrl` at `http://127.0.0.1:1` and assert the body has no `127.0.0.1` and no stack
   - `FR-SYS-001: /api/v1/auth/health is forwarded to auth /health`: use a stub upstream Express app on an ephemeral port
