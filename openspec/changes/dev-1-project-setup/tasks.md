@@ -68,7 +68,7 @@ Rules for every task:
 
 ## 5. Gateway [PARALLEL with 4, 6, 8 after group 2] (FR-SYS-001, FR-SYS-002)
 
-- [ ] 5.1 Rewrite `services/api-gateway/src/app.test.ts` first. Tests:
+- [x] 5.1 Rewrite `services/api-gateway/src/app.test.ts` first. Tests:
   - `FR-SYS-001: GET /health returns 200 ok`
   - `FR-SYS-002: GET /api/v1/health returns 200 ok`
   - `FR-SYS-002: unknown /api/v1 path returns 404 NOT_FOUND`
