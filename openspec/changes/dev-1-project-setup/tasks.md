@@ -58,7 +58,7 @@ Rules for every task:
 
 ## 4. Auth [PARALLEL with 5, 6, 8 after group 3] (FR-SYS-001, NFR-MNT-001)
 
-- [ ] 4.1 Rewrite `services/auth/src/app.test.ts` against `createApp({ checkDatabase })` before changing the code. Tests:
+- [x] 4.1 Rewrite `services/auth/src/app.test.ts` against `createApp({ checkDatabase })` before changing the code. Tests:
   - `FR-SYS-001: GET /health returns 200 ok when the database is reachable`
   - `FR-SYS-001: GET /health returns 503 error when the database is down`
   - `FR-SYS-001: unknown path returns 404 NOT_FOUND`
