@@ -9,7 +9,7 @@ Rules for every task:
 
 ## 1. Root workspace (NFR-OPS-001, NFR-MNT-001)
 
-- [ ] 1.1 Write `scripts/check-versions.test.mjs`:
+- [x] 1.1 Write `scripts/check-versions.test.mjs`:
   - fixtures with `^`, `~`, `latest`, `postgres:16`, `node:22-slim` and `pnpm@latest` must fail
   - exact pins and `workspace:*` must pass
   - test names start with `NFR-OPS-001:`
