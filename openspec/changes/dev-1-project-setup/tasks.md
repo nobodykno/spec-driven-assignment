@@ -27,7 +27,7 @@ Rules for every task:
   - format the existing files once
   - verify: add a throwaway file containing `const x: any = 1` and `// @ts-ignore`, confirm `pnpm exec eslint` reports `no-explicit-any` and `ban-ts-comment`, delete the file, then confirm `pnpm exec eslint . && pnpm exec prettier --check .` exits 0
   - **[NFR-MNT-001]**
-- [ ] 1.5 Stop tracking `apps/web/tsconfig.tsbuildinfo` and add `*.tsbuildinfo` to `.gitignore`. Verify: `git ls-files | grep tsbuildinfo` prints nothing. **[NFR-MNT-001]**
+- [x] 1.5 Stop tracking `apps/web/tsconfig.tsbuildinfo` and add `*.tsbuildinfo` to `.gitignore`. Verify: `git ls-files | grep tsbuildinfo` prints nothing. **[NFR-MNT-001]**
 
 ## 2. Shared (FR-SYS-001, NFR-MNT-001)
 
