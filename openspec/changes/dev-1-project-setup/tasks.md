@@ -84,7 +84,7 @@ Rules for every task:
 
 ## 6. Tracker [PARALLEL with 4, 5, 8 after group 3] (FR-SYS-001, NFR-MNT-001)
 
-- [ ] 6.1 Scaffold `services/tracker`:
+- [x] 6.1 Scaffold `services/tracker`:
   - `package.json` with the same pinned dependencies as auth
   - `tsconfig.json`, `vitest.config.ts`, `.env.example` with `PORT=4002`
   - write `src/app.test.ts` with the four auth-equivalent tests from 4.1
