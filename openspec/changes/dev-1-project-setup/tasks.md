@@ -46,7 +46,7 @@ Rules for every task:
 
 ## 3. Database (FR-SYS-001)
 
-- [ ] 3.1 Write `packages/database/src/health.test.ts`. `FR-SYS-001: checkDatabase returns false within 3s when the database is unreachable` uses `postgresql://x:x@127.0.0.1:1/x`. Verify: `pnpm --filter @app/database test` fails.
+- [x] 3.1 Write `packages/database/src/health.test.ts`. `FR-SYS-001: checkDatabase returns false within 3s when the database is unreachable` uses `postgresql://x:x@127.0.0.1:1/x`. Verify: `pnpm --filter @app/database test` fails.
 - [ ] 3.2 Implement in `packages/database`:
   - a lazy `getSequelize()` from `DATABASE_URL` (default host port 5433, `dev/dev/tracker`)
   - `checkDatabase(timeoutMs)` (design D2)
