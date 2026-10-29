@@ -1,40 +1,50 @@
 schema: spec-driven
 
 context: |
-  Project: spec-driven-assignment, a microservices monorepo
-  Package manager: pnpm workspaces (pnpm-workspace.yaml). Never use npm or yarn.
-  Node.js 22, TypeScript strict everywhere (all Node packages extend tsconfig.base.json)
+  Project: Team Task Tracker (spec-driven-assignment), pnpm microservices monorepo.
+  Package manager: pnpm workspaces only. Never use npm or yarn. No "latest" versions; pin exact versions.
+  Node.js 22, TypeScript strict; Node packages extend tsconfig.base.json.
+
+  Source documents (read before planning any change):
+    - docs/FRS.md  functional requirements with IDs (FR-AUTH-001, FR-TASK-005, ...)
+    - docs/SDS.md  architecture, data model, API, security, testing design
 
   Structure:
-    - apps/web              React 18 + Vite + TypeScript
-    - services/api-gateway  Express; single public entry point on port 4000;
-                            proxies /api/v1/auth/* to the auth service
-    - services/auth         Express on port 4001; registration, login, JWT
-    - packages/database     Sequelize + PostgreSQL connection, models and migrations;
-                            the ONLY package that talks to the database
-    - packages/shared       Zod schemas + TypeScript types for all API contracts
+    - apps/web              React 19 + Vite + Tailwind + shadcn/ui + TanStack Query
+    - services/api-gateway  Express 5, port 4000, only public entry; verifies JWT, proxies to services
+    - services/auth         Express 5, port 4001; register, login, refresh, logout, me
+    - services/tracker      Express 5, port 4002; projects, members, tasks, comments, activity
+    - packages/database     Sequelize + PostgreSQL 16; models, migrations, seeders (ONLY package using sequelize)
+    - packages/shared       Zod schemas, TS types, error codes, OpenAPI 3.1 registry
 
-  Package names: @app/shared, @app/database, auth, api-gateway, web
-  Internal deps use the pnpm workspace protocol: "@app/shared": "workspace:*"
-
-  Database: PostgreSQL 16 in Docker (docker-compose.yml), accessed only via Sequelize
-  Config: environment variables, documented in .env.example files; never commit .env
-  API: REST under /api/v1; errors as { error: { code, message } }
-  Testing: Vitest + Supertest for services; Vitest for packages
-  Every service has a GET /health endpoint and its own Dockerfile
+  Database: PostgreSQL 16 in Docker Compose on host port 5433.
+  API: REST under /api/v1; errors { error: { code, message, details? } }; lists { items, meta }.
+  Testing: Vitest + Supertest (services), Vitest + RTL (web), Playwright (e2e).
+  Issue tracker keys: DEV-1001 ... DEV-1018. Tickets are fetched via the issue-tracker MCP.
+  Quality gates: pnpm build, pnpm lint, pnpm typecheck, pnpm test.
 
 rules:
   proposal:
-    - Explain why, what changes, and a rollback plan
-    - List every new npm package and the reason for it
-    - List any database tables, columns or migrations
+    - "First lines must be: 'Ticket: <KEY>', 'Ticket source: live MCP | FIXTURE (reason)', 'Status: Draft', 'Approved-by:', 'Approved-on:'"
+    - List the FRS requirement IDs covered and the SDS sections followed or changed
+    - List the affected packages/services
+    - List every new dependency with exact version and reason
+    - List database changes (tables, columns, indexes, migrations), or state "none"
+    - Include a rollback plan
+    - List ticket dependencies and confirm they are done
   specs:
-    - Use WHEN/THEN scenarios
-    - Include success and failure scenarios for every requirement
+    - Use WHEN/THEN scenarios copied or derived from FRS acceptance criteria
+    - Every scenario title ends with its FRS ID in brackets, e.g. "Wrong password rejected [FR-AUTH-002]"
+    - Every requirement has a success scenario and at least one failure scenario
+    - Endpoints touching projects/tasks include a non-member (404) and wrong-role (403) scenario
   design:
+    - Reference the SDS sections followed (e.g. "Follows SDS §7.2")
+    - If the design differs from the SDS, state the difference and update docs/SDS.md in the same change
     - Define Zod schemas in packages/shared before service or web code
-    - Only packages/database may import sequelize
+    - Record library APIs checked with Context7 MCP (library, version, topic), or why it was unavailable
   tasks:
-    - Small tasks, each verifiable with a command or test
-    - Write tests before implementation where code has behavior
-    - Group tasks by package: Root, Shared, Database, Auth, Gateway, Web, Docker
+    - Group tasks by package (Shared, Database, Auth, Tracker, Gateway, Web, Docker, Docs)
+    - Each task names the FRS IDs it implements and the command that verifies it
+    - Tests are written before implementation; test names start with the FRS ID
+    - Final task group runs all quality gates
+    - Mark tasks that can run in parallel worktrees with [PARALLEL]
