@@ -31,7 +31,7 @@ Rules for every task:
 
 ## 2. Shared (FR-SYS-001, NFR-MNT-001)
 
-- [ ] 2.1 Write `packages/shared/src/schemas/common.test.ts` first, covering:
+- [x] 2.1 Write `packages/shared/src/schemas/common.test.ts` first, covering:
   - `FR-SYS-001`: `HealthResponseSchema` accepts ok/error and rejects other values
   - `NFR-MNT-001`: `ErrorResponseSchema` accepts every SDS §6.4 code and rejects `SOMETHING_ELSE`
   - `NFR-MNT-001`: `AppError` keeps `code`, `status` and `details`
