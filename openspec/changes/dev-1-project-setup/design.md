@@ -151,6 +151,16 @@ Context7 MCP is **not configured** in this repository: `.mcp.json` only contains
 
 During apply, check the Express 5 and http-proxy-middleware v4 APIs against the docs, either with Context7 (if it gets configured) or the official docs, and record the result in `docs/versions.md`.
 
+### Docs checked (during apply)
+
+Context7 is still not configured, so these were checked against the installed package's own docs and type definitions:
+
+| Library | Version | Topic | Source / finding |
+| --- | --- | --- | --- |
+| http-proxy-middleware | 4.2.1 | error handler, mount path | `dist/types.d.ts`: `on.error(err, req, res: ServerResponse \| Socket, target?)`. README: when mounted with `app.use(path, proxy)` the path is relative to the mount point, so `/api/v1/auth/health` reaches auth as `/health`. Unhandled, the default status is 504, so `on.error` sends 503 instead |
+| eslint-plugin-react-hooks | 7.1.1 | flat config | `configs.flat.recommended` is the flat-config object; `configs.recommended` is the legacy form |
+| eslint | 10.13.0 | config helpers | `eslint/config` exports `defineConfig` and `globalIgnores` |
+
 ## Risks / Trade-offs
 
 - [The http-proxy-middleware v4 API changed from v3] → task 5.3 is test-first: the 503 test fails until the `on.error` wiring is correct.
