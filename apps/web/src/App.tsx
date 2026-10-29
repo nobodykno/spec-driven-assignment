@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { HealthResponseSchema } from "@app/shared";
 
 function App() {
-  const [apiStatus, setApiStatus] = useState<"online" | "offline" | "loading">(
-    "loading"
-  );
+  const [apiStatus, setApiStatus] = useState<"online" | "offline" | "loading">("loading");
 
   useEffect(() => {
     fetch("/api/v1/health")

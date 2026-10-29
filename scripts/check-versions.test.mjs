@@ -56,15 +56,19 @@ describe("check-versions", () => {
       expect(checkDockerfile(text, "apps/web/Dockerfile")).toEqual([]);
     });
 
-    it.each(["node:22-slim", "node:22", "node:latest", "node", "nginx:alpine", "postgres:16-alpine"])(
-      "NFR-OPS-001: rejects floating FROM image %s",
-      (image) => {
-        const findings = checkDockerfile(`FROM ${image} AS build\n`, "services/auth/Dockerfile");
-        expect(findings).toHaveLength(1);
-        expect(findings[0]).toContain("services/auth/Dockerfile");
-        expect(findings[0]).toContain(image);
-      },
-    );
+    it.each([
+      "node:22-slim",
+      "node:22",
+      "node:latest",
+      "node",
+      "nginx:alpine",
+      "postgres:16-alpine",
+    ])("NFR-OPS-001: rejects floating FROM image %s", (image) => {
+      const findings = checkDockerfile(`FROM ${image} AS build\n`, "services/auth/Dockerfile");
+      expect(findings).toHaveLength(1);
+      expect(findings[0]).toContain("services/auth/Dockerfile");
+      expect(findings[0]).toContain(image);
+    });
 
     it("NFR-OPS-001: rejects pnpm@latest", () => {
       const findings = checkDockerfile(

@@ -101,7 +101,9 @@ export function checkRepository(root) {
     }
     const dockerfile = join(dir, "Dockerfile");
     if (existsSync(dockerfile)) {
-      findings.push(...checkDockerfile(readFileSync(dockerfile, "utf8"), relative(root, dockerfile)));
+      findings.push(
+        ...checkDockerfile(readFileSync(dockerfile, "utf8"), relative(root, dockerfile)),
+      );
     }
   }
   const compose = join(root, "docker-compose.yml");

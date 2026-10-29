@@ -18,7 +18,7 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
-  })
+  }),
 );
 
 export default app;

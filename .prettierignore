@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+**/dist/
+**/coverage/
+*.tsbuildinfo
+.claude/
+openspec/changes/archive/
+*.md
+openspec/

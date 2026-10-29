@@ -100,6 +100,8 @@ Root `eslint.config.js` (flat config) with:
 
 Prettier uses `.prettierrc.json` (default style plus `printWidth: 100`) and a `.prettierignore` that covers `pnpm-lock.yaml`, `dist`, `.claude/commands/opsx` and `openspec/changes/archive`.
 
+> **Implementation note (task 1.4):** `.prettierignore` also excludes `*.md`, `openspec/` and all of `.claude/`. Running Prettier over Markdown rewrote the approved proposal and specs, `CLAUDE.md` and the FRS/SDS tables, and the OpenSpec CLI owns `openspec/config.yaml`. Prettier therefore checks code and config only (ts/tsx/js/mjs/cjs/json/yaml/html). ESLint ignores `openspec/` and `.claude/` for the same reason. The lint behaviour in the spec (unformatted *source* files fail) is unchanged.
+
 ### D8. Version checker (`scripts/check-versions.mjs`)
 A dependency-free Node script.
 - **package.json files:** it walks every workspace `package.json` and fails on any value matching `^`, `~`, `*`, `x`, `>`, `<`, `||` or `latest`. `workspace:*` is allowed.

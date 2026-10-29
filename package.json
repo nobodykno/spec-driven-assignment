@@ -10,11 +10,14 @@
   "scripts": {
     "dev": "concurrently \"pnpm --filter auth dev\" \"pnpm --filter api-gateway dev\" \"pnpm --filter web dev\"",
     "build": "pnpm -r build",
-    "test": "vitest run",
+    "lint": "pnpm check:versions && eslint . && prettier --check .",
+    "format": "prettier --write .",
     "typecheck": "pnpm -r typecheck",
-    "db:up": "docker compose up -d postgres",
+    "test": "pnpm -r test && vitest run --dir scripts",
+    "check:versions": "node scripts/check-versions.mjs",
+    "db:up": "docker compose up -d --wait postgres",
     "db:down": "docker compose down",
-    "check:versions": "node scripts/check-versions.mjs"
+    "db:migrate": "pnpm --filter @app/database migrate"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

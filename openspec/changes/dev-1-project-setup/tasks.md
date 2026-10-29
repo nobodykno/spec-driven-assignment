@@ -20,7 +20,7 @@ Rules for every task:
   - remove `devEngines`, `main` and other `npm init` leftovers from the root
   - verify: `pnpm install` exits 0 and `pnpm check:versions` reports only the Docker findings that group 7 fixes
   - **[NFR-OPS-001]**
-- [ ] 1.4 Add the root configs:
+- [x] 1.4 Add the root configs:
   - `eslint.config.js` (design D7), `.prettierrc.json`, `.prettierignore`
   - root scripts `lint`, `format`, `test`, `db:migrate` (design D6)
   - remove the root `vitest.config.ts`

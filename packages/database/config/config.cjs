@@ -1,16 +1,16 @@
-const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/app';
+const databaseUrl = process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/app";
 
 module.exports = {
   development: {
     url: databaseUrl,
-    dialect: 'postgres',
+    dialect: "postgres",
   },
   test: {
     url: databaseUrl,
-    dialect: 'postgres',
+    dialect: "postgres",
   },
   production: {
     url: databaseUrl,
-    dialect: 'postgres',
+    dialect: "postgres",
   },
 };
