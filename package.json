@@ -8,7 +8,7 @@
     "node": ">=22.12.0 <23"
   },
   "scripts": {
-    "dev": "concurrently \"pnpm --filter auth dev\" \"pnpm --filter api-gateway dev\" \"pnpm --filter web dev\"",
+    "dev": "concurrently \"pnpm --filter auth dev\" \"pnpm --filter tracker dev\" \"pnpm --filter api-gateway dev\" \"pnpm --filter web dev\"",
     "build": "pnpm -r build",
     "lint": "pnpm check:versions && eslint . && prettier --check .",
     "format": "prettier --write .",

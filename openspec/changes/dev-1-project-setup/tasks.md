@@ -89,7 +89,7 @@ Rules for every task:
   - `tsconfig.json`, `vitest.config.ts`, `.env.example` with `PORT=4002`
   - write `src/app.test.ts` with the four auth-equivalent tests from 4.1
   - verify: `pnpm install && pnpm --filter tracker test` fails
-- [ ] 6.2 Implement the tracker `createApp({ checkDatabase })` with the D4 layout and `index.ts` (port 4002). Verify: `pnpm --filter tracker test && pnpm --filter tracker build`. **[FR-SYS-001, NFR-MNT-001]**
+- [x] 6.2 Implement the tracker `createApp({ checkDatabase })` with the D4 layout and `index.ts` (port 4002). Verify: `pnpm --filter tracker test && pnpm --filter tracker build`. **[FR-SYS-001, NFR-MNT-001]**
 
 ## 7. Docker (NFR-OPS-001)
 
