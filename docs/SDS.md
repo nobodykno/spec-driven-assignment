@@ -308,6 +308,8 @@ These operations run in a single Sequelize managed transaction:
 
 **Every service:** `GET /health` (FR-SYS-001).
 
+**Gateway:** `GET /api/v1/health`, public, answered by the gateway itself and never proxied (FR-SYS-002; added in DEV-1).
+
 ### 6.3 Task list query parameters
 `status` (comma-separated), `priority` (comma-separated), `assigneeId` (UUID, `me` or `none`), `dueFrom`, `dueTo` (ISO dates), `includeArchived` (boolean), `sort` (`dueDate | priority | createdAt | updatedAt`), `order` (`asc | desc`), `page`, `pageSize` (≤ 100). All parameters are parsed with a Zod schema; unknown parameters are rejected.
 
@@ -394,6 +396,7 @@ shadcn/ui components on Tailwind. Every data view has loading, empty and error s
 - Test names include the FR ID, for example `it('FR-TASK-005: rejects TODO → DONE with 409')`, so test results trace back to requirements.
 - Integration tests use a separate database (`tracker_test`) that is migrated before the run and truncated between tests.
 - Quality gates before every PR: `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`.
+- `pnpm test` runs each workspace's own Vitest config (`pnpm -r test`, so web can use jsdom), then the root `scripts/` tests. Unit and Supertest tests in this layer inject the database health check, so they need no running PostgreSQL. `pnpm lint` also runs `pnpm check:versions`, which rejects floating npm ranges and Docker tags (DEV-1).
 
 ---
 

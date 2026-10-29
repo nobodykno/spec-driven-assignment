@@ -334,6 +334,14 @@ Acceptance criteria:
 - WHEN the service and its dependencies are healthy THEN the response is 200 `{ "status": "ok" }`.
 - WHEN the database is unreachable THEN the response is 503 `{ "status": "error" }`.
 
+#### FR-SYS-002: API status indicator (new in DEV-1)
+The API gateway SHALL expose `GET /api/v1/health`, and the web app SHALL show the API connectivity status it reports.
+
+Acceptance criteria:
+- WHEN `GET /api/v1/health` is called on the gateway THEN the response is 200 `{ "status": "ok" }`.
+- WHEN the web app opens and the gateway health check succeeds THEN the page shows "API: online".
+- WHEN the gateway is unreachable or returns a non-ok response THEN the page shows "API: offline".
+
 ---
 
 ## 4. Non-functional requirements
@@ -363,7 +371,7 @@ Acceptance criteria:
 
 | Ticket | Requirements |
 | --- | --- |
-| DEV-1001 | FR-SYS-001, NFR-OPS-001, NFR-MNT-001 |
+| DEV-1001 (Jira DEV-1) | FR-SYS-001, FR-SYS-002, NFR-OPS-001, NFR-MNT-001 |
 | DEV-1006 | FR-AUTH-001 to FR-AUTH-007, NFR-SEC-001 to 003 |
 | DEV-1007 | FR-PROJ-001 to FR-PROJ-006, FR-AUTH-006 |
 | DEV-1008 | FR-TASK-001 to FR-TASK-006 |
