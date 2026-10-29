@@ -64,7 +64,7 @@ Rules for every task:
   - `FR-SYS-001: unknown path returns 404 NOT_FOUND`
   - `NFR-MNT-001: unexpected error returns 500 INTERNAL_ERROR without stack`
   - verify: `pnpm --filter auth test` fails
-- [ ] 4.2 Upgrade auth to Express 5 with the D4 layout: `app.ts` exports `createApp`, plus routes/health, controllers/health and middleware/error-handler. `index.ts` wires the real `checkDatabase` and `PORT` (default 4001). Update the dev script (D10) and `.env.example`. Verify: `pnpm --filter auth test && pnpm --filter auth typecheck`. **[FR-SYS-001, NFR-MNT-001]**
+- [x] 4.2 Upgrade auth to Express 5 with the D4 layout: `app.ts` exports `createApp`, plus routes/health, controllers/health and middleware/error-handler. `index.ts` wires the real `checkDatabase` and `PORT` (default 4001). Update the dev script (D10) and `.env.example`. Verify: `pnpm --filter auth test && pnpm --filter auth typecheck`. **[FR-SYS-001, NFR-MNT-001]**
 
 ## 5. Gateway [PARALLEL with 4, 6, 8 after group 2] (FR-SYS-001, FR-SYS-002)
 

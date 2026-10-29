@@ -13,6 +13,8 @@ export default defineConfig(
     languageOptions: { globals: globals.node },
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
+      // Express error handlers need four parameters even when `next` is unused.
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       "@typescript-eslint/ban-ts-comment": [
         "error",
         {

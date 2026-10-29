@@ -1,20 +1,19 @@
-import express, { type Express, type Request, type Response } from "express";
-import { connectDatabase } from "@app/database";
-import type { HealthResponse } from "@app/shared";
+import express, { type Express } from "express";
+import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
+import { healthRouter } from "./routes/health.js";
 
-const app: Express = express();
+export interface AppDependencies {
+  checkDatabase: () => Promise<boolean>;
+}
 
-app.use(express.json());
+export function createApp(deps: AppDependencies): Express {
+  const app = express();
+  app.disable("x-powered-by");
+  app.use(express.json({ limit: "100kb" }));
 
-app.get("/health", async (_req: Request, res: Response) => {
-  try {
-    await connectDatabase();
-    const response: HealthResponse = { status: "ok" };
-    res.status(200).json(response);
-  } catch {
-    const response: HealthResponse = { status: "error" };
-    res.status(503).json(response);
-  }
-});
+  app.use(healthRouter(deps.checkDatabase));
 
-export default app;
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+  return app;
+}
