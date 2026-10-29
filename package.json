@@ -9,7 +9,8 @@
     "test": "vitest run",
     "typecheck": "pnpm -r typecheck",
     "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "check:versions": "node scripts/check-versions.mjs"
   },
   "keywords": [],
   "author": "",
