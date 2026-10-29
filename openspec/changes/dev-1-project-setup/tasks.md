@@ -36,7 +36,7 @@ Rules for every task:
   - `NFR-MNT-001`: `ErrorResponseSchema` accepts every SDS §6.4 code and rejects `SOMETHING_ELSE`
   - `NFR-MNT-001`: `AppError` keeps `code`, `status` and `details`
   - verify: `pnpm --filter @app/shared test` fails
-- [ ] 2.2 Implement:
+- [x] 2.2 Implement:
   - `src/schemas/common.ts` (health schema)
   - `src/errors.ts` (`ErrorCodeSchema`, `ErrorResponseSchema`, `AppError`)
   - re-export from `src/index.ts` and delete the old `index.test.ts`
