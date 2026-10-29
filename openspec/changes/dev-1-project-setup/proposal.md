@@ -1,8 +1,8 @@
 Ticket: DEV-1
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena
+Approved-on: 2026-10-29
 
 # Proposal: DEV-1 Project setup
 
