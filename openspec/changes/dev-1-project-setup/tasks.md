@@ -15,7 +15,7 @@ Rules for every task:
   - test names start with `NFR-OPS-001:`
   - verify: `pnpm exec vitest run --dir scripts` fails (no implementation yet)
 - [x] 1.2 Implement `scripts/check-versions.mjs` (design D8) and add the root script `check:versions`. Verify: `pnpm exec vitest run --dir scripts` passes. **[NFR-OPS-001]**
-- [ ] 1.3 Pin exact versions in every workspace `package.json`, using the proposal's dependency table:
+- [x] 1.3 Pin exact versions in every workspace `package.json`, using the proposal's dependency table:
   - add `"packageManager": "pnpm@11.28.9"` and `engines.node`
   - remove `devEngines`, `main` and other `npm init` leftovers from the root
   - verify: `pnpm install` exits 0 and `pnpm check:versions` reports only the Docker findings that group 7 fixes
