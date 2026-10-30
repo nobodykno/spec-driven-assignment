@@ -6,7 +6,7 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 ## 1. Checker (D5)
 
 - [x] 1.1 Write `scripts/check-graph-docs.test.mjs` first: versions, ignore entries, query count, 4-run table, placeholders. Verify: `pnpm exec vitest run scripts/check-graph-docs.test.mjs` fails. **[NFR-OPS-001, NFR-MNT-001]**
-- [ ] 1.2 Implement `scripts/check-graph-docs.mjs`; add `check:graph-docs` to `pnpm lint`. Verify: the test passes. **[NFR-OPS-001, NFR-MNT-001]**
+- [x] 1.2 Implement `scripts/check-graph-docs.mjs`; add `check:graph-docs` to `pnpm lint`. Verify: the test passes. **[NFR-OPS-001, NFR-MNT-001]**
 
 ## 2. Install and build (D1–D3)
 
