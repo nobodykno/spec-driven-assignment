@@ -100,11 +100,20 @@ export default defineConfig(
   },
   {
     // SDS §3.1: only services access models; routes and controllers never import @app/database.
-    files: ['services/*/src/routes/**', 'services/*/src/controllers/**'],
+    files: [
+      'services/*/src/routes/**',
+      'services/*/src/controllers/**',
+      'services/*/src/middleware/**',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',
-        { paths: [{ name: '@app/database', message: 'Only services access models (SDS §3.1).' }] },
+        {
+          paths: [{ name: '@app/database', message: 'Only services access models (SDS §3.1).' }],
+          patterns: [
+            { group: ['@app/database/*'], message: 'Only services access models (SDS §3.1).' },
+          ],
+        },
       ],
     },
   },

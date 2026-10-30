@@ -30,4 +30,4 @@ Write `verification.md` inside the change folder, containing:
 ## 5. Result
 - If any gate fails, any FRS ID has no test, or any critical/high finding is unresolved: report **NOT READY** and list what blocks it (Rule 24).
 - Otherwise report **READY FOR PR** and tell the user to run `/sdd:ship $0 $1`.
-- Commit the report: `docs($0): verification report for <change-name>`.
+- Commit the report: `docs(workflow): verification report for <change-name>` with the footer `Refs: $0`.

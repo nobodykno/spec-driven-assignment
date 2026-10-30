@@ -29,7 +29,7 @@ Follows SDS §3 (`.claude/hooks/`), §3.1, §5.4, §6.1, §6.4, §7.4, §10, §1
 
 ### D1. Hook scripts live in `.claude/hooks/`, are linted and tested
 - **Files:** `.claude/hooks/pre-tool-guard.mjs` and `.claude/hooks/post-edit-format.mjs`. Each exports pure functions and runs as a CLI only when executed directly (the same pattern as `scripts/check-versions.mjs`).
-- **Tests:** `.claude/hooks/*.test.mjs`. The root `test` script runs `vitest run --dir scripts && vitest run --dir .claude/hooks`.
+- **Tests:** `.claude/hooks/*.test.mjs`. The root `test` script runs `vitest run scripts/ .claude/hooks/`: one run with path filters, which picks up both folders (implemented that way in task 2.1 instead of two `--dir` runs; same result, one report).
 - **Lint scope:** ESLint `globalIgnores` changes `'.claude/'` to `'.claude/*'` plus `'!.claude/hooks/'`, and `.prettierignore` does the same, so the hook code is linted and formatted like `scripts/`. Generated OpenSpec files under `.claude/` stay ignored.
 - *Alternative considered:* keeping the code in `scripts/claude-hooks/`. Rejected, because SDS §3 already places hooks in `.claude/hooks/`.
 
@@ -128,6 +128,6 @@ Tests use fixture objects. This is the automated part of "`/permissions` shows n
 
 ## Migration Plan
 
-1. Merge. Claude Code picks up `.claude/settings.json` hooks when the next session starts.
+1. Merge. Claude Code picks up changed `.claude/settings.json` hooks right away (observed in task 5.3: the hooks were active in the same session without a restart).
 2. Anyone with an older `settings.local.json`: remove the now-duplicated `pnpm add`/`remove`/`install` ask entries (optional; duplicates in the local file are harmless).
 3. Rollback: revert the merge commit, or delete the `hooks` key.

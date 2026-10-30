@@ -23,7 +23,9 @@ To add an endpoint, use the `express-endpoint` skill. For a schema change, use `
 - Never edit an applied migration and never call `sync()` outside tests (SDS §5.4).
 
 ## Tests
-- `src/**/*.test.ts` with Vitest + Supertest against `createApp(...)`. Names start with the FRS ID.
+- SDS §11: unit and app tests in `src/**/*.test.ts` (Vitest + Supertest against `createApp(...)` with
+  injected dependencies); endpoint integration tests in `test/` against the `tracker_test` database;
+  the authorization matrix in `services/tracker/test/authz.test.ts`. Names start with the FRS ID.
 - Cover success, validation (400), 401, 404/403 and every conflict code the FRS names, plus side effects.
 
 ## Logging

@@ -41,6 +41,7 @@ Arguments: $ARGUMENTS
 
 ## 6. STOP
 - Do NOT write implementation code. Do NOT install packages.
-- Commit only the planning artifacts: `docs($0): propose <change-name>`.
+- Commit only the planning artifacts: `docs(workflow): propose <change-name>` with the footer `Refs: $0`.
 - Print a summary: ticket, FRS IDs covered, files created, open questions.
-- Tell the user: "Review the change in openspec/changes/. To approve, set `Status: Approved` and fill in Approved-by and Approved-on in proposal.md, then run /sdd:apply $0 $1."
+- Tell the user: "Review the change in openspec/changes/. Reply exactly `approved` to approve it (the agent then
+  records Status/Approved-by/Approved-on per `sdd/apply.md` §1), or ask for changes."

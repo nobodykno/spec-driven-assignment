@@ -20,16 +20,22 @@ and the files are kebab-case with named exports.
 1. **Contract first:** run the `zod-contract` skill for the request body/query and the response.
    The endpoint, path, status codes and error codes come from SDS §6.2 / §6.4 and the FRS
    acceptance criteria.
-2. **Test first:** in `services/<svc>/src/<resource>.test.ts`, use Supertest against
-   `createApp(deps)` (never `index.ts`). Name every test with the FRS ID. Cover:
+2. **Test first** (SDS §11), with names starting with the FRS ID:
+   - **Unit / app tests:** `services/<svc>/src/**/*.test.ts`. Vitest + Supertest against
+     `createApp(deps)` (never `index.ts`), with dependencies injected, so no server or database is needed.
+   - **Endpoint integration tests:** `services/<svc>/test/<resource>.test.ts`. Supertest against
+     `createApp` wired to the real `tracker_test` PostgreSQL database, which is migrated before the
+     run and truncated between tests. Role × action authorization matrix:
+     `services/tracker/test/authz.test.ts`.
+
+   Together they cover:
    - success: status and body parsed with the response schema
    - validation failure: 400 `VALIDATION_ERROR` with `details`
    - for protected routes: 401, non-member 404 and wrong role 403 (CLAUDE.md, SDS §7.3)
    - each conflict code the FRS names (409 …)
    - side effects (DB rows, activity entries) for writes
 
-   Inject dependencies through `createApp`, as `checkDatabase` is injected today, so the tests
-   need no running server. Run `pnpm --filter <svc> test` and watch them fail.
+   Run `pnpm --filter <svc> test` and watch them fail.
 3. **Service:** a function or class in `src/services/<resource>-service.ts`.
    - Throw `AppError(code, status, message, details?)` from `@app/shared` for every expected
      failure.
@@ -38,7 +44,9 @@ and the files are kebab-case with named exports.
    - Keep functions ≤ 30 lines and nesting ≤ 3; use early returns.
 4. **Controller:** an `async` handler.
    - Validate with `<Schema>.safeParse(req.body | req.query | req.params)`. On failure, throw
-     `new AppError('VALIDATION_ERROR', 400, 'Invalid request', issues)`. Or use a shared
+     `new AppError('VALIDATION_ERROR', 400, 'Invalid request', details)`, where
+     `details = result.error.issues.map((i) => ({ path: i.path.map(String).join('.'), message: i.message }))`.
+     `AppError.details` is `ErrorDetail[]` with a string `path`. Or use a shared
      `validate(schema)` middleware in `src/middleware/validate.ts` once a second endpoint needs it.
    - Call the service and send `res.status(...).json(body)`.
    - Express 5 forwards rejected promises to `errorHandler`, so do not add `try/catch` just to
