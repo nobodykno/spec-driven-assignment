@@ -163,3 +163,15 @@ dependency order via PRs #6 to #13. Conflicts and how they were resolved are in 
 
 Independent reviews (DEV-20), the full test suites and the Playwright journey (DEV-19), the 10,000-task
 performance check, archives with spec sync, token-efficiency rows (`/cost` not provided), and Jira updates.
+
+## Phase 3 (tooling fixes, tests, review, close): resume point
+
+Usage limit reached at this point. Approvals given in chat: Jira Bug titles, pushes/PRs/merges for the
+phase, and Jira writes for the phase. The DEV project has no Bug issue type, so the bugs were created as
+Tasks labelled `bug`.
+
+- Created: DEV-22 (agent-scope-guard worktrees), DEV-23 (.env.example), DEV-24 (reviewer report), DEV-25 (verify archive step).
+- In progress: DEV-22 on branch `feature/DEV-22-guard-worktrees`: `resolveWorkRoot` and `readApproval` added to
+  `.claude/hooks/agent-scope-guard.mjs` plus two worktree tests. Next: run `pnpm exec vitest run .claude/hooks`,
+  fix, push, PR, merge, comment/close DEV-22.
+- Not started: A2 (DEV-23), A3 (DEV-24), A4 (DEV-25), B5, B6, C7, D8, D9, D10.

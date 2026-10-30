@@ -1,4 +1,6 @@
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -6,6 +8,8 @@ import {
   changeNameForBranch,
   evaluateAgentCall,
   isApprovedProposal,
+  readApproval,
+  resolveWorkRoot,
 } from './agent-scope-guard.mjs';
 
 const HOOK = join(fileURLToPath(import.meta.url), '..', 'agent-scope-guard.mjs');
@@ -237,5 +241,47 @@ describe('agent-scope-guard CLI', () => {
   it('NFR-MNT-001: the CLI fails closed without an agent or on unparseable input', () => {
     expect(run([], JSON.stringify({ tool_name: 'Read', tool_input: {} })).status).toBe(2);
     expect(run(['--agent', 'reviewer'], 'not json').status).toBe(2);
+  });
+});
+
+describe('agent-scope-guard: git worktrees (DEV-22)', () => {
+  const git = (cwd, ...args) =>
+    execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+
+  function setup() {
+    const base = realpathSync(mkdtempSync(join(tmpdir(), 'guard-wt-')));
+    const main = join(base, 'main');
+    mkdirSync(main);
+    git(main, 'init', '-q', '-b', 'main');
+    git(main, 'config', 'user.email', 't@example.com');
+    git(main, 'config', 'user.name', 't');
+    writeFileSync(join(main, 'f.txt'), 'x');
+    git(main, 'add', '.');
+    git(main, 'commit', '-q', '-m', 'init');
+    const wt = join(base, 'wt');
+    git(main, 'worktree', 'add', '-q', '-b', 'feature/DEV-1-demo', wt);
+    const dir = join(wt, 'openspec/changes/dev-1-demo');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, 'proposal.md'),
+      'Status: Approved\nApproved-by: Me\nApproved-on: 2026-01-01 10:00 IST\n',
+    );
+    return { main, wt };
+  }
+
+  it('NFR-MNT-001: a file in a linked worktree resolves to that worktree and its approval', () => {
+    const { main, wt } = setup();
+    const payload = { tool_name: 'Write', tool_input: { file_path: join(wt, 'new/dir/a.ts') } };
+    const root = resolveWorkRoot(main, payload);
+    expect(root).toBe(wt);
+    expect(readApproval(root)).toBe(true);
+    expect(readApproval(main)).toBe(false);
+  });
+
+  it('NFR-MNT-001: a file outside the repository keeps the main project root', () => {
+    const { main } = setup();
+    const outside = realpathSync(mkdtempSync(join(tmpdir(), 'guard-out-')));
+    const payload = { tool_name: 'Write', tool_input: { file_path: join(outside, 'a.ts') } };
+    expect(resolveWorkRoot(main, payload)).toBe(main);
   });
 });
