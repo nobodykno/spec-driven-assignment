@@ -33,6 +33,7 @@
 - Database:    pnpm db:up   (Docker Postgres on host port 5433)
 
 ## Code rules
+- Coding guidelines: follow docs/CODING_GUIDELINES.md (naming, style, structure, TypeScript, errors). `pnpm lint` enforces them.
 - Layering: routes → controllers → services → @app/database models
 - app.ts (Express app) separate from index.ts (listen) so Supertest can test `app`
 - Validate all input with Zod schemas from @app/shared
