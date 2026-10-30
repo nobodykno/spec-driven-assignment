@@ -15,7 +15,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "migrate": "sequelize-cli db:migrate",
-    "migrate:undo": "sequelize-cli db:migrate:undo"
+    "migrate:undo": "sequelize-cli db:migrate:undo",
+    "seed": "sequelize-cli db:seed:all"
   },
   "dependencies": {
     "pg": "8.23.1",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "22.20.5",
+    "bcryptjs": "3.0.3",
     "sequelize-cli": "6.6.5"
   }
 }
