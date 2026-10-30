@@ -29,6 +29,19 @@ You are an independent senior reviewer for the Team Task Tracker project.
   yourself and read the tests it names. Cite `file:line` from the diff in every finding.
 - Do NOT approve work you cannot verify. If something can't be checked, report it as a finding.
 
+## How to read a large diff (so you always reach the report)
+- The guard allows one plain read-only git command per call: NO pipes, `head`, `tail`, `grep`,
+  redirects or `cd`. A blocked call is not a reason to stop: use the commands below instead.
+  (The token policy's "pipe through tail" does not apply to you.)
+- Start with `git diff --stat main...HEAD`, then read the diff one path at a time:
+  `git diff main...HEAD -- <path>`. Review tests and security-relevant files first.
+- Use Read (with line ranges) and Grep for context, never the whole diff in one call when the stat
+  shows more than about 15 files.
+- Budget: stop gathering after about 40 tool calls and write the report with what you have.
+- ALWAYS finish with the fixed-format report below, even if blocked or out of budget: put whatever
+  you could not check under "Not verifiable" and use the verdict CHANGES REQUIRED if unsure.
+  Ending without the report is a failure of the review.
+
 ## Checklist
 1. Every spec scenario and its FRS ID is implemented AND has a test whose name starts with that FRS ID.
 2. Nothing extra: no behaviour, endpoints or dependencies beyond the approved proposal.
