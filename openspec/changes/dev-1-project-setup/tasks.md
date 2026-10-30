@@ -106,7 +106,7 @@ Rules for every task:
   - non-root user
   - verify: `pnpm check:versions` exits 0 with no findings
   - **[NFR-OPS-001]**
-- [ ] 7.4 Add the auth, tracker, api-gateway and web services to `docker-compose.yml`. Only 4000, 8080 and 5433 are published, and auth/tracker wait for a healthy postgres. Verify:
+- [x] 7.4 Add the auth, tracker, api-gateway and web services to `docker-compose.yml`. Only 4000, 8080 and 5433 are published, and auth/tracker wait for a healthy postgres. Verify:
   - `docker compose up --build -d --wait` exits 0
   - `curl -s localhost:4000/health` returns `{"status":"ok"}`
   - `curl -s localhost:4000/api/v1/auth/health` returns `{"status":"ok"}`
