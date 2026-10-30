@@ -3,7 +3,7 @@ description: Full ticket loop. Propose → approve → apply → verify → ship
 argument-hint: <JIRA-KEY> <change-name>   e.g. DEV-9 auth
 ---
 
-Ticket: **$1**. Change name: `$1` in lowercase plus `-$2` (e.g. DEV-9 auth → `dev-9-auth`).
+Ticket: **$0**. Change name: `$0` in lowercase plus `-$1` (e.g. DEV-9 auth → `dev-9-auth`).
 Arguments: $ARGUMENTS
 
 Run the stages below in order. Each stage follows its own command file; this file only adds the
@@ -16,9 +16,9 @@ checkpoints and the glue between them. Work autonomously between the two checkpo
 - Never write approval without the user's exact reply `approved` (see `sdd/apply.md` §1).
 - Never push before the user's `commit` at CHECKPOINT B. Never force-push. Never read `.env` files.
 - Code follows docs/CODING_GUIDELINES.md. Commits: `type(area): <task> <summary>` plus the footer
-  `Refs: $1` (areas: auth, tracker, gateway, web, shared, database, docker, workflow, docs).
+  `Refs: $0` (areas: auth, tracker, gateway, web, shared, database, docker, workflow, docs).
 - Do checks yourself:
-  - browser: Playwright headless against the running app, screenshots in `docs/evidence/$1/`
+  - browser: Playwright headless against the running app, screenshots in `docs/evidence/$0/`
   - long-running processes (`pnpm dev`, `docker compose up`): run in the background, wait for the
     health checks, stop them when done
   - HTTP: `curl` against localhost only
@@ -39,7 +39,7 @@ Show a short plan summary: ticket, title, dependencies (and whether each is Done
 to create or change, tasks, risks and open questions. Wait for the reply.
 - Change requests → update the artifacts, re-validate, show the summary again, wait again.
 - Exactly `approved` → write the approval lines in `proposal.md` (`sdd/apply.md` §1, `Approved-on`
-  in IST) and commit `docs(workflow): approve <change-name>` with `Refs: $1`.
+  in IST) and commit `docs(workflow): approve <change-name>` with `Refs: $0`.
 
 ## b. Apply
 - Follow `.claude/commands/sdd/apply.md` (tests first, one task at a time, one local commit per
@@ -56,17 +56,18 @@ Show: commits (`git log --oneline main..HEAD`), files changed (`git diff --stat 
 results, the traceability table (FRS ID → scenario → test → result), review findings (fixed /
 accepted with reason) and deviations. Wait for the user to reply `commit`.
 
-## d. Ship, merge and archive (on `commit`)
-The `commit` reply approves every step in this stage, including the Jira writes.
-1. If `gh repo view` fails, create the repo: `gh repo create spec-driven-assignment --private --source=. --push`.
-2. Follow `.claude/commands/sdd/ship.md` steps 1–3: push the branch, open the PR, show the link.
-3. `gh pr merge <number> --merge`, then `git switch main && git pull`.
-4. Run native `/opsx:archive` for the change, commit `chore(workflow): archive <change-name>`
-   with `Refs: $1`, and `git push origin main`.
+## d. Archive, ship and merge (on `commit`)
+The `commit` reply approves every step in this stage, including the Jira writes. The agent never
+pushes to `main`: the archive reaches `main` through the PR (the guard hook blocks pushes to `main`).
+1. On the feature branch, run native `/opsx:archive` for the change (sync the delta specs), then
+   commit `chore(workflow): archive <change-name>` with `Refs: $0`.
+2. If `gh repo view` fails, create the repo: `gh repo create spec-driven-assignment --private --source=.`.
+3. Follow `.claude/commands/sdd/ship.md` steps 1–3: push the branch, open the PR, show the link.
+4. `gh pr merge <number> --merge`, then `git switch main && git pull`.
 5. Delete the feature branch locally and on the remote (remove the worktree first, if any).
-6. Jira via the Atlassian MCP: comment on $1 with the PR link, then transition $1 to Done
+6. Jira via the Atlassian MCP: comment on $0 with the PR link, then transition $0 to Done
    (`getTransitionsForJiraIssue` for the id). If the MCP fails, stop and give the user the text.
-7. Update `docs/progress.md`.
+7. Update `docs/progress.md` on the next ticket's branch (no commits on `main`).
 
 ## e. Next
 - Name the next ticket in order (key map in `docs/mcp-setup.md`) and whether its dependencies are

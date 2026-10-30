@@ -13,7 +13,9 @@ export default defineConfig(
   globalIgnores([
     '**/dist/',
     '**/coverage/',
-    '.claude/',
+    // Generated Claude/OpenSpec files are ignored; the project's own hooks are linted.
+    '.claude/*',
+    '!.claude/hooks/',
     'openspec/',
     'test-results/',
     'playwright-report/',
@@ -87,8 +89,33 @@ export default defineConfig(
     rules: { 'max-lines-per-function': 'off' },
   },
   {
-    files: ['scripts/**'],
+    // CLI scripts and Claude Code hooks talk to their caller through the console.
+    files: ['scripts/**', '.claude/hooks/**'],
     rules: { 'no-console': 'off' },
+  },
+  {
+    // sequelize-cli passes the Sequelize class as a parameter named `Sequelize` (its documented contract).
+    files: ['packages/database/migrations/**', 'packages/database/seeders/**'],
+    rules: { '@typescript-eslint/naming-convention': 'off' },
+  },
+  {
+    // SDS §3.1: only services access models; routes and controllers never import @app/database.
+    files: [
+      'services/*/src/routes/**',
+      'services/*/src/controllers/**',
+      'services/*/src/middleware/**',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: '@app/database', message: 'Only services access models (SDS §3.1).' }],
+          patterns: [
+            { group: ['@app/database/*'], message: 'Only services access models (SDS §3.1).' },
+          ],
+        },
+      ],
+    },
   },
   {
     files: ['apps/web/**/*.{ts,tsx}'],

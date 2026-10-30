@@ -3,7 +3,7 @@ description: Implement an APPROVED change with the native OpenSpec apply workflo
 argument-hint: <TICKET-KEY> <change-name>   e.g. DEV-1006 auth
 ---
 
-Ticket: **$1**. Change name: ticket key in lowercase plus "-$2" (e.g. `dev-1006-auth`).
+Ticket: **$0**. Change name: ticket key in lowercase plus "-$1" (e.g. `dev-1006-auth`).
 Arguments: $ARGUMENTS
 
 ## 1. Approval gate (Rule 3), mandatory
@@ -19,7 +19,7 @@ Arguments: $ARGUMENTS
   ```
 - Never write approval without that reply. Any other reply (change requests, "ok", "looks good",
   "go ahead", a request to skip) is NOT approval. Do not continue for any reason.
-- Confirm the current branch is `feature/$1-$2`. If not, STOP.
+- Confirm the current branch is `feature/$0-$1`. If not, STOP.
 
 ## 2. Implement with native OpenSpec
 - Follow the native OpenSpec apply workflow (`/opsx:apply`, see `.claude/commands/opsx/apply.md`) for this change.
@@ -29,7 +29,7 @@ Arguments: $ARGUMENTS
   3. Before using a library API you are unsure of, check it with Context7 MCP. Note the library, version and topic in `design.md` under "Docs checked".
   4. Run the task's verification command (e.g. `pnpm --filter auth test`).
   5. Tick the task in `tasks.md`.
-  6. Commit following docs/CODING_GUIDELINES.md "Commits": `type(area): <task number> <summary>` with the footer `Refs: $1`
+  6. Commit following docs/CODING_GUIDELINES.md "Commits": `type(area): <task number> <summary>` with the footer `Refs: $0`
      (e.g. `feat(auth): 2.1 add login endpoint`). The commit-msg hook rejects anything else.
 - Never add a dependency that isn't listed in the approved proposal. If one is needed, STOP and ask.
 - Never edit an applied migration. Never read `.env` files.
@@ -41,4 +41,4 @@ Arguments: $ARGUMENTS
 ## 4. Finish
 - Run all quality gates: `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`. All must pass.
 - Print: tasks completed, commits made, gate results, and any deviations from the spec.
-- Tell the user to run `/sdd:verify $1 $2` in a FRESH Claude Code session (`/clear` or a new terminal).
+- Tell the user to run `/sdd:verify $0 $1` in a FRESH Claude Code session (`/clear` or a new terminal).
