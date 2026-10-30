@@ -1,8 +1,8 @@
 // Claude Code PreToolUse hook registered in a subagent's frontmatter (DEV-6 design D2, D3).
 // Usage: node agent-scope-guard.mjs --agent <name>; exit 2 + stderr blocks the call.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { splitCommand } from './pre-tool-guard.mjs';
 
@@ -206,15 +206,52 @@ export function isApprovedProposal(proposal) {
   );
 }
 
-function readApproval(projectDir) {
+const git = (cwd, args) =>
+  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+
+/** The nearest existing directory at or above `path` (a Write may target a new folder). */
+function existingDir(path) {
+  let dir = dirname(path);
+  while (!existsSync(dir) && dirname(dir) !== dir) {
+    dir = dirname(dir);
+  }
+  return dir;
+}
+
+/**
+ * The git work tree an agent call belongs to (DEV-22). In a linked worktree the branch, the
+ * approved proposal and the project boundary are those of that worktree, not of the main
+ * checkout that CLAUDE_PROJECT_DIR points to. A path in another repository falls back to
+ * `projectDir`, so the guard never trusts a foreign repository's approval.
+ * @param {string} projectDir main project root (CLAUDE_PROJECT_DIR)
+ * @param {unknown} payload PreToolUse payload
+ * @returns {string} the root to read the branch and proposal from
+ */
+export function resolveWorkRoot(projectDir, payload) {
+  const input = payload?.tool_input;
+  const target = input?.file_path ?? input?.notebook_path;
+  const base = typeof payload?.cwd === 'string' ? payload.cwd : projectDir;
+  const start = startDirectory(base, target);
   try {
-    const branch = execFileSync('git', ['branch', '--show-current'], {
-      cwd: projectDir,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
+    const top = realpathSync(git(start, ['rev-parse', '--show-toplevel']));
+    return commonDir(start) === commonDir(projectDir) ? top : projectDir;
+  } catch {
+    // Not a git directory: keep the main project root (fail closed through the approval check).
+    return projectDir;
+  }
+}
+
+const commonDir = (cwd) => realpathSync(resolve(cwd, git(cwd, ['rev-parse', '--git-common-dir'])));
+
+function startDirectory(base, target) {
+  return typeof target === 'string' && target !== '' ? existingDir(resolve(base, target)) : base;
+}
+
+export function readApproval(root) {
+  try {
+    const branch = git(root, ['branch', '--show-current']);
     const change = changeNameForBranch(branch);
-    const file = change && join(projectDir, 'openspec/changes', change, 'proposal.md');
+    const file = change && join(root, 'openspec/changes', change, 'proposal.md');
     return Boolean(file) && isApprovedProposal(readFileSync(file, 'utf8'));
   } catch {
     // No branch or no proposal: the change is not approved (fail closed).
@@ -236,9 +273,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const agent = agentFlag === -1 ? undefined : process.argv[agentFlag + 1];
   const payload = readPayload();
   const projectDir = process.env.CLAUDE_PROJECT_DIR ?? payload?.cwd ?? process.cwd();
+  const root = resolveWorkRoot(projectDir, payload);
   const result = evaluateAgentCall(agent, payload, {
-    projectDir,
-    approved: readApproval(projectDir),
+    projectDir: root,
+    approved: readApproval(root),
   });
   if (!result.allow) {
     console.error(result.reason);
