@@ -8,7 +8,8 @@
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "perf": "vitest run --config vitest.perf.config.ts"
   },
   "dependencies": {
     "@app/database": "workspace:*",
