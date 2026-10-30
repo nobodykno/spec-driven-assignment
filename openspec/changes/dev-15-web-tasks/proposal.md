@@ -1,8 +1,8 @@
 Ticket: DEV-15
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 18:32 IST
 
 # Proposal: DEV-15 Frontend — task list, filters and detail pages
 
