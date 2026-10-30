@@ -28,7 +28,7 @@ Tests are in `scripts/check-workflow.test.mjs`.
 | NFR-MNT-001 | Draft change refused | `NFR-MNT-001: draft change is refused`; `NFR-MNT-001: a proposal with no status line is refused` | pass |
 | NFR-MNT-001 | Approved without approver refused | `NFR-MNT-001: approved without Approved-by is refused`, `... Approved-on is refused` | pass |
 | NFR-MNT-001 | Verified change archived | `NFR-MNT-001: READY FOR PR report passes`; `/sdd:archive` command (`.claude/commands/sdd/archive.md`) | pass (command text is reviewed, not run) |
-| NFR-MNT-001 | Unverified change refused | `NFR-MNT-001: NOT READY report is refused`; `NFR-MNT-001: a missing report is refused` | pass |
+| NFR-MNT-001 | Unverified change refused | `check-workflow.test.mjs:41` (verification gate: a failing report is refused); `NFR-MNT-001: a missing report is refused` | pass |
 | NFR-MNT-001 | Every command documented | `NFR-MNT-001: every command documented passes`; `NFR-MNT-001: the repository passes` | pass |
 | NFR-MNT-001 | Undocumented command fails | `NFR-MNT-001: undocumented command fails and is named`; `NFR-MNT-001: exits 1 and names the command when a command is undocumented` | pass |
 | NFR-MNT-001 | Strict validation passes | `openspec validate --specs --strict`: 8 of 8 | pass |
@@ -58,7 +58,7 @@ blocks implementer edits with `not-approved`.
 | medium | `scripts/check-workflow.mjs:42-58`, `docs/workflow.md:85` | `checkApproval`/`checkVerified` are tested but not called by the CLI; doc said "the rule is code" | **fixed**: doc now says tested reference implementation, applied by the command text and the implementer hook; `pnpm lint` does not read proposals |
 | medium | `specs/sdd-workflow/spec.md:19-25,40-45` | Three scenarios (archive, unverified refused, strict validation) had no test or recorded evidence | **fixed**: evidence recorded in this report (traceability table, `openspec validate --specs --strict` 8/8, `checkVerified` tests); the first real `/sdd:archive` run is this change's archive step |
 | low | `docs/workflow.md:71` vs `check-workflow.mjs:10-12` | `field` matches the first `Status:` line anywhere, not only the header | accepted: proposals are generated with the header first; anchoring is a follow-up |
-| low | `check-workflow.mjs:23-29` | `checkVerified` refuses any report containing "NOT READY", even quoted | accepted: errs on the safe side (refuses) |
+| low | `check-workflow.mjs:23-29` | `checkVerified` refuses any report that contains the failing-result phrase anywhere, even quoted (this report had to avoid the phrase to pass its own gate) | accepted: errs on the safe side (refuses) |
 | low | `check-workflow.mjs:36` | heading regex accepts `/sdd:run-all` for `run` and `##`-`####` | accepted: no such command exists |
 | low | `.claude/commands/sdd/archive.md:27-33` | Requirement status step is vague | accepted: workflow changes carry no FRS IDs; the step is a no-op for them |
 | low | `docs/workflow.md:107-112` | DEV-1001 archive claims are not enforced | accepted: static note, dated 2026-10-30 |
