@@ -4,8 +4,11 @@ import {
   type CreationOptional,
   type InferAttributes,
   type InferCreationAttributes,
+  type NonAttribute,
   type Sequelize,
 } from 'sequelize';
+import type { Project } from './project.js';
+import type { User } from './user.js';
 
 export class ProjectMember extends Model<
   InferAttributes<ProjectMember>,
@@ -14,6 +17,8 @@ export class ProjectMember extends Model<
   declare projectId: string;
   declare userId: string;
   declare role: 'OWNER' | 'MEMBER';
+  declare user?: NonAttribute<User>;
+  declare project?: NonAttribute<Project>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
