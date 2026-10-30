@@ -4,6 +4,7 @@ import express from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createApp } from './app.js';
+import { testConfig } from './test-support.js';
 
 describe('gateway auth proxy', () => {
   let upstream: Server;
@@ -25,7 +26,7 @@ describe('gateway auth proxy', () => {
   });
 
   it('FR-SYS-001: /api/v1/auth/health is forwarded to auth /health', async () => {
-    const response = await request(createApp({ authServiceUrl: upstreamUrl })).get(
+    const response = await request(createApp(testConfig({ authServiceUrl: upstreamUrl }))).get(
       '/api/v1/auth/health',
     );
     expect(response.status).toBe(200);
@@ -33,9 +34,7 @@ describe('gateway auth proxy', () => {
   });
 
   it('FR-SYS-001: /api/v1/auth/* returns 503 SERVICE_UNAVAILABLE without internal details when auth is unreachable', async () => {
-    const response = await request(createApp({ authServiceUrl: 'http://127.0.0.1:1' })).get(
-      '/api/v1/auth/health',
-    );
+    const response = await request(createApp(testConfig())).get('/api/v1/auth/health');
     expect(response.status).toBe(503);
     expect(response.body).toEqual({
       error: { code: 'SERVICE_UNAVAILABLE', message: 'Service unavailable' },
@@ -46,9 +45,10 @@ describe('gateway auth proxy', () => {
   });
 
   it('FR-SYS-001: an unreachable auth service is logged server-side', async () => {
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    await request(createApp({ authServiceUrl: 'http://127.0.0.1:1' })).get('/api/v1/auth/health');
-    expect(log).toHaveBeenCalledWith('Proxy error', expect.any(Error));
-    log.mockRestore();
+    const error = vi.fn();
+    await request(createApp(testConfig({ logger: { info: vi.fn(), error } }))).get(
+      '/api/v1/auth/health',
+    );
+    expect(error).toHaveBeenCalledWith({ err: expect.any(Error) }, 'Proxy error');
   });
 });

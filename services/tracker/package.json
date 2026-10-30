@@ -13,7 +13,9 @@
   "dependencies": {
     "@app/database": "workspace:*",
     "@app/shared": "workspace:*",
-    "express": "5.3.0"
+    "express": "5.3.0",
+    "helmet": "8.3.0",
+    "pino": "10.4.0"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
