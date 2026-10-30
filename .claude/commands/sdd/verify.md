@@ -36,5 +36,7 @@ Write `verification.md` inside the change folder, containing:
 
 ## 6. Result
 - If any gate fails, any FRS ID has no test, or any critical/high finding is unresolved: report **NOT READY** and list what blocks it (Rule 24).
-- Otherwise report **READY FOR PR** and tell the user to run `/sdd:ship $0 $1`.
-- Commit the report: `docs(workflow): verification report for <change-name>` with the footer `Refs: $0`.
+- Commit the report first: `docs(workflow): verification report for <change-name>` with the footer `Refs: $0`.
+  Commit it before archiving, because the archive moves the change folder that holds `verification.md`.
+- Otherwise report **READY FOR PR** and tell the user to reply `commit` at checkpoint B. The next steps
+  are `/sdd:archive $0 $1` and only then `/sdd:ship $0 $1`, so the archive travels in the PR.
