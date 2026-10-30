@@ -31,7 +31,7 @@ Rules for every task:
   - `NFR-SEC-005: fails closed on malformed input`
   - a CLI test that pipes a real hook payload and asserts exit code 2 and the stderr message
   - verify: `pnpm exec vitest run --dir .claude/hooks` fails
-- [ ] 3.2 Implement `.claude/hooks/pre-tool-guard.mjs` (`evaluateToolCall` plus the CLI wrapper). Verify: `pnpm exec vitest run --dir .claude/hooks` passes. **[NFR-SEC-005, NFR-MNT-001]**
+- [x] 3.2 Implement `.claude/hooks/pre-tool-guard.mjs` (`evaluateToolCall` plus the CLI wrapper). Verify: `pnpm exec vitest run --dir .claude/hooks` passes. **[NFR-SEC-005, NFR-MNT-001]**
 
 ## 4. PostToolUse formatter (D4)
 

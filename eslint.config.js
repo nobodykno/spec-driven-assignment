@@ -89,7 +89,8 @@ export default defineConfig(
     rules: { 'max-lines-per-function': 'off' },
   },
   {
-    files: ['scripts/**'],
+    // CLI scripts and Claude Code hooks talk to their caller through the console.
+    files: ['scripts/**', '.claude/hooks/**'],
     rules: { 'no-console': 'off' },
   },
   {
