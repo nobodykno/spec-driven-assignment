@@ -19,6 +19,7 @@
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @app/database migrate",
     "db:migrate:undo": "pnpm --filter @app/database migrate:undo",
+    "db:seed": "pnpm --filter @app/database seed",
     "prepare": "husky",
     "test:e2e": "playwright test",
     "check:file-names": "node scripts/check-file-names.mjs",

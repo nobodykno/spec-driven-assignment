@@ -1,9 +1,15 @@
+import { pino, type Logger } from 'pino';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { createApp } from './app.js';
 
-const appWithDatabase = (checkDatabase: () => Promise<boolean>): ReturnType<typeof createApp> =>
-  createApp({ checkDatabase });
+const config = { internalToken: 'internal' };
+const silentLogger = pino({ level: 'silent' });
+
+const appWithDatabase = (
+  checkDatabase: () => Promise<boolean>,
+  logger: Pick<Logger, 'error' | 'info'> = silentLogger,
+): ReturnType<typeof createApp> => createApp({ checkDatabase, config, logger: logger as Logger });
 
 describe('tracker GET /health', () => {
   it('FR-SYS-001: GET /health returns 200 ok when the database is reachable', async () => {
@@ -27,9 +33,26 @@ describe('tracker GET /health', () => {
   });
 });
 
+describe('tracker identity', () => {
+  it('FR-AUTH-005: a non-health route without the internal token returns 401 UNAUTHORIZED', async () => {
+    const response = await request(appWithDatabase(async () => true)).get('/projects');
+    expect(response.status).toBe(401);
+    expect(response.body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('FR-AUTH-005: a wrong internal token returns 401 UNAUTHORIZED', async () => {
+    const response = await request(appWithDatabase(async () => true))
+      .get('/projects')
+      .set({ 'x-internal-token': 'wrong', 'x-user-id': 'u', 'x-user-role': 'USER' });
+    expect(response.status).toBe(401);
+  });
+});
+
 describe('tracker errors', () => {
-  it('FR-SYS-001: unknown path returns 404 NOT_FOUND', async () => {
-    const response = await request(appWithDatabase(async () => true)).get('/healthz');
+  it('FR-SYS-001: unknown path with identity returns 404 NOT_FOUND', async () => {
+    const response = await request(appWithDatabase(async () => true))
+      .get('/healthz')
+      .set({ 'x-internal-token': 'internal', 'x-user-id': 'u', 'x-user-role': 'USER' });
     expect(response.status).toBe(404);
     expect(response.body.error.code).toBe('NOT_FOUND');
     expect(typeof response.body.error.message).toBe('string');
@@ -50,14 +73,16 @@ describe('tracker errors', () => {
   });
 
   it('FR-SYS-001: unexpected error is logged server-side', async () => {
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.fn();
     const failure = new Error('database driver crashed');
     await request(
-      appWithDatabase(async () => {
-        throw failure;
-      }),
+      appWithDatabase(
+        async () => {
+          throw failure;
+        },
+        { error, info: vi.fn() },
+      ),
     ).get('/health');
-    expect(log).toHaveBeenCalledWith('Unhandled error', failure);
-    log.mockRestore();
+    expect(error).toHaveBeenCalledWith({ err: failure }, 'Unhandled error');
   });
 });
