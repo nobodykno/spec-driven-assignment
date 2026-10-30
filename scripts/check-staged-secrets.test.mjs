@@ -69,6 +69,8 @@ describe('check-staged-secrets', () => {
     ['config/min.json', '{"PORT":4001,"JWT_' + 'SECRET":"minified-real-4"}'],
     ['compose.inline.yml', 'environment: { PORT: 4001, JWT_' + 'SECRET: inline-real-5 }'],
     ['old.Dockerfile', 'ENV JWT_' + 'SECRET legacy-real-value-6'],
+    ['quoted-old.Dockerfile', 'env JWT_' + 'SECRET "quoted-real-7"'],
+    ['services/auth/src/config.ts', 'const config = { JWT_' + 'SECRET: "literal-real-8" };'],
   ])(
     'NFR-SEC-005: rejects JWT_SECRET in Dockerfile, compose and JSON form (%s)',
     (path, content) => {
@@ -83,6 +85,17 @@ describe('check-staged-secrets', () => {
     ['config/app.json', '{\n  "JWT_' + 'SECRET": ""\n}'],
     ['config/min.json', '{"JWT_' + 'SECRET":""}'],
     ['README.md', 'Set JWT_' + 'SECRET before starting the auth service.'],
+    ['legacy.Dockerfile', 'ENV JWT_' + 'SECRET change-me'],
+    ['quoted.Dockerfile', 'ENV JWT_' + 'SECRET "change-me"'],
+    [
+      'services/auth/src/env.ts',
+      'export const EnvSchema = z.object({ JWT_' + 'SECRET: z.string().min(32) });',
+    ],
+    [
+      'services/auth/src/config.ts',
+      'const config = { PORT: 4001, JWT_' + 'SECRET: process.env.JWT_' + 'SECRET };',
+    ],
+    ['services/auth/src/schema.ts', '  JWT_' + 'SECRET: z.string(),'],
   ])('NFR-SEC-005: allows JWT_SECRET placeholders in other forms (%s)', (path, content) => {
     expect(findSecrets([file(path, content)])).toEqual([]);
   });

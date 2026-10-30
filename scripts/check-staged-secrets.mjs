@@ -8,10 +8,13 @@ const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
 const JWT_SECRET_PATTERNS = [
   // `KEY=value`, `export`/`ENV`/`- ` prefixes, YAML `KEY: value`, JSON `"KEY": "value"`, also
   // after `{` or `,` for single-line JSON and inline YAML maps.
-  /(?:^[\t ]*(?:-[\t ]*)?(?:(?:export|ENV)[\t ]+)?|[{,][\t ]*)["']?JWT_SECRET["']?[\t ]*[=:][\t ]*["']?([^"'\s#,]*)/gm,
+  // Group 1 is the opening quote (empty when unquoted), group 2 the value.
+  /(?:^[\t ]*(?:-[\t ]*)?(?:(?:export|ENV)[\t ]+)?|[{,][\t ]*)["']?JWT_SECRET["']?[\t ]*[=:][\t ]*(["']?)([^"'\s#,]*)/gim,
   // Legacy Dockerfile form: `ENV KEY value`.
-  /^[\t ]*ENV[\t ]+JWT_SECRET[\t ]+([^\s=#]+)/gm,
+  /^[\t ]*ENV[\t ]+JWT_SECRET[\t ]+(["']?)([^"'\s=#]*)/gim,
 ];
+// In source code an unquoted value is an expression (`z.string()`, `process.env.X`), not a secret.
+const CODE_FILE = /\.(ts|tsx|js|mjs|cjs)$/;
 const JWT_PLACEHOLDER = /^(?:change-?me|<.*>|\$\{.*\}|your[-_].*|x+)$/i;
 const AWS_ACCESS_KEY = /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/;
 const AWS_SECRET_KEY =
@@ -23,11 +26,17 @@ export function isEnvFile(path) {
   return name === '.env' || (name.startsWith('.env.') && name !== '.env.example');
 }
 
-const isRealValue = (value) => value !== '' && !JWT_PLACEHOLDER.test(value);
+function isRealValue([, quote, value], inCode) {
+  if (value === '' || JWT_PLACEHOLDER.test(value)) {
+    return false;
+  }
+  return !inCode || quote !== '';
+}
 
-function hasRealJwtSecret(content) {
+function hasRealJwtSecret(path, content) {
+  const inCode = CODE_FILE.test(path);
   return JWT_SECRET_PATTERNS.some((pattern) =>
-    [...content.matchAll(pattern)].some((match) => isRealValue(match[1])),
+    [...content.matchAll(pattern)].some((match) => isRealValue(match, inCode)),
   );
 }
 
@@ -49,7 +58,7 @@ export function findSecrets(files) {
     if (PRIVATE_KEY.test(content)) {
       findings.push(`${path}: contains a private key`);
     }
-    if (hasRealJwtSecret(content)) {
+    if (hasRealJwtSecret(path, content)) {
       findings.push(`${path}: contains a real JWT_SECRET value`);
     }
     if (AWS_ACCESS_KEY.test(content)) {
