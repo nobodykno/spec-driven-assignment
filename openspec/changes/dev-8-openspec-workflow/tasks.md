@@ -15,8 +15,8 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 
 ## 3. Documentation (D3)
 
-- [ ] 3.1 Write `docs/workflow.md` (diagram, command reference, approval gate and record format, traceability chain, conventions, DEV-1001 archive check). Verify: checker passes. **[NFR-MNT-001]**
-- [ ] 3.2 Verify the DEV-1001 archive and merged specs; run `openspec validate --specs --strict`. Verify: exits 0. **[NFR-MNT-001]**
+- [x] 3.1 Write `docs/workflow.md` (diagram, command reference, approval gate and record format, traceability chain, conventions, DEV-1001 archive check). Verify: checker passes. **[NFR-MNT-001]**
+- [x] 3.2 Verify the DEV-1001 archive and merged specs; run `openspec validate --specs --strict`. Verify: exits 0. **[NFR-MNT-001]**
 
 ## 4. Quality gates
 
