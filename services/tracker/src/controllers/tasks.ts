@@ -2,6 +2,7 @@ import {
   AssignTaskSchema,
   ChangeStatusSchema,
   CreateTaskSchema,
+  TaskListQuerySchema,
   UpdateTaskSchema,
   parseInput,
 } from '@app/shared';
@@ -12,6 +13,7 @@ import { uuidParam } from './params.js';
 
 export interface TaskController {
   create: RequestHandler;
+  list: RequestHandler;
   get: RequestHandler;
   update: RequestHandler;
   assign: RequestHandler;
@@ -26,6 +28,12 @@ export function createTaskController(service: TaskService): TaskController {
       const input = parseInput(CreateTaskSchema, req.body);
       const projectId = uuidParam(req, 'projectId');
       res.status(201).json(await service.create(readIdentity(res).userId, projectId, input));
+    },
+    // FR-FILT-001..003
+    list: async (req, res) => {
+      const query = parseInput(TaskListQuerySchema, req.query);
+      const projectId = uuidParam(req, 'projectId');
+      res.status(200).json(await service.list(readIdentity(res).userId, projectId, query));
     },
     // FR-TASK-002
     get: async (req, res) => {

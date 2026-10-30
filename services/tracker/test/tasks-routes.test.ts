@@ -17,6 +17,9 @@ function build(service: Record<string, unknown> = {}): ReturnType<typeof createA
     logger: pino({ level: 'silent' }),
     taskService: {
       create: vi.fn().mockResolvedValue({ id: TASK }),
+      list: vi
+        .fn()
+        .mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 } }),
       get: vi.fn().mockResolvedValue({ id: TASK }),
       update: vi.fn().mockResolvedValue({ id: TASK }),
       assign: vi.fn().mockResolvedValue({ id: TASK }),
@@ -104,5 +107,41 @@ describe('tasks routes', () => {
   it('FR-TASK-006: POST archive returns 200', async () => {
     const response = await request(build()).post(`/tasks/${TASK}/archive`).set(IDENTITY);
     expect(response.status).toBe(200);
+  });
+});
+
+describe('task list route', () => {
+  const url = `/projects/${PROJECT}/tasks`;
+
+  it('FR-FILT-003: GET returns items and meta and passes parsed defaults', async () => {
+    const list = vi.fn().mockResolvedValue({
+      items: [],
+      meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
+    });
+    const response = await request(build({ list })).get(url).set(IDENTITY);
+    expect(response.status).toBe(200);
+    expect(response.body.meta).toEqual({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
+    expect(list).toHaveBeenCalledWith(
+      USER,
+      PROJECT,
+      expect.objectContaining({ page: 1, pageSize: 20, sort: 'createdAt', order: 'desc' }),
+    );
+  });
+
+  it('FR-FILT-003: pageSize above 100 returns 400 VALIDATION_ERROR', async () => {
+    const response = await request(build()).get(`${url}?pageSize=101`).set(IDENTITY);
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('FR-FILT-001: an invalid filter value or unknown parameter returns 400', async () => {
+    expect((await request(build()).get(`${url}?status=NOPE`).set(IDENTITY)).status).toBe(400);
+    expect((await request(build()).get(`${url}?bogus=1`).set(IDENTITY)).status).toBe(400);
+  });
+
+  it('FR-FILT-001: a non-member gets 404 NOT_FOUND', async () => {
+    const list = vi.fn().mockRejectedValue(new AppError('NOT_FOUND', 404, 'Project not found'));
+    const response = await request(build({ list })).get(url).set(IDENTITY);
+    expect(response.status).toBe(404);
   });
 });
