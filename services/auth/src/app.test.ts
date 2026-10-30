@@ -1,9 +1,15 @@
+import { pino, type Logger } from 'pino';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
 import { createApp } from './app.js';
 
-const appWithDatabase = (checkDatabase: () => Promise<boolean>): ReturnType<typeof createApp> =>
-  createApp({ checkDatabase });
+const config = { jwtSecret: 'test-secret', internalToken: 'internal', secureCookies: false };
+const silentLogger = pino({ level: 'silent' });
+
+const appWithDatabase = (
+  checkDatabase: () => Promise<boolean>,
+  logger: Pick<Logger, 'error' | 'info'> = silentLogger,
+): ReturnType<typeof createApp> => createApp({ checkDatabase, config, logger: logger as Logger });
 
 describe('auth GET /health', () => {
   it('FR-SYS-001: GET /health returns 200 ok when the database is reachable', async () => {
@@ -50,14 +56,16 @@ describe('auth errors', () => {
   });
 
   it('FR-SYS-001: unexpected error is logged server-side', async () => {
-    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const error = vi.fn();
     const failure = new Error('database driver crashed');
     await request(
-      appWithDatabase(async () => {
-        throw failure;
-      }),
+      appWithDatabase(
+        async () => {
+          throw failure;
+        },
+        { error, info: vi.fn() },
+      ),
     ).get('/health');
-    expect(log).toHaveBeenCalledWith('Unhandled error', failure);
-    log.mockRestore();
+    expect(error).toHaveBeenCalledWith({ err: failure }, 'Unhandled error');
   });
 });

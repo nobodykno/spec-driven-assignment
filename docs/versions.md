@@ -51,6 +51,16 @@ Every version is pinned exactly (NFR-OPS-001). `pnpm check:versions` fails on an
 | supertest | 7.3.1 | auth, tracker, api-gateway | dev |
 | @types/supertest | 7.2.1 | auth, tracker, api-gateway | dev |
 | tsx | 4.23.15 | auth, tracker, api-gateway | dev |
+| bcryptjs | 3.0.3 | auth (prod), packages/database (dev, seeder) | prod/dev |
+| jsonwebtoken | 9.0.3 | auth, api-gateway | prod |
+| @types/jsonwebtoken | 9.0.10 | auth, api-gateway | dev |
+| cookie-parser | 1.4.7 | auth | prod |
+| @types/cookie-parser | 1.4.10 | auth | dev |
+| helmet | 8.3.0 | auth, tracker, api-gateway | prod |
+| cors | 2.8.6 | api-gateway | prod |
+| @types/cors | 2.8.19 | api-gateway | dev |
+| express-rate-limit | 8.7.2 | api-gateway | prod |
+| pino | 10.4.0 | auth, tracker, api-gateway | prod |
 
 Comparison: this table was checked against every `package.json` (root, `apps/web`,
 `packages/shared`, `packages/database`, `services/auth`, `services/tracker`,
