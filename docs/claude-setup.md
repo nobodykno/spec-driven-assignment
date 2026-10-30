@@ -31,3 +31,21 @@ Both `Read` and `cat` were refused by rules outside the committed config: the pe
 `settings.local.json` still has `Bash(cat *.env*)`, and machine-level settings deny reading the
 file. The committed `.claude/settings.json` and the hook both allow `.env.example` (unit tests
 `NFR-SEC-005: allows .env.example`). See "Recommended local settings" below.
+
+## Skill demos (tasks 6.1–6.3)
+
+Each skill was invoked with the Skill tool on a scratch branch, followed step by step, checked
+against its checklist, and then discarded (scratch branch deleted).
+
+### `zod-contract` (6.1)
+
+Request: "add a sample `PingResponse` contract `{ status: 'pong', time: ISO datetime }`" (demo ID FR-SYS-002).
+
+| Step | Result |
+| --- | --- |
+| Area / file | `packages/shared/src/schemas/common.ts` (area `common`; a system endpoint) |
+| Tests first | 4 tests named `FR-SYS-002: …` added to `common.test.ts`; `pnpm --filter @app/shared test` failed (4 ×) |
+| Schema | `PingResponseSchema = z.object({ status: z.literal('pong'), time: z.iso.datetime() })` + `export type PingResponse`; FRS comment |
+| Re-export | already covered by `export * from './schemas/common.js'` |
+| Verify | `pnpm --filter @app/shared test` 34/34, `build` OK, ESLint clean |
+| Checklist | all 6 items met |

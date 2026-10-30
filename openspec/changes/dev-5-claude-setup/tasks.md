@@ -66,7 +66,7 @@ Rules for every task:
 
 ## 6. Skills and instructions (D7, D8)
 
-- [ ] 6.1 Add `.claude/skills/zod-contract/SKILL.md`. Demo it on a scratch branch with a sample schema plus tests, check the result against the checklist, run `pnpm --filter @app/shared test`, then delete the branch. Verify: the demo result is recorded. **[NFR-MNT-001]**
+- [x] 6.1 Add `.claude/skills/zod-contract/SKILL.md`. Demo it on a scratch branch with a sample schema plus tests, check the result against the checklist, run `pnpm --filter @app/shared test`, then delete the branch. Verify: the demo result is recorded. **[NFR-MNT-001]**
 - [ ] 6.2 Add `.claude/skills/express-endpoint/SKILL.md`. Demo it on a scratch branch with `GET /api/v1/ping` in tracker (schema, test first, route/controller/service), check against the checklist, run the gates, then delete the branch. Verify: the demo result is recorded, including the checklist catching a controller that queries a model. **[NFR-MNT-001]**
 - [ ] 6.3 Add `pnpm db:migrate:undo` (root and `@app/database` `migrate:undo`) and `.claude/skills/sequelize-migration/SKILL.md`. Demo it on a scratch branch: a throwaway table, `pnpm db:migrate`, check the table exists (`docker compose exec postgres psql`), `pnpm db:migrate:undo`, check it is gone, then delete the branch. Verify: the demo result is recorded. **[NFR-MNT-001]**
 - [ ] 6.4 Add `services/CLAUDE.md` and `apps/web/CLAUDE.md` (D8), and a "Claude Code setup" section in the root `CLAUDE.md` that references them, the hooks, the skills and `docs/claude-setup.md`. Verify: each nested file exists and is referenced, and is checked line by line against `docs/CODING_GUIDELINES.md` and SDS §3.1 for contradictions (none). **[NFR-MNT-001]**
