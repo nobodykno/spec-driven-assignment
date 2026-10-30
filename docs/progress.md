@@ -101,3 +101,40 @@ Branch `feature/DEV-6-agents`.
 | 2026-10-30 | Human request | User switched the remaining tickets to FAST MODE (batched checkpoints per group, one reviewer round, medium/low accepted). DEV-6 finished under it. |
 | 2026-10-30 | Verify | Live checks 1–5 via the real subagents (all pass; agents refused forced violations on policy). Gates pass (366 root + 55 package tests). Reviewer round 1: CHANGES REQUIRED (1 high, 3 medium, 4 low); high + 3 medium fixed (099844b), lows accepted. Report: `verification.md`. |
 | 2026-10-30 | Checkpoint B | User replied `commit` without pasting `/cost` or confirming `/agents`: tokens/cost "not provided", `/agents` menu unconfirmed (agents shown as loaded after restart). Measurement: Opus 5.5, ~45 files read (est.), 1 review round. |
+
+## Batch DEV-9 to DEV-16 (build now, review after merge)
+
+Instruction (2026-10-30): build the full application code for DEV-9…DEV-16, push each branch, merge in
+dependency order. Testing, bug fixing and reviews come later. Deliberate deviation for speed: independent
+review and E2E happen **after** merge. Models: Sonnet 5.5 for all tickets (DEV-9 is normally Opus).
+
+| Ticket | Branch | Status |
+| --- | --- | --- |
+| DEV-9 | `feature/DEV-9-auth` | code complete, gates pass (lint 0 errors, 407 tests) |
+| DEV-10 | `feature/DEV-10-projects` | proposed, approved |
+| DEV-11 | `feature/DEV-11-tasks` | proposed, approved |
+| DEV-12 | `feature/DEV-12-task-filtering` | proposed, approved |
+| DEV-13 | `feature/DEV-13-comments-activity` | proposed, approved |
+| DEV-14 | `feature/DEV-14-web-auth-projects` | proposed, approved |
+| DEV-15 | `feature/DEV-15-web-tasks` | proposed, approved |
+| DEV-16 | `feature/DEV-16-web-comments-activity` | proposed, approved |
+
+### Deferred (not done in this batch)
+
+- E2E tests (Playwright journey, NFR-TST-002) and the full test suites / authorization matrix (DEV-19).
+- Independent reviews (DEV-20) and bug hunting beyond what the gates need; reviews happen after merge.
+- OpenSpec archives and spec sync, `docs/token-efficiency.md` rows (`/cost` not provided), Jira updates.
+- NFR-PERF-001 measurement on 10,000 tasks; `.env.example` updates (the guard hook blocks env files, see
+  `docs/environment.md`); OpenAPI generation (NFR-MNT-002).
+
+### DEV-9 notes
+
+- `pnpm` added `express-rate-limit@8.7.2` to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` (release too new for the policy).
+- `.env.example` files were not edited (guard hook blocks env access); variable names are in `docs/environment.md`.
+- Tests cover routes with a fake service plus an in-memory service test (rotation, reuse detection); migrations were applied, undone and re-applied on local Postgres.
+
+### Resume point (updated during the batch)
+
+- DEV-9: done and pushed (`feature/DEV-9-auth`, 27062b8).
+- DEV-10 and DEV-11: being built in worktrees `../spec-driven-assignment-wt/DEV-10` and `.../DEV-11` (each branch already merged with DEV-9; approvals recorded). Next: verify gates in each, push both branches.
+- Then: DEV-12 and DEV-13 (worktrees from the DEV-11 branch merged with DEV-10 where needed), DEV-14 and DEV-15, DEV-16, then merge PRs in order 9, 10, 11, 12, 13, 14, 15, 16 and log conflicts in `docs/worktrees.md`.
