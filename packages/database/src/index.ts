@@ -25,10 +25,15 @@ export async function checkDatabase(timeoutMs = CONNECT_TIMEOUT_MS): Promise<boo
   const timeout = new Promise<boolean>((resolve) => {
     timer = setTimeout(() => resolve(false), timeoutMs);
   });
-  const probe = getSequelize()
-    .authenticate()
-    .then(() => true)
-    .catch(() => false);
+  // A failed connection is the expected "database down" answer, not an error to rethrow.
+  const probe = (async (): Promise<boolean> => {
+    try {
+      await getSequelize().authenticate();
+      return true;
+    } catch {
+      return false;
+    }
+  })();
   try {
     return await Promise.race([probe, timeout]);
   } finally {
