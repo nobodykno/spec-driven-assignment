@@ -168,7 +168,7 @@ Rules for every task:
 
 ## 10. Docs (NFR-OPS-001, NFR-MNT-001, NFR-SEC-005)
 
-- [ ] 10.1 Create `docs/versions.md` listing:
+- [x] 10.1 Create `docs/versions.md` listing:
   - every pinned npm package and its exact version, including the Git-hook tools from 9.1
   - Node 22.x and pnpm 11.28.9
   - the three Docker image tags from 7.1
