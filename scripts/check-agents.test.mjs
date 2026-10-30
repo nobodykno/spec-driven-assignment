@@ -166,9 +166,9 @@ describe('check-agents', () => {
 
   it('NFR-MNT-001: extra agents only need a name and description', () => {
     const input = validInput();
-    input.agents.helper = '---\nname: helper\ndescription: Helps.\n---\nbody';
+    input.agents.helper = `---\nname: helper\ndescription: Helps.\n---\n${POLICY_LINE}`;
     expect(checkAgents(input)).toEqual([]);
-    input.agents.helper = '---\nname: helper\ndescription:\n---\nbody';
+    input.agents.helper = `---\nname: helper\ndescription:\n---\n${POLICY_LINE}`;
     expect(checkAgents(input)).toEqual(['helper: description is empty']);
   });
 

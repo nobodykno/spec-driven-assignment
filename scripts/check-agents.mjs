@@ -6,6 +6,10 @@ import { pathToFileURL } from 'node:url';
 
 const AGENTS_DIR = '.claude/agents';
 const DOCS = 'docs/agents.md';
+const POLICY = 'docs/token-policy.md';
+const SDD_DIR = '.claude/commands/sdd';
+export const POLICY_LINE = `Follow ${POLICY}`;
+export const SDD_COMMANDS = ['propose', 'apply', 'verify', 'ship', 'run'];
 const GUARD = 'agent-scope-guard.mjs';
 const HEADINGS = ['Scope', 'Permitted actions', 'Output', 'Restrictions', 'When used'];
 const HOOK_SCRIPT = /node\s+"?(?:\$CLAUDE_PROJECT_DIR\/)?([^"\s]+\.(?:mjs|cjs|js))"?/;
@@ -144,15 +148,43 @@ function checkDocs(name, docs, tools) {
   ];
 }
 
+// The policy line must be in the body, not hidden in the frontmatter.
+const hasPolicyLine = (text) =>
+  text
+    .replace(/^---\n[\s\S]*?\n---(?:\n|$)/, '')
+    .split('\n')
+    .some((line) => line.trim() === POLICY_LINE);
+
+/** Token-policy references in the policy file, every agent and every sdd command (design D6). */
+function checkPolicy({ agents, commands, scriptExists }) {
+  const errors = scriptExists(POLICY) ? [] : [`${POLICY} is missing`];
+  for (const name of Object.keys(agents).filter((n) => !hasPolicyLine(agents[n]))) {
+    errors.push(`${name}: ${AGENTS_DIR}/${name}.md lacks "${POLICY_LINE}"`);
+  }
+  for (const name of SDD_COMMANDS) {
+    const text = commands[name];
+    if (text === undefined || !hasPolicyLine(text)) {
+      const problem = text === undefined ? 'is missing' : `lacks "${POLICY_LINE}"`;
+      errors.push(`sdd/${name}: ${SDD_DIR}/${name}.md ${problem}`);
+    }
+  }
+  return errors;
+}
+
 /**
- * @param {{ agents: Record<string, string>, docs: string | null, scriptExists: (path: string) => boolean }} input
- *   agent file contents by file name (without `.md`), docs/agents.md text, and a file-exists check
+ * @param {{ agents: Record<string, string>, docs: string | null,
+ *   scriptExists: (path: string) => boolean, commands: Record<string, string> }} input
+ *   agent file contents by name (without `.md`), docs/agents.md text, a project file-exists
+ *   check, and sdd command contents by name
  * @returns {string[]} problems; empty when everything is valid
  */
-export function checkAgents({ agents, docs, scriptExists }) {
-  const errors = Object.keys(ALLOWED_TOOLS)
-    .filter((name) => !Object.hasOwn(agents, name))
-    .map((name) => `${name}: ${AGENTS_DIR}/${name}.md is missing`);
+export function checkAgents({ agents, docs, scriptExists, commands }) {
+  const errors = checkPolicy({ agents, commands, scriptExists });
+  errors.push(
+    ...Object.keys(ALLOWED_TOOLS)
+      .filter((name) => !Object.hasOwn(agents, name))
+      .map((name) => `${name}: ${AGENTS_DIR}/${name}.md is missing`),
+  );
   for (const [name, text] of Object.entries(agents)) {
     errors.push(...checkAgent(name, text, scriptExists));
   }
@@ -175,6 +207,12 @@ function loadInput(root) {
     ),
     docs: existsSync(docsPath) ? readFileSync(docsPath, 'utf8') : null,
     scriptExists: (path) => existsSync(join(root, path)),
+    commands: Object.fromEntries(
+      SDD_COMMANDS.filter((name) => existsSync(join(root, SDD_DIR, `${name}.md`))).map((name) => [
+        name,
+        readFileSync(join(root, SDD_DIR, `${name}.md`), 'utf8'),
+      ]),
+    ),
   };
 }
 

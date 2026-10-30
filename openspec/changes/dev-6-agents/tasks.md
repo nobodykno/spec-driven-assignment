@@ -35,7 +35,7 @@ Rules for every task:
   - `NFR-MNT-001: policy referenced everywhere` (fixture set with the line in every agent and sdd command)
   - `NFR-MNT-001: missing policy reference fails the checker` (agent without the line, `sdd/ship.md` without it, `docs/token-policy.md` missing)
   - verify: the new tests fail
-- [ ] 2.4 Extend `scripts/check-agents.mjs` with the token-policy checks. Verify: `pnpm exec vitest run scripts/check-agents.test.mjs` passes except the committed-files test (passes after 4.2). **[NFR-MNT-001]**
+- [x] 2.4 Extend `scripts/check-agents.mjs` with the token-policy checks. Verify: `pnpm exec vitest run scripts/check-agents.test.mjs` passes except the committed-files test (passes after 4.2). **[NFR-MNT-001]**
 
 ## 3. Agent definitions (D1)
 
