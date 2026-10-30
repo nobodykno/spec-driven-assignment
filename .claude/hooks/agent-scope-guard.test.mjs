@@ -46,6 +46,14 @@ describe('agent-scope-guard: implementer', () => {
     'git push',
     'git push origin feature/DEV-6-agents',
     'git -C . push',
+    'git -C /abs/path push',
+    'git -c core.x=y push',
+    'git --git-dir=.git push',
+    'command git push',
+    '/usr/bin/git push',
+    'env FOO=1 git push',
+    'xargs git push < /dev/null',
+    'command gh pr create',
     'pnpm test && git push',
     'bash -c "git push"',
     'echo $(git push)',
@@ -126,9 +134,15 @@ describe('agent-scope-guard: reviewer', () => {
       expectBlocked(call('reviewer', toolName, { file_path: 'docs/x.md' }), 'edit-not-allowed'),
   );
 
-  it.each(['pnpm test', 'git commit -m x', 'git diff > out.txt', 'touch x'])(
-    'NFR-TST-001: reviewer runs no other commands (%s)',
-    (command) => expectBlocked(bash('reviewer', command), 'command-not-allowed'),
+  it.each([
+    'pnpm test',
+    'git commit -m x',
+    'git diff > out.txt',
+    'git diff --output=out.txt',
+    'git log --output x',
+    'touch x',
+  ])('NFR-TST-001: reviewer runs no other commands (%s)', (command) =>
+    expectBlocked(bash('reviewer', command), 'command-not-allowed'),
   );
 
   it('NFR-TST-001: reviewer may not call MCP tools', () =>

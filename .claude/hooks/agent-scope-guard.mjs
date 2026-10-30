@@ -49,7 +49,9 @@ const simpleCommands = (command) =>
   });
 
 const isGitRead = ([name, sub, ...rest], extra = []) =>
-  name === 'git' && [...GIT_READS, ...extra].includes(sub) && !rest.includes('--output');
+  name === 'git' &&
+  [...GIT_READS, ...extra].includes(sub) &&
+  !rest.some((arg) => arg.startsWith('--output'));
 
 const isPnpmRun = ([name, ...args]) => {
   if (name !== 'pnpm') {
@@ -82,13 +84,25 @@ function checkAllowlistedBash(agent, command) {
   return allowed ? null : 'command-not-allowed';
 }
 
+const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace']);
+
+/** The subcommand after git's global options (`-C <path>`, `-c k=v`, `--git-dir=<x>`, ...). */
+function gitSubcommand(args) {
+  let i = 0;
+  while (i < args.length && args[i].startsWith('-')) {
+    i += GIT_VALUE_OPTIONS.has(args[i]) ? 2 : 1;
+  }
+  return args[i];
+}
+
 /** True for `git [options] push` and any `gh` call, also inside quoted words and substitutions. */
 function pushesOrOpensPr(command, depth = 0) {
   return simpleCommands(command.replace(/\$\(|`/g, ';')).some((words) => {
-    const [name, ...args] = words;
+    // Any word that is git/gh (also `/usr/bin/git`, after `command`, `env`, `xargs`, ...) counts.
+    const names = words.map((word) => word.split('/').at(-1));
     if (
-      name === 'gh' ||
-      (name === 'git' && args.find((arg) => !arg.startsWith('-') && arg !== '.') === 'push')
+      names.includes('gh') ||
+      names.some((n, i) => n === 'git' && gitSubcommand(words.slice(i + 1)) === 'push')
     ) {
       return true;
     }
