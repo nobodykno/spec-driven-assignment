@@ -4,8 +4,8 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 
 ## 1. Scripts — coverage by requirement
 
-- [ ] 1.1 Failing unit test for the coverage script (found, missing, NFR rows). Verify: `pnpm exec vitest run scripts/`. **[NFR-TST-001]**
-- [ ] 1.2 `scripts/coverage-by-requirement.mjs` makes it pass; add `pnpm coverage:requirements`. Verify: `pnpm exec vitest run scripts/`. **[NFR-TST-001]**
+- [x] 1.1 Failing unit test for the coverage script (found, missing, NFR rows). Verify: `pnpm exec vitest run scripts/`. **[NFR-TST-001]**
+- [x] 1.2 `scripts/coverage-by-requirement.mjs` makes it pass; add `pnpm coverage:requirements`. Verify: `pnpm exec vitest run scripts/`. **[NFR-TST-001]**
 - [ ] 1.3 Run it and add small tests in the owning packages for every `FR-*` it reports as uncovered. Verify: `pnpm coverage:requirements` exits 0. **[NFR-TST-001]**
 
 ## 2. Tracker — real-database tests
