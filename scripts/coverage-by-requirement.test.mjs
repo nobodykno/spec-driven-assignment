@@ -29,6 +29,22 @@ describe('coverage-by-requirement', () => {
     expect(extractTestTitleIds(source)).toEqual(['FR-AUTH-001', 'FR-SYS-002', 'NFR-OPS-001']);
   });
 
+  it('NFR-TST-001: ignores skipped and todo tests', () => {
+    const source =
+      "it.skip('FR-AUTH-001: a', () => {});\nit.todo('FR-AUTH-002: b');\nit.fails('FR-AUTH-003: c', () => {});";
+    expect(extractTestTitleIds(source)).toEqual(['FR-AUTH-003']);
+  });
+
+  it('NFR-TST-001: counts the id rows of a data-driven test titled with the id', () => {
+    const source = [
+      "const ROWS = [{ id: 'FR-PROJ-003', action: 'a' }, { id: 'FR-TASK-001', action: 'b' }];",
+      "describe.each(ROWS)('$action', ({ id, action }) => {",
+      '  it.each(ROLES)(`${id}: ${action} as %s`, () => {});',
+      '});',
+    ].join('\n');
+    expect(extractTestTitleIds(source)).toEqual(['FR-PROJ-003', 'FR-TASK-001']);
+  });
+
   it('NFR-TST-001: lists tests per requirement and reports functional gaps', () => {
     const coverage = buildCoverage(
       ['FR-AUTH-001', 'FR-TASK-005', 'NFR-SEC-001'],

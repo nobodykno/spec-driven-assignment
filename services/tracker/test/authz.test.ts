@@ -202,6 +202,9 @@ describe('authorization matrix (FRS §2.2)', () => {
         .set(asUser(ACTOR[role](world)))
         .send(body);
       expect(response.status).toBe(expected[role]);
+      if (expected[role] === 403 || expected[role] === 404) {
+        expect(response.body.error.code).toBe(expected[role] === 403 ? 'FORBIDDEN' : 'NOT_FOUND');
+      }
     });
   });
 

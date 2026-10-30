@@ -9,7 +9,10 @@ const ID = '(?:N?FR)-[A-Z]+-\\d+';
 const HEADING = new RegExp(`^#### (${ID})\\b`, 'gm');
 const NFR_ROW = new RegExp('^\\| (NFR-[A-Z]+-\\d+) \\|', 'gm');
 // it/test(...) or the call that follows .each(...): the title is the first string argument.
-const TITLE = new RegExp(`(?:\\b(?:it|test)(?:\\.\\w+)*|\\))\\(\\s*['"\`](${ID}):`, 'g');
+const TITLE = new RegExp(
+  `(?:\\b(?:it|test)(?!\\.(?:skip|todo))(?:\\.\\w+)*|\\))\\(\\s*['"\`](${ID}):`,
+  'g',
+);
 
 /** @returns {string[]} sorted unique requirement ids declared in the FRS (headings and NFR rows) */
 export function extractRequirementIds(frs) {
@@ -22,9 +25,17 @@ export function extractRequirementIds(frs) {
   return [...ids].sort();
 }
 
+// Data-driven tests title themselves `${id}: ...`; each `id: 'FR-...'` row in the file is then covered.
+const TEMPLATE_TITLE = /(?:\b(?:it|test)(?!\.(?:skip|todo))(?:\.\w+)*|\))\(\s*`\$\{id\}:/;
+const ROW_ID = new RegExp(`\\bid:\\s*'(${ID})'`, 'g');
+
 /** @returns {string[]} the requirement id of each test title that starts with one */
 export function extractTestTitleIds(source) {
-  return [...source.matchAll(TITLE)].map((match) => match[1]);
+  const ids = [...source.matchAll(TITLE)].map((match) => match[1]);
+  if (TEMPLATE_TITLE.test(source)) {
+    ids.push(...[...source.matchAll(ROW_ID)].map((match) => match[1]));
+  }
+  return ids;
 }
 
 /**
@@ -69,7 +80,11 @@ function listTestFiles() {
       encoding: 'utf8',
     },
   );
-  return out.split('\n').filter(Boolean);
+  // Its own fixtures contain test-looking strings that are not tests.
+  return out
+    .split('\n')
+    .filter(Boolean)
+    .filter((file) => file !== 'scripts/coverage-by-requirement.test.mjs');
 }
 
 function main() {

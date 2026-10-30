@@ -9,8 +9,10 @@ const url = new URL(
 const name = url.pathname.slice(1);
 
 async function main() {
-  if (!name.endsWith('_test')) {
-    throw new Error(`Refusing to prepare "${name}": the test database name must end in _test`);
+  if (!/^[a-z0-9_]+_test$/.test(name)) {
+    throw new Error(
+      `Refusing to prepare "${name}": the test database name must match [a-z0-9_]+_test`,
+    );
   }
   const admin = new URL(url);
   admin.pathname = '/postgres';
@@ -24,13 +26,19 @@ async function main() {
   } finally {
     await client.end();
   }
-  execFileSync('pnpm', ['exec', 'sequelize-cli', 'db:migrate'], {
-    env: { ...process.env, DATABASE_URL: url.toString() },
-    stdio: 'ignore',
-  });
+  try {
+    execFileSync('pnpm', ['exec', 'sequelize-cli', 'db:migrate'], {
+      env: { ...process.env, DATABASE_URL: url.toString() },
+      stdio: 'pipe',
+    });
+  } catch (error) {
+    throw new Error(`Migration failed: ${error.stderr?.toString() || error.message}`, {
+      cause: error,
+    });
+  }
 }
 
 main().catch((error) => {
-  console.error(error.message);
+  process.stderr.write(`${error.message}\n`);
   process.exitCode = 1;
 });

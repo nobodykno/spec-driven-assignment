@@ -87,6 +87,13 @@ test('NFR-TST-002: register, project, member, task, assign, DONE, comment, activ
     await expect(owner.getByText('created the task')).toBeVisible();
     await expect(owner.getByText('changed the assignee')).toBeVisible();
     await expect(owner.getByText('changed the status')).toHaveCount(3);
+    await expect(owner.getByLabel('Status')).toHaveValue('DONE');
+    const entries = await owner
+      .locator('li')
+      .filter({ hasText: /created the task|changed the (assignee|status)/ })
+      .allInnerTexts();
+    expect(entries[0]).toContain('changed the status');
+    expect(entries.at(-1)).toContain('created the task');
     await owner.screenshot({ path: `${EVIDENCE}/journey-task-activity.png`, fullPage: true });
   });
 });
