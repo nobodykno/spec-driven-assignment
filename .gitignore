@@ -35,3 +35,7 @@ pnpm-debug.log*
 # Playwright output (screenshots kept in docs/evidence/)
 test-results/
 playwright-report/
+
+# Graph tool caches and databases (DEV-1015, docs/graph-tools.md)
+.code-review-graph/
+graphify-out/
