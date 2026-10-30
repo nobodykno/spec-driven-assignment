@@ -65,8 +65,8 @@ accepted with reason) and deviations. Wait for the user to reply `commit`.
 ## d. Archive, ship and merge (on `commit`)
 The `commit` reply approves every step in this stage, including the Jira writes. The agent never
 pushes to `main`: the archive reaches `main` through the PR (the guard hook blocks pushes to `main`).
-1. On the feature branch, run native `/opsx:archive` for the change (sync the delta specs), then
-   commit `chore(workflow): archive <change-name>` with `Refs: $0`.
+1. On the feature branch, run `/sdd:archive $0 $1` (native archive: sync the delta specs, move the
+   folder, then commit `chore(workflow): archive <change-name>` with `Refs: $0`).
 2. If `gh repo view` fails, create the repo: `gh repo create spec-driven-assignment --private --source=.`.
 3. Follow `.claude/commands/sdd/ship.md` steps 1–3: push the branch, open the PR, show the link.
 4. `gh pr merge <number> --merge`, then `git switch main && git pull`.
