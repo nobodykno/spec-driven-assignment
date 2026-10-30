@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import type { Logger } from 'pino';
 import type { TrackerConfig } from './config.js';
+import { createProjectController } from './controllers/projects.js';
 import { createTaskController } from './controllers/tasks.js';
 import { createCommentController } from './controllers/comments.js';
 import { createLogger } from './logger.js';
@@ -10,15 +11,18 @@ import { requireInternalIdentity } from './middleware/internal-identity.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { commentsRouter, taskActivityRouter, taskCommentsRouter } from './routes/comments.js';
 import { healthRouter } from './routes/health.js';
+import { projectsRouter } from './routes/projects.js';
 import { projectTasksRouter, tasksRouter } from './routes/tasks.js';
 import { ActivityService } from './services/activity-service.js';
 import { CommentService } from './services/comment-service.js';
+import { ProjectService } from './services/project-service.js';
 import { TaskService } from './services/task-service.js';
 
 export interface AppDependencies {
   checkDatabase: () => Promise<boolean>;
   config: TrackerConfig;
   logger?: Logger;
+  projectService?: ProjectService;
   taskService?: TaskService;
   commentService?: CommentService;
   activityService?: ActivityService;
@@ -46,6 +50,9 @@ export function createApp(deps: AppDependencies): Express {
   app.use('/tasks/:taskId/comments', taskCommentsRouter(comments));
   app.use('/tasks/:taskId/activity', taskActivityRouter(comments));
   app.use('/comments', commentsRouter(comments));
+
+  const projects = createProjectController(deps.projectService ?? new ProjectService());
+  app.use('/projects', projectsRouter(projects));
 
   app.use(notFoundHandler);
   app.use(errorHandler(logger));
