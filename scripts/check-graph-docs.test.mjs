@@ -97,6 +97,14 @@ describe('token-efficiency doc', () => {
     expect(checkTokenDoc(tokenDoc(fourRows()))).toEqual([]);
   });
 
+  it('NFR-MNT-001: later tables in the same section are not read as runs', () => {
+    const doc = tokenDoc(fourRows()).replace(
+      '## Method',
+      '### Differences\n| Comparison | Baseline |\n| --- | --- |\n| Task tokens | 1 |\n## Method',
+    );
+    expect(checkTokenDoc(doc)).toEqual([]);
+  });
+
   it('NFR-MNT-001: fewer than four runs fails', () => {
     expect(checkTokenDoc(tokenDoc(fourRows().slice(0, 3)))).toEqual([
       expect.stringContaining('four'),

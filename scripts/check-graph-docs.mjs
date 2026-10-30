@@ -34,6 +34,18 @@ const section = (doc, title) => {
   return (end === -1 ? rest : rest.slice(0, end)).join('\n');
 };
 
+/** The lines of the first Markdown table in a text (header, separator, rows). */
+const firstTable = (text) => {
+  const lines = text.split('\n');
+  const start = lines.findIndex((line) => line.startsWith('|'));
+  if (start === -1) {
+    return [];
+  }
+  const rest = lines.slice(start);
+  const end = rest.findIndex((line) => !line.startsWith('|'));
+  return end === -1 ? rest : rest.slice(0, end);
+};
+
 /** @returns {string[]} findings for tools without an exact version in docs/versions.md */
 export function checkVersions(doc) {
   const rows = doc
@@ -75,9 +87,7 @@ export function checkGraphDoc(doc) {
 export function checkTokenDoc(doc) {
   const findings = [];
   const table = section(doc, 'Baseline vs graph-assisted');
-  const rows = (table ?? '')
-    .split('\n')
-    .filter((line) => line.startsWith('|'))
+  const rows = firstTable(table ?? '')
     .slice(2)
     .map(cells);
   if (rows.length !== RUNS) {
