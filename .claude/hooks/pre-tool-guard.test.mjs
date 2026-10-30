@@ -152,3 +152,69 @@ describe('pre-tool-guard', () => {
     expect(result.status).toBe(2);
   });
 });
+
+describe('pre-tool-guard review round 1', () => {
+  const MAIN = { currentBranch: 'main' };
+
+  it.each([
+    ['git push origin HEAD', MAIN],
+    ['git push origin @', MAIN],
+    ['git push --all', FEATURE],
+    ['git push --mirror origin', FEATURE],
+    ['git push', { currentBranch: '' }],
+  ])(
+    'NFR-SEC-005: blocks push to main via HEAD, --all, --mirror or unknown branch (%s)',
+    (command, context) => expectBlocked(bash(command, context), 'push-main'),
+  );
+
+  it('NFR-SEC-005: allows pushing HEAD from a feature branch', () => {
+    expect(bash('git push -u origin HEAD')).toEqual({ allow: true });
+  });
+
+  it.each([
+    ['git -C . push --force', 'force-push'],
+    ['git -c x=y push origin main', 'push-main'],
+    ['git --no-pager commit --no-verify -m x', 'no-verify'],
+    ['git -c core.hooksPath=/dev/null commit -m x', 'no-verify'],
+    ['HUSKY=0 git commit -m x', 'no-verify'],
+  ])(
+    'NFR-MNT-001: git global options and hook overrides do not bypass the guard (%s)',
+    (command, rule) => expectBlocked(bash(command), rule),
+  );
+
+  const ENV_FILE = '.e' + 'nv';
+  it.each([
+    ['(rm -rf dist)', 'rm-recursive-force'],
+    ['{ rm -rf dist; }', 'rm-recursive-force'],
+    ['if true; then rm -rf dist; fi', 'rm-recursive-force'],
+    ['sudo rm -rf dist', 'rm-recursive-force'],
+    ['/bin/rm -rf dist', 'rm-recursive-force'],
+    ['command rm -rf dist', 'rm-recursive-force'],
+    ['env rm -rf dist', 'rm-recursive-force'],
+    ['A=1 B=2 rm -rf dist', 'rm-recursive-force'],
+    ['find . | xargs rm -rf', 'rm-recursive-force'],
+    [`cat <${ENV_FILE}`, 'env-file-shell'],
+    [`cat<${ENV_FILE}`, 'env-file-shell'],
+    [`echo $(cat ${ENV_FILE})`, 'env-file-shell'],
+    [`echo \`cat ${ENV_FILE}\``, 'env-file-shell'],
+  ])(
+    'NFR-SEC-005: shell grouping, wrappers and redirection do not bypass the guard (%s)',
+    (command, rule) => expectBlocked(bash(command), rule),
+  );
+
+  it.each(['docker compose -f docker-compose.yml down -v', 'docker compose -p x down --volumes'])(
+    'NFR-SEC-005: compose options before down do not bypass the guard (%s)',
+    (command) => expectBlocked(bash(command), 'docker-volumes'),
+  );
+
+  it.each(['env NODE_ENV=test pnpm test', 'echo "(rm -rf dist)"', 'git -C services/auth status'])(
+    'NFR-SEC-005: still allows ordinary forms (%s)',
+    (command) => expect(bash(command)).toEqual({ allow: true }),
+  );
+
+  it('NFR-SEC-005: the .env file-tool message says secrets come only from the environment', () => {
+    expect(tool('Read', { file_path: ENV_FILE }).reason).toContain(
+      'secrets come only from the environment',
+    );
+  });
+});
