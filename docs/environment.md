@@ -17,3 +17,9 @@ Names only: values come from the shell or an untracked env file and are never co
 | `NODE_ENV` | auth | `production` makes the refresh cookie `Secure` |
 
 Local run: export `JWT_SECRET` and `INTERNAL_TOKEN` (any long random strings) before `pnpm dev`.
+
+Each service and `packages/database` ships a complete `.env.example`; copy it to a local env file
+and replace every `change-me` value with a long random string.
+
+The Docker stack does not run migrations. After `pnpm db:up`, run `pnpm db:migrate` (and `pnpm db:seed`
+for the demo users) before starting the services, otherwise tracker requests fail with 500.
