@@ -141,7 +141,7 @@ Rules for every task:
   - `NFR-SEC-005: findings never contain the secret value`
   - verify: `pnpm exec vitest run --dir scripts` fails
 - [x] 9.3 Implement `scripts/check-staged-secrets.mjs` (D13: `findSecrets` plus a CLI over staged blobs). Verify: `pnpm exec vitest run --dir scripts` passes. Then in a scratch commit, `git add -f` a `.env` and confirm the hook (after 9.6) or `node scripts/check-staged-secrets.mjs` exits non-zero, and unstage it. **[NFR-SEC-005]**
-- [ ] 9.4 Write `scripts/commitlint.test.mjs` first. It runs the real commitlint CLI with stdin and `COMMITLINT_BRANCH`, and tests:
+- [x] 9.4 Write `scripts/commitlint.test.mjs` first. It runs the real commitlint CLI with stdin and `COMMITLINT_BRANCH`, and tests:
   - `NFR-MNT-001: accepts feat(DEV-9) with Refs: DEV-9`
   - `NFR-MNT-001: rejects a message without a Jira scope`
   - `NFR-MNT-001: rejects a non-Jira scope`
