@@ -12,16 +12,19 @@ const TOKEN = /"([^"]*)"|'([^']*)'|(&&|\|\||[;|&\n(){}`])|[<>]+|([^\s"';|&(){}`<
 const SUBSTITUTION = /\$\(([^()]*)\)|`([^`]*)`/g;
 // An env-file name anywhere in the raw text: `.env`, `.env.<x>`, `.env*` (group 1 = suffix).
 const ENV_IN_TEXT =
-  /(?:^|[\s/=@:'"`(<>{},;|&])\.env(?:\.([A-Za-z0-9_*-]+)|\*)?(?=$|[\s'"`)<>;|&,}/])/g;
+  /(?:^|[\s/=@:'"`(<>{},;|&])\.env(?:\.([A-Za-z0-9_.*-]+)|\*)?(?=$|[\s'"`)<>;|&,}/])/g;
 const HUSKY_OFF = /(?:^|[\s;&|(])(?:export\s+)?HUSKY=["']?0["']?(?=$|[\s;&|)])/;
+// GIT_CONFIG_KEY_<n>=core.hooksPath sets the hooks path through the environment.
+const GIT_CONFIG_HOOKS = /(?:^|[\s;&|(])GIT_CONFIG_KEY_\d+=["']?core\.hookspath/i;
 const ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
 // Words that run another command later on the same line (keywords and wrapper programs).
 const WRAPPERS = new Set([
   ...['sudo', 'command', 'exec', 'nohup', 'time', 'timeout', 'nice', 'ionice', 'stdbuf', 'xargs'],
+  ...['find'],
   ...['if', 'elif', 'then', 'else', 'while', 'until', 'do', '!'],
 ]);
-const GUARDED = new Set(['rm', 'git', 'printenv', 'env', 'docker', 'docker-compose', 'bash', 'sh']);
 const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash']);
+const GUARDED = new Set(['rm', 'git', 'printenv', 'env', 'docker', 'docker-compose', ...SHELLS]);
 const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace']);
 const PUSH_VALUE_OPTIONS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
 const CONFIG_READS = new Set(['--get', '--get-all', '--unset', '--unset-all', '--list', '-l']);
@@ -88,7 +91,7 @@ export function splitCommand(command) {
 const shortFlags = (args) => args.filter((a) => /^-[A-Za-z]+$/.test(a)).join('');
 const hasFlag = (args, long, short) => args.includes(long) || shortFlags(args).includes(short);
 const commandName = (word) => word.split('/').at(-1);
-const isNoVerify = (arg) => arg.startsWith('--no-verif');
+const isNoVerify = (arg) => arg.startsWith('--no-veri');
 
 /** Drops leading assignments; after a wrapper, continues at the next guarded command (if any). */
 function unwrap(words) {
@@ -184,9 +187,12 @@ function checkDocker(name, args) {
   return hasFlag(args.slice(down + 1), '--volumes', 'v') ? 'docker-volumes' : null;
 }
 
+// `-c`, also combined (`-lc`, `-ec`); the script is the next word, after an optional `--`.
 function checkShell(args, currentBranch, depth) {
-  const script = args[args.indexOf('-c') + 1];
-  return args.includes('-c') && script ? checkBash(script, currentBranch, depth + 1) : null;
+  const flag = args.findIndex((arg) => /^-[A-Za-z]*c[A-Za-z]*$/.test(arg));
+  const rest = flag === -1 ? [] : args.slice(flag + 1);
+  const script = rest[0] === '--' ? rest[1] : rest[0];
+  return script && depth < MAX_DEPTH ? checkBash(script, currentBranch, depth + 1) : null;
 }
 
 function checkSimpleCommand(words, currentBranch, depth) {
@@ -213,7 +219,8 @@ function checkText(command) {
   if (mentionsEnvFile(command)) {
     return 'env-file-shell';
   }
-  return HUSKY_OFF.test(withoutQuotedWords(command)) ? 'no-verify' : null;
+  const unquoted = withoutQuotedWords(command);
+  return HUSKY_OFF.test(unquoted) || GIT_CONFIG_HOOKS.test(unquoted) ? 'no-verify' : null;
 }
 
 function checkSubstitutions(command, currentBranch, depth) {

@@ -62,6 +62,24 @@ describe('check-claude-settings', () => {
     },
   );
 
+  it.each(['Bash', 'Bash(*)', 'Bash(do*)', 'Bash(g*)'])(
+    'NFR-SEC-005: rejects allow-everything and wildcard prefixes (%s)',
+    (rule) => {
+      const settings = withPermissions({
+        defaultMode: 'default',
+        allow: [rule],
+        ask: REQUIRED_POLICY.ask,
+      });
+      const findings = checkSettings(settings, {
+        fileExists: allExist,
+        requiredPolicy: REQUIRED_POLICY,
+      });
+      expect(findings).toEqual([
+        expect.stringContaining(`${JSON.stringify(rule)} must not be allowed`),
+      ]);
+    },
+  );
+
   it('NFR-SEC-005: every Jira write tool must ask first', () => {
     expect(REQUIRED_POLICY.ask).toEqual(
       expect.arrayContaining([

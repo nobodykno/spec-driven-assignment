@@ -42,12 +42,23 @@ export const REQUIRED_POLICY = {
   ],
 };
 
-/** `Bash(git push:*)` → `git push`; null for non-Bash rules. */
+/**
+ * `Bash(git push:*)` → { prefix: 'git push', glob: false }; `Bash(do*)` → { prefix: 'do', glob: true };
+ * a bare `Bash` or `Bash(*)` → { prefix: '', glob: true }; null for non-Bash rules.
+ */
 const bashPrefix = (rule) => {
+  if (rule === 'Bash') {
+    return { prefix: '', glob: true };
+  }
   const spec = /^Bash\((.*)\)$/.exec(rule)?.[1];
-  return spec === undefined ? null : spec.replace(/:?\*$/, '').trim();
+  if (spec === undefined) {
+    return null;
+  }
+  const glob = spec.endsWith('*') && !spec.endsWith(':*');
+  return { prefix: spec.replace(/:?\*$/, '').trim(), glob };
 };
-const covers = (prefix, command) => command === prefix || command.startsWith(`${prefix} `);
+const covers = ({ prefix, glob }, command) =>
+  command === prefix || command.startsWith(glob ? prefix : `${prefix} `);
 
 const isBalanced = (spec) => {
   let depth = 0;
@@ -116,12 +127,12 @@ function checkHooks(hooks, { root, fileExists, requiredHooks }) {
 /** Allow rules whose prefix also matches a command that must ask first (e.g. `Bash(git:*)`). */
 function tooBroadAllows(allow, policy) {
   const protectedCommands = [
-    ...policy.ask.map(bashPrefix).filter(Boolean),
+    ...policy.ask.map((rule) => bashPrefix(rule)?.prefix).filter(Boolean),
     ...policy.askFirstCommands,
   ];
   return [...allow].filter((rule) => {
-    const prefix = bashPrefix(rule);
-    return prefix !== null && protectedCommands.some((command) => covers(prefix, command));
+    const parsed = bashPrefix(rule);
+    return parsed !== null && protectedCommands.some((command) => covers(parsed, command));
   });
 }
 

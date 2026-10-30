@@ -275,6 +275,25 @@ describe('pre-tool-guard review round 2', () => {
   });
 
   it.each([
+    [`cat apps/web/${ENV_FILE}.development.local`, 'env-file-shell'],
+    [`cat ${ENV_FILE}.production.local`, 'env-file-shell'],
+    ["bash -lc 'git push --force'", 'force-push'],
+    ['sh -ec "rm -rf dist"', 'rm-recursive-force'],
+    ["bash -c -- 'rm -rf dist'", 'rm-recursive-force'],
+    ['git commit --no-veri -m x', 'no-verify'],
+    ['git push --no-veri', 'no-verify'],
+    ['nohup zsh -c "rm -rf dist"', 'rm-recursive-force'],
+    ['sudo dash -c "git push --force"', 'force-push'],
+    ['find . -exec rm -rf {} \\;', 'rm-recursive-force'],
+    [
+      'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=x git commit',
+      'no-verify',
+    ],
+  ])('NFR-SEC-005: review round 3 bypasses are blocked (%s)', (command, rule) => {
+    expectBlocked(bash(command), rule);
+  });
+
+  it.each([
     'git commit -m "docs: mention the env example"',
     'git commit -m "fix: block HUSKY=0 overrides"',
     `cat services/auth/${ENV_FILE}.example`,
