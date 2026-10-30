@@ -49,3 +49,18 @@ Request: "add a sample `PingResponse` contract `{ status: 'pong', time: ISO date
 | Re-export | already covered by `export * from './schemas/common.js'` |
 | Verify | `pnpm --filter @app/shared test` 34/34, `build` OK, ESLint clean |
 | Checklist | all 6 items met |
+
+### `express-endpoint` (6.2)
+
+Request: "add `GET /ping` to services/tracker returning `PingResponse`, clock injected" (demo ID FR-SYS-002).
+
+| Step | Result |
+| --- | --- |
+| Contract first | `PingResponseSchema` + `PingResponse` in `packages/shared/src/schemas/common.ts` (zod-contract) |
+| Test first | `services/tracker/src/ping.test.ts`: `FR-SYS-002: returns pong with the injected time` failed; `FR-SYS-002: other methods on /ping return 404 NOT_FOUND` |
+| Service | `src/services/ping-service.ts`: `ping(now): PingResponse`, no `req`/`res`, explicit return type |
+| Controller | `src/controllers/ping.ts`: maps to `res.status(200).json(...)`, no model import |
+| Route | `src/routes/ping.ts`: `pingRouter(now)` wiring only, mounted in `createApp` before `notFoundHandler`; clock injected as `deps.now` |
+| Verify | `pnpm --filter tracker test` 8/8, `typecheck` OK, `pnpm lint` 0 errors |
+| Checklist | all 8 items met (auth/membership/transaction items not applicable to a public read-only endpoint) |
+| Negative check | a controller importing `@app/database` is rejected by ESLint: `'@app/database' import is restricted … Only services access models (SDS §3.1)  no-restricted-imports`. This checklist item is enforced by a lint rule added in this task |

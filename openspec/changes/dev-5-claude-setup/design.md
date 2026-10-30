@@ -89,6 +89,8 @@ Tests use fixture objects. This is the automated part of "`/permissions` shows n
   - New scripts: `pnpm db:migrate:undo` (root) → `pnpm --filter @app/database migrate:undo` (`sequelize-cli db:migrate:undo`). The skill needs them to prove a migration is reversible.
 - **Demo check:** each skill is checked once by invoking it on a scratch branch (sample endpoint `GET /api/v1/ping`, a throwaway migration, a sample schema), confirming the result against the checklist and running the gates. Then the scratch branch is deleted. The demo is recorded in `docs/claude-setup.md`.
 
+- **Lint-enforced layering (added in task 6.2):** the express-endpoint checklist item "no model import in controllers/routes" is enforced by ESLint `no-restricted-imports` for `@app/database` in `services/*/src/{routes,controllers}/**`.
+
 ### D8. Nested instructions
 - **`services/CLAUDE.md`:**
   - layering

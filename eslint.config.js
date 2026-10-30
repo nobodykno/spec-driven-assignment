@@ -94,6 +94,16 @@ export default defineConfig(
     rules: { 'no-console': 'off' },
   },
   {
+    // SDS §3.1: only services access models; routes and controllers never import @app/database.
+    files: ['services/*/src/routes/**', 'services/*/src/controllers/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { paths: [{ name: '@app/database', message: 'Only services access models (SDS §3.1).' }] },
+      ],
+    },
+  },
+  {
     files: ['apps/web/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended],
     languageOptions: { globals: globals.browser },
