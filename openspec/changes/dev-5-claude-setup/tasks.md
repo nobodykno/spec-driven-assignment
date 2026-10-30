@@ -52,7 +52,7 @@ Rules for every task:
   - `NFR-MNT-001: rejects an unknown defaultMode`
   - `NFR-MNT-001: rejects a missing hook script`
   - verify: the tests fail
-- [ ] 5.2 Implement `scripts/check-claude-settings.mjs` and add it to `pnpm lint` (`check:claude-settings`). Update `.claude/settings.json` per D5: `defaultMode`, `hooks`, and the pnpm ask rules. Verify: `pnpm exec vitest run --dir scripts` and `pnpm lint` pass. **[NFR-SEC-005, NFR-MNT-001]**
+- [x] 5.2 Implement `scripts/check-claude-settings.mjs` and add it to `pnpm lint` (`check:claude-settings`). Update `.claude/settings.json` per D5: `defaultMode`, `hooks`, and the pnpm ask rules. Verify: `pnpm exec vitest run --dir scripts` and `pnpm lint` pass. **[NFR-SEC-005, NFR-MNT-001]**
 - [ ] 5.3 Live hook check in a new Claude Code session on this branch. Through the agent, try:
   - `rm -rf tmp-guard-check`
   - `git push --force`
