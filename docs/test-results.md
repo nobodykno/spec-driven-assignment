@@ -100,3 +100,7 @@ page 100). Numbers are copied from the run output on 2026-10-30.
 | NFR-PERF-001 | p95 | 69.4 ms | below 300 ms: passed |
 | NFR-PERF-001 | max | 230.1 ms | none |
 | NFR-PERF-002 | four task indexes in the migrated database | present | passed |
+
+Four runs on 2026-10-30 (implementer, two verification runs, review fix) gave p95 of 69.4, 46.3,
+36.5 and 42.6 ms and p50 of 12.3 to 16.4 ms. The single slowest request varied from 59 ms to 346 ms
+(one outlier in one run), which is why the limit applies to the 95th percentile and not the maximum.
