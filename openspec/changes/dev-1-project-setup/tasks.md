@@ -120,7 +120,7 @@ Rules for every task:
 
 ## 8. Web [PARALLEL with 4, 5, 6 after group 2] (FR-SYS-002)
 
-- [ ] 8.1 Upgrade web to React 19 and Vite 8 (pinned), and add `vitest.config.ts` (jsdom), RTL and `test`/`lint` scripts. Write `src/App.test.tsx` before changing `App.tsx`:
+- [x] 8.1 Upgrade web to React 19 and Vite 8 (pinned), and add `vitest.config.ts` (jsdom), RTL and `test`/`lint` scripts. Write `src/App.test.tsx` before changing `App.tsx`:
   - `FR-SYS-002: shows API: online when health is ok`
   - `FR-SYS-002: shows API: offline on 503`
   - `FR-SYS-002: shows API: offline on network error`
