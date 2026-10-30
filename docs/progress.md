@@ -96,3 +96,4 @@ Branch `feature/DEV-6-agents`.
 | 2026-10-30 | Apply 1.1–1.3 | Docs check: frontmatter hooks supported, `Bash(...)` specifiers in subagent `tools` not documented, so the guard is an allowlist and the reviewer gets it too (design refinement). Guard + tests (221 hook tests pass). |
 | 2026-10-30 | Human request | Mid-apply the user asked for a "Token efficiency" section in `CLAUDE.md` and five `Read(...)` deny rules; committed on the user's `commit` (057b344). Outside the approved plan: listed as a deviation. |
 | 2026-10-30 | Re-plan | User asked (pasted request) to add a token-efficiency policy via `/opsx:update`: requirement "Agents follow the token-efficiency policy", design D6, tasks 2.3–2.4, 4.2–4.3, 5.2, 6.2. Status back to Draft; tasks 1.1–2.2 stay done. Waiting at checkpoint A. |
+| 2026-10-30 16:33 | Re-approve | User replied `approved` to the updated plan. |
