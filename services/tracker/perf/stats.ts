@@ -10,7 +10,7 @@ export function percentile(samples: number[], p: number): number {
     throw new Error('no samples');
   }
   const sorted = [...samples].sort((a, b) => a - b);
-  const rank = Math.max(1, Math.ceil((p / 100) * sorted.length));
+  const rank = Math.max(1, Math.ceil((p * sorted.length) / 100));
   return sorted[rank - 1] as number;
 }
 

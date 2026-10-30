@@ -65,6 +65,7 @@ describe('task list performance with 10,000 tasks', () => {
       const response = await get(queries[i % queries.length] ?? '');
       samples.push(performance.now() - started);
       expect(response.status).toBe(200);
+      expect((response.body.items as unknown[]).length).toBeGreaterThan(0);
     }
     const { p50, p95, max } = summarize(samples);
     process.stdout.write(
