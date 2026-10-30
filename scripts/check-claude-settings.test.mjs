@@ -44,6 +44,33 @@ describe('check-claude-settings', () => {
     );
   });
 
+  it.each(['Bash(git:*)', 'Bash(gh:*)', 'Bash(docker compose:*)', 'Bash(docker compose down:*)'])(
+    'NFR-SEC-005: rejects broad allow rules that cover ask-first commands (%s)',
+    (rule) => {
+      const settings = withPermissions({
+        defaultMode: 'default',
+        allow: [rule],
+        ask: REQUIRED_POLICY.ask,
+      });
+      const findings = checkSettings(settings, {
+        fileExists: allExist,
+        requiredPolicy: REQUIRED_POLICY,
+      });
+      expect(findings).toEqual([
+        expect.stringContaining(`${JSON.stringify(rule)} must not be allowed`),
+      ]);
+    },
+  );
+
+  it('NFR-SEC-005: every Jira write tool must ask first', () => {
+    expect(REQUIRED_POLICY.ask).toEqual(
+      expect.arrayContaining([
+        'mcp__atlassian__addWorklogToJiraIssue',
+        'mcp__atlassian__createIssueLink',
+      ]),
+    );
+  });
+
   it.each(['Bash(foo(bar)', 'Bash(a)(b)'])(
     'NFR-MNT-001: rejects unbalanced parentheses (%s)',
     (rule) => {

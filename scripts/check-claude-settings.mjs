@@ -28,9 +28,26 @@ export const REQUIRED_POLICY = {
     'mcp__atlassian__editJiraIssue',
     'mcp__atlassian__transitionJiraIssue',
     'mcp__atlassian__addCommentToJiraIssue',
+    'mcp__atlassian__addWorklogToJiraIssue',
+    'mcp__atlassian__createIssueLink',
   ],
   forbiddenAllow: ['Bash(docker:*)', 'Bash(git push:*)', 'Bash(gh pr merge:*)', 'Bash(pnpm add:*)'],
+  // Commands that must prompt; no allow rule may cover them, even by a shorter prefix.
+  askFirstCommands: [
+    'docker run',
+    'docker build',
+    'docker volume',
+    'docker compose down',
+    'docker compose rm',
+  ],
 };
+
+/** `Bash(git push:*)` → `git push`; null for non-Bash rules. */
+const bashPrefix = (rule) => {
+  const spec = /^Bash\((.*)\)$/.exec(rule)?.[1];
+  return spec === undefined ? null : spec.replace(/:?\*$/, '').trim();
+};
+const covers = (prefix, command) => command === prefix || command.startsWith(`${prefix} `);
 
 const isBalanced = (spec) => {
   let depth = 0;
@@ -96,6 +113,18 @@ function checkHooks(hooks, { root, fileExists, requiredHooks }) {
   return findings;
 }
 
+/** Allow rules whose prefix also matches a command that must ask first (e.g. `Bash(git:*)`). */
+function tooBroadAllows(allow, policy) {
+  const protectedCommands = [
+    ...policy.ask.map(bashPrefix).filter(Boolean),
+    ...policy.askFirstCommands,
+  ];
+  return [...allow].filter((rule) => {
+    const prefix = bashPrefix(rule);
+    return prefix !== null && protectedCommands.some((command) => covers(prefix, command));
+  });
+}
+
 function checkPolicy(permissions = {}, policy) {
   if (!policy) {
     return [];
@@ -111,10 +140,12 @@ function checkPolicy(permissions = {}, policy) {
       .filter((rule) => !ask.has(rule))
       .map((rule) => `${FILE}: ${JSON.stringify(rule)} must be in ask`),
   );
+  const forbidden = new Set([
+    ...policy.forbiddenAllow.filter((rule) => allow.has(rule)),
+    ...tooBroadAllows(allow, policy),
+  ]);
   findings.push(
-    ...policy.forbiddenAllow
-      .filter((rule) => allow.has(rule))
-      .map((rule) => `${FILE}: ${JSON.stringify(rule)} must not be allowed`),
+    ...[...forbidden].map((rule) => `${FILE}: ${JSON.stringify(rule)} must not be allowed`),
   );
   return findings;
 }
