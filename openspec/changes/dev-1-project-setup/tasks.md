@@ -209,7 +209,7 @@ Rules for every task:
 
 ## 12. Quality gates (all IDs)
 
-- [ ] 12.1 Run the full gates from a clean install: `pnpm install --frozen-lockfile && pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Every command exits 0 with Postgres stopped. Then make a real commit and push through the hooks, without `--no-verify`. **[NFR-MNT-001, NFR-SEC-005, NFR-OPS-001, FR-SYS-001, FR-SYS-002]**
+- [x] 12.1 Run the full gates from a clean install: `pnpm install --frozen-lockfile && pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Every command exits 0 with Postgres stopped. Then make a real commit and push through the hooks, without `--no-verify`. **[NFR-MNT-001, NFR-SEC-005, NFR-OPS-001, FR-SYS-001, FR-SYS-002]**
 - [ ] 12.2 Run `openspec validate dev-1-project-setup --strict` and check that every spec scenario has a matching test name or a 7.x/8.2/9.6 manual verification step. Verify: validate exits 0. **[all]**
 
 ## Workflow follow-up
