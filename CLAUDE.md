@@ -48,6 +48,13 @@
 - Test names start with the FRS ID: it('FR-TASK-005: ...')
 - Pin exact versions; no `latest`; no dependency outside the approved proposal
 
+## Git hooks (husky, installed by `pnpm install`)
+- pre-commit: `pnpm lint-staged` (ESLint --fix + Prettier on staged files), then
+  `scripts/check-staged-secrets.mjs` (blocks .env files, private keys, real JWT_SECRET, AWS keys)
+- commit-msg: commitlint (commit convention above)
+- pre-push: pnpm build && pnpm lint && pnpm typecheck && pnpm test
+- Never bypass hooks with --no-verify. If a hook fails, fix the cause.
+
 ## Never
 - Read, print or commit .env files or secrets
 - Use npm or yarn

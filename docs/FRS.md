@@ -371,7 +371,7 @@ Acceptance criteria:
 
 | Ticket | Requirements |
 | --- | --- |
-| DEV-1001 (Jira DEV-1) | FR-SYS-001, FR-SYS-002, NFR-OPS-001, NFR-MNT-001 |
+| DEV-1001 (Jira DEV-1) | FR-SYS-001, FR-SYS-002, NFR-OPS-001, NFR-MNT-001, NFR-SEC-005 |
 | DEV-1006 | FR-AUTH-001 to FR-AUTH-007, NFR-SEC-001 to 003 |
 | DEV-1007 | FR-PROJ-001 to FR-PROJ-006, FR-AUTH-006 |
 | DEV-1008 | FR-TASK-001 to FR-TASK-006 |
