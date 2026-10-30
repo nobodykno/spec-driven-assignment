@@ -41,7 +41,7 @@ Rules for every task:
   - `NFR-MNT-001: leaves other files untouched`: `.md` file and an `openspec/` path → exit 0, content unchanged
   - `NFR-MNT-001: ignores paths outside the project`
   - verify: the tests fail
-- [ ] 4.2 Implement `.claude/hooks/post-edit-format.mjs`. Verify: `pnpm exec vitest run --dir .claude/hooks` passes. **[NFR-MNT-001]**
+- [x] 4.2 Implement `.claude/hooks/post-edit-format.mjs`. Verify: `pnpm exec vitest run --dir .claude/hooks` passes. **[NFR-MNT-001]**
 
 ## 5. Settings checker and settings (D5, D6)
 
