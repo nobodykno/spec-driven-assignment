@@ -16,7 +16,7 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 
 ## 3. End-to-end
 
-- [ ] 3.1 `e2e/journey.spec.ts` register → project → member → task → assign → DONE → comment → activity. Verify: `pnpm test:e2e` against the running stack. **[NFR-TST-002]**
+- [x] 3.1 `e2e/journey.spec.ts` register → project → member → task → assign → DONE → comment → activity. Verify: `pnpm test:e2e` against the running stack. **[NFR-TST-002]**
 
 ## 4. Docs
 
