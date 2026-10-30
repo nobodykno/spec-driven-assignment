@@ -82,8 +82,10 @@ Approved-on: 2026-10-30 16:58 IST
   "looks good" or "go ahead" do not count.
 - `Approved-by` and `Approved-on` must both be filled in. A spec change after approval sets
   `Status: Draft` again.
-- The rule is code: `checkApproval` in `scripts/check-workflow.mjs`, tested in
-  `scripts/check-workflow.test.mjs`. `checkVerified` is the same for `verification.md`.
+- The rule has a tested reference implementation: `checkApproval` in `scripts/check-workflow.mjs`
+  (tests in `scripts/check-workflow.test.mjs`); `checkVerified` is the same for `verification.md`.
+  The `/sdd:*` commands apply the rule as written instructions, and `pnpm lint` does not read
+  proposals, so the gate is enforced by the command text and, for the implementer subagent, by its hook.
 - The implementer subagent has the same gate as an agent-scoped hook (`docs/agents.md`).
 
 ## Traceability chain
