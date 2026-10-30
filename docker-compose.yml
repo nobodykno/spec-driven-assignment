@@ -16,5 +16,64 @@ services:
       timeout: 5s
       retries: 10
 
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    environment:
+      PORT: "4001"
+      DATABASE_URL: postgresql://dev:dev@postgres:5432/tracker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4001/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  tracker:
+    build:
+      context: .
+      dockerfile: services/tracker/Dockerfile
+    environment:
+      PORT: "4002"
+      DATABASE_URL: postgresql://dev:dev@postgres:5432/tracker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4002/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    environment:
+      PORT: "4000"
+      AUTH_SERVICE_URL: http://auth:4001
+    ports:
+      - "4000:4000"
+    depends_on:
+      - auth
+      - tracker
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:4000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api-gateway
+
 volumes:
   tracker_pgdata:
