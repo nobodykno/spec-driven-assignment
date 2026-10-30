@@ -131,7 +131,7 @@ Rules for every task:
 
 ## 9. Git hooks (NFR-MNT-001, NFR-SEC-005)
 
-- [ ] 9.1 Add the pinned dev dependencies `husky@9.1.7`, `lint-staged@17.6.0`, `@commitlint/cli@21.2.4` and `@commitlint/config-conventional@21.2.4`, raise root `engines.node` to `>=22.22.1 <23`, and add `"prepare": "husky"`. Run `pnpm install`. Verify: `pnpm check:versions` exits 0 and `git config core.hooksPath` prints `.husky/_`. **[NFR-MNT-001]**
+- [x] 9.1 Add the pinned dev dependencies `husky@9.1.7`, `lint-staged@17.6.0`, `@commitlint/cli@21.2.4` and `@commitlint/config-conventional@21.2.4`, raise root `engines.node` to `>=22.22.1 <23`, and add `"prepare": "husky"`. Run `pnpm install`. Verify: `pnpm check:versions` exits 0 and `git config core.hooksPath` prints `.husky/_`. **[NFR-MNT-001]**
 - [ ] 9.2 Write `scripts/check-staged-secrets.test.mjs` first. Fixtures are built by concatenation, and tests cover:
   - `NFR-SEC-005: rejects .env, nested .env and .env.production`
   - `NFR-SEC-005: allows .env.example`
