@@ -55,4 +55,4 @@ Rules for every task:
 ## 6. Quality gates
 
 - [x] 6.1 Run `pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Verify: all exit 0. **[NFR-MNT-001]**
-- [ ] 6.2 Before checkpoint B: ask the user to run `/cost` and paste the numbers; record the DEV-6 row in `docs/progress.md` and `docs/token-efficiency.md` ("not provided" if nothing is pasted). Verify: both rows exist. **[NFR-MNT-001]**
+- [x] 6.2 Before checkpoint B: ask the user to run `/cost` and paste the numbers; record the DEV-6 row in `docs/progress.md` and `docs/token-efficiency.md` ("not provided" if nothing is pasted). Verify: both rows exist. **[NFR-MNT-001]**
