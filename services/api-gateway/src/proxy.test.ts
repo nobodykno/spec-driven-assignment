@@ -2,7 +2,7 @@ import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
 import express from 'express';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createApp } from './app.js';
 
 describe('gateway auth proxy', () => {
@@ -43,5 +43,12 @@ describe('gateway auth proxy', () => {
     expect(response.text).not.toContain('127.0.0.1');
     expect(response.text).not.toContain('ECONNREFUSED');
     expect(response.text).not.toContain('at ');
+  });
+
+  it('FR-SYS-001: an unreachable auth service is logged server-side', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await request(createApp({ authServiceUrl: 'http://127.0.0.1:1' })).get('/api/v1/auth/health');
+    expect(log).toHaveBeenCalledWith('Proxy error', expect.any(Error));
+    log.mockRestore();
   });
 });

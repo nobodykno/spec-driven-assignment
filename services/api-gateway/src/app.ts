@@ -11,8 +11,9 @@ export interface GatewayConfig {
 }
 
 // SDS §10: an unreachable downstream service becomes 503 SERVICE_UNAVAILABLE,
-// without the upstream address or error details.
-function sendServiceUnavailable(_err: Error, _req: unknown, res: ServerResponse | Socket): void {
+// without the upstream address or error details. The error itself is logged server-side.
+function sendServiceUnavailable(err: Error, _req: unknown, res: ServerResponse | Socket): void {
+  console.error('Proxy error', err);
   if (!(res instanceof ServerResponse)) {
     res.destroy();
     return;
