@@ -187,7 +187,7 @@ Rules for every task:
 ## 11. Coding guidelines (NFR-MNT-001)
 
 - [x] 11.1 Add `docs/CODING_GUIDELINES.md`. Add a "Coding guidelines" line to `CLAUDE.md` pointing to it, and add "code follows docs/CODING_GUIDELINES.md" to the checklist in `.claude/agents/reviewer.md`. Verify: the file exists and both references point to it. **[NFR-MNT-001]**
-- [ ] 11.2 Write `scripts/lint-rules.test.mjs` first (ESLint Node API on fixtures, D15). Each test asserts the rule id:
+- [x] 11.2 Write `scripts/lint-rules.test.mjs` first (ESLint Node API on fixtures, D15). Each test asserts the rule id:
   - `NFR-MNT-001: clean guideline-style code passes`
   - `NFR-MNT-001: rejects double quotes and missing semicolons`
   - `NFR-MNT-001: rejects == and if without braces`
