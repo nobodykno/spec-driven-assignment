@@ -112,7 +112,7 @@ Rules for every task:
   - `curl -s localhost:4000/api/v1/auth/health` returns `{"status":"ok"}`
   - `curl localhost:4001` is refused
   - **[NFR-OPS-001, FR-SYS-001]**
-- [ ] 7.5 Check the database-down path end to end:
+- [x] 7.5 Check the database-down path end to end:
   - with the stack up, `docker compose stop postgres`, then `curl -s -w '%{http_code}' localhost:4000/api/v1/auth/health` prints `{"status":"error"}503` within 3s
   - `docker compose start postgres` and the same call returns 200
   - verify: the commands above
