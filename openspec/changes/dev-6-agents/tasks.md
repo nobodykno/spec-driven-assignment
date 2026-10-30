@@ -8,7 +8,7 @@ Rules for every task:
 
 ## 1. Agent scope guard (D2, D3)
 
-- [ ] 1.1 Check the Claude Code docs for subagent frontmatter (`tools`, `hooks`) and hook input `agent_type`; record the result under "Docs checked" in `design.md` and pick D2 primary or fallback. Verify: `design.md` "Docs checked" filled. **[NFR-MNT-001]**
+- [x] 1.1 Check the Claude Code docs for subagent frontmatter (`tools`, `hooks`) and hook input `agent_type`; record the result under "Docs checked" in `design.md` and pick D2 primary or fallback. Verify: `design.md` "Docs checked" filled. **[NFR-MNT-001]**
 - [ ] 1.2 Write `.claude/hooks/agent-scope-guard.test.mjs` first, one test per scenario:
   - `NFR-MNT-001: implementer edits allowed on an approved change`
   - `NFR-MNT-001: implementer edits blocked on an unapproved change`

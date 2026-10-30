@@ -107,5 +107,30 @@ In a Claude Code session on the branch (recorded in `docs/agents.md`):
 
 ## Docs checked
 
-To be filled during apply (Context7 / Claude Code docs: subagent frontmatter `tools`, `hooks`,
-hook input `agent_type`).
+| Source | Version | Topic | Result |
+| --- | --- | --- | --- |
+| code.claude.com/docs/en/sub-agents (fetched 2026-10-30; Context7 not configured until DEV-1004) | Claude Code 2.1.314 | Frontmatter fields | `name`, `description` required; `tools` is a comma-separated string or YAML list; also `disallowedTools`, `hooks`, `model`, `permissionMode`. Unknown fields are ignored silently. |
+| same | 2.1.314 | `hooks` in frontmatter | Supported: "These hooks only run while that specific subagent is active and are cleaned up when it finishes." Project agents' hooks run only after the workspace trust dialog is accepted. **D2 primary applies.** |
+| same | 2.1.314 | Specifiers in `tools` | Documented only for `Agent(...)` with `claude --agent`. `Bash(git diff:*)` in `tools` is **not documented** as restricting Bash; `disallowedTools: Bash(git push *)` removes the whole Bash tool. |
+| code.claude.com/docs/en/hooks | 2.1.314 | Hook input / blocking | Input has `agent_id` and `agent_type` inside subagents; exit 2 + stderr blocks a PreToolUse call; `CLAUDE_PROJECT_DIR` is exported to hook commands. |
+
+### Refinements from the docs check (task 1.1)
+- Because `Bash(...)` specifiers in `tools` may not restrict the Bash tool, **the guard is the
+  enforcement** and works as an allowlist for the restricted agents: reviewer, test-writer and
+  coordinator may run only the Bash commands listed below. The `tools` field keeps the specifiers
+  as documentation of intent.
+- The **reviewer also registers the guard** (`--agent reviewer`): no Edit/Write/MultiEdit/NotebookEdit,
+  Bash only read-only git. D1's "none needed" no longer holds.
+- The matcher is `*` (all tools). Read, Grep, Glob and TodoWrite pass (the global DEV-5 guard still
+  checks `.env` paths); other tools are decided per agent.
+
+| Agent | Bash allowed | Other tools |
+| --- | --- | --- |
+| reviewer | `git diff`, `git log`, `git show`, `git status` | none |
+| test-writer | `git diff`, `git log`, `git show`, `git status`; `pnpm` test/lint/typecheck/build runs and `pnpm exec vitest`/`playwright` | Skill |
+| coordinator | `git diff`, `git log`, `git show`, `git status`, `git branch` (list), `git worktree list`; `openspec list/status/show/validate/instructions` | none |
+| implementer | anything the global guard allows, except `git push` and `gh` | all except Atlassian MCP write tools |
+
+- For allowlist agents, command substitution (`$(...)`, backticks) and output redirection to a file
+  are blocked. For the implementer, words inside quotes are scanned too (`bash -c "git push"`), so a
+  commit message that contains "git push" is a known false positive.
