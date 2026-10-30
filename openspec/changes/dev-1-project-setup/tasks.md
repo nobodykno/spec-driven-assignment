@@ -129,7 +129,7 @@ Rules for every task:
   - verify: `pnpm --filter web test` runs (and the cases that are not implemented yet fail)
 - [x] 8.2 Update `App.tsx`/`main.tsx` for React 19 to meet 8.1 and keep the Vite `/api` proxy to `:4000`. Verify: `pnpm --filter web test && pnpm --filter web build`. The browser check is task 8.3. **[FR-SYS-002]**
 
-- [ ] 8.3 Browser check with Playwright (design D14):
+- [x] 8.3 Browser check with Playwright (design D14):
   - add `@playwright/test@1.64.1` (root, dev), `playwright.config.ts`, `e2e/web-api-status.spec.ts`, the root script `test:e2e`, and git-ignore `test-results/` and `playwright-report/`
   - `pnpm exec playwright install chromium`
   - with Postgres, auth, gateway and the web dev server running in the background: `E2E_EXPECT=online pnpm test:e2e` passes and saves `docs/evidence/DEV-1/web-api-online.png`

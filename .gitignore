@@ -29,3 +29,7 @@ pnpm-debug.log*
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Playwright output (screenshots kept in docs/evidence/)
+test-results/
+playwright-report/
