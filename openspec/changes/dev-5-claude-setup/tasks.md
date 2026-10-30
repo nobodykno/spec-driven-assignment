@@ -45,7 +45,7 @@ Rules for every task:
 
 ## 5. Settings checker and settings (D5, D6)
 
-- [ ] 5.1 Write `scripts/check-claude-settings.test.mjs` first:
+- [x] 5.1 Write `scripts/check-claude-settings.test.mjs` first:
   - `NFR-MNT-001: current settings pass`: loads the real file
   - `NFR-MNT-001: rejects malformed rules`: `:*` in the middle, unbalanced parentheses
   - `NFR-MNT-001: rejects a rule in two lists`
