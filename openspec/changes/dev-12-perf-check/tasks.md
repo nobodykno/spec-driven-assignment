@@ -10,4 +10,4 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 
 ## 2. Quality gates
 
-- [ ] 2.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass, and `pnpm --filter tracker perf` passes.
+- [x] 2.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass, and `pnpm --filter tracker perf` passes.
