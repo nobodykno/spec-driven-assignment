@@ -12,9 +12,11 @@ dist/
 # Test coverage
 coverage/
 
-# IDE
+# IDE (shared editor settings are kept, see docs/CODING_GUIDELINES.md)
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 *.swp
 *.swo
 
