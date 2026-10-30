@@ -15,7 +15,7 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 
 ## 3. Queries and docs
 
-- [ ] 3.1 Write `docs/graph-tools.md`: setup, versions, build stats, ≥5 queries each confirmed against source. Verify: checker passes. **[NFR-MNT-001]**
+- [x] 3.1 Write `docs/graph-tools.md`: setup, versions, build stats, ≥5 queries each confirmed against source. Verify: checker passes. **[NFR-MNT-001]**
 
 ## 4. Token efficiency (D4)
 
