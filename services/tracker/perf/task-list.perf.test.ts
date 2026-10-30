@@ -3,6 +3,7 @@ import { performance } from 'node:perf_hooks';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { asUser, buildRealApp, closeConnection } from '../test/support/db.js';
+import { summarize } from './stats.js';
 import { seedPerfProject, TASK_COUNT, type PerfWorld } from './seed.js';
 
 const P95_LIMIT_MS = 300;
@@ -65,12 +66,7 @@ describe('task list performance with 10,000 tasks', () => {
       samples.push(performance.now() - started);
       expect(response.status).toBe(200);
     }
-    samples.sort((a, b) => a - b);
-    const at = (p: number): number =>
-      samples[Math.ceil((p / 100) * samples.length) - 1] ?? Infinity;
-    const p50 = at(50);
-    const p95 = at(95);
-    const max = samples[samples.length - 1] ?? Infinity;
+    const { p50, p95, max } = summarize(samples);
     process.stdout.write(
       `PERF task list (${TASK_COUNT} tasks, ${REQUESTS} requests): p50=${p50.toFixed(1)} ms p95=${p95.toFixed(1)} ms max=${max.toFixed(1)} ms\n`,
     );
