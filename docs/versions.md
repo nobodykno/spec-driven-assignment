@@ -39,6 +39,17 @@ Every version is pinned exactly (NFR-OPS-001). `pnpm check:versions` fails on an
 | @vitejs/plugin-react | 6.1.2 | apps/web | dev |
 | jsdom | 30.1.3 | apps/web | dev |
 | vite | 8.3.5 | apps/web | dev |
+| react-router | 8.5.1 | apps/web | prod |
+| @tanstack/react-query | 5.105.0 | apps/web | prod |
+| react-hook-form | 7.91.0 | apps/web | prod |
+| @hookform/resolvers | 6.0.2 | apps/web | prod |
+| tailwindcss, @tailwindcss/vite | 4.3.3 | apps/web | prod |
+| class-variance-authority | 0.7.1 | apps/web | prod |
+| clsx | 2.1.1 | apps/web | prod |
+| tailwind-merge | 3.7.0 | apps/web | prod |
+| @radix-ui/react-slot | 1.5.0 | apps/web | prod |
+| @radix-ui/react-label | 2.1.17 | apps/web | prod |
+| @testing-library/user-event | 14.6.8 | apps/web | dev |
 | zod | 4.6.7 | packages/shared | prod |
 | sequelize | 6.37.8 | packages/database | prod |
 | pg | 8.23.1 | packages/database | prod |

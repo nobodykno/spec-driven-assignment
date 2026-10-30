@@ -1,40 +1,28 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type JSX, useEffect, useState } from 'react';
-import { HealthResponseSchema } from '@app/shared';
+import { BrowserRouter } from 'react-router';
+import { bootstrapSession } from './features/auth/api/auth-api.ts';
+import { AppRoutes } from './routes/index.tsx';
 
-type ApiStatus = 'loading' | 'online' | 'offline';
-
-async function fetchApiStatus(signal: AbortSignal): Promise<ApiStatus> {
-  try {
-    const response = await fetch('/api/v1/health', { signal });
-    if (!response.ok) {
-      return 'offline';
-    }
-    const result = HealthResponseSchema.safeParse(await response.json());
-    return result.success && result.data.status === 'ok' ? 'online' : 'offline';
-  } catch {
-    return 'offline';
-  }
+function createQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+  });
 }
 
 export function App(): JSX.Element {
-  const [apiStatus, setApiStatus] = useState<ApiStatus>('loading');
+  const [queryClient] = useState(createQueryClient);
 
   useEffect(() => {
-    // Abort on unmount so StrictMode's second effect run doesn't race the first.
-    const controller = new AbortController();
-    const load = async (): Promise<void> => {
-      const status = await fetchApiStatus(controller.signal);
-      if (!controller.signal.aborted) {
-        setApiStatus(status);
-      }
-    };
-    void load();
-    return () => controller.abort();
+    // FR-UI-002: restore the session from the refresh cookie after a reload.
+    void bootstrapSession();
   }, []);
 
-  if (apiStatus === 'loading') {
-    return <div role="status">Checking API…</div>;
-  }
-
-  return <div role="status">API: {apiStatus}</div>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 }
