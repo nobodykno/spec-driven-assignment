@@ -1,8 +1,8 @@
 Ticket: DEV-9
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 18:10 IST
 
 # Proposal: DEV-9 Authentication and shared API contracts
 
