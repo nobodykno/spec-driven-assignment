@@ -1,10 +1,12 @@
 Ticket: DEV-1
 Ticket source: live MCP
 Status: Approved
-Approved-by: Paramjit Jena
-Approved-on: 2026-10-29
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 13:30 IST
 
 # Proposal: DEV-1 Project setup
+
+> **Re-opened 2026-10-30** to add Git hooks to the scope (husky, lint-staged, commitlint, staged-secret check, pre-push gates). The earlier approval (Paramjit Jena, 2026-10-29) covered tasks 1–6, which are already implemented; the new scope needs a fresh approval before any hook code is written.
 
 > Jira issue `DEV-1` is titled "[DEV-1001] Project setup". The FRS traceability table (§5) refers to this ticket as **DEV-1001**. Both keys mean the same ticket.
 
@@ -27,7 +29,8 @@ Every later ticket (DEV-1006 onwards) builds on this foundation, so it has to be
 | FR-SYS-001 | `GET /health` on gateway, auth and tracker; 503 when the database is down |
 | FR-SYS-002 | **(new in DEV-1)** Gateway exposes `GET /api/v1/health`; the web app shows "API: online" / "API: offline". Added to `docs/FRS.md` in this change |
 | NFR-OPS-001 | Docker Compose stack with exact image tags; `pnpm db:up` starts PostgreSQL 16 on host port 5433 and it becomes healthy; no floating versions anywhere |
-| NFR-MNT-001 | TypeScript strict, ESLint (no `any`, no `@ts-ignore`), Prettier check, Vitest, all wired into root `build` / `lint` / `typecheck` / `test` |
+| NFR-MNT-001 | TypeScript strict, ESLint (no `any`, no `@ts-ignore`), Prettier check, Vitest, all wired into root `build` / `lint` / `typecheck` / `test`. Git hooks enforce them locally: lint-staged on commit, commit-message format (Jira scope) on commit-msg, all four gates on push |
+| NFR-SEC-005 | Pre-commit hook rejects staged `.env` / `.env.*` files (except `.env.example`) and obvious secrets (private keys, real `JWT_SECRET=` values, AWS-style keys) |
 
 ## SDS sections followed / changed
 
@@ -69,10 +72,19 @@ Every later ticket (DEV-1006 onwards) builds on this foundation, so it has to be
   - `docker-compose.yml`: PostgreSQL 16 on 5433 with an exact tag, a named volume, a healthcheck and `dev`/`dev`/`tracker` credentials.
   - Add the auth, tracker, gateway and web services.
   - Dockerfiles: pin node and pnpm versions, drop `|| true`, and run as a non-root user.
+- **Git hooks (husky):**
+  - Root `"prepare": "husky"`, so `pnpm install` installs the hooks.
+  - `.husky/pre-commit`: `pnpm lint-staged` (ESLint `--fix` + Prettier `--write` on staged files), then `node scripts/check-staged-secrets.mjs`.
+  - `.husky/commit-msg`: `pnpm commitlint --edit "$1"` with `commitlint.config.mjs` (config-conventional plus project rules and a local plugin: Jira-key scope, matching `Refs: DEV-N` footer).
+  - `.husky/pre-push`: `pnpm build && pnpm lint && pnpm typecheck && pnpm test`.
+  - Tests for the commitlint rules and the secret check under `scripts/`.
+  - Root `engines.node` floor raised to `>=22.22.1` (lint-staged 17 requirement).
 - **Docs:**
   - New `docs/versions.md`.
   - FRS: add FR-SYS-002 and update the traceability table.
   - SDS updates as listed above.
+  - `CLAUDE.md`: a "Git hooks" section, the full commit convention, and "Never bypass hooks with --no-verify. If a hook fails, fix the cause."
+  - FRS traceability: add NFR-SEC-005 to the DEV-1001 row.
   - Delete the superseded `openspec/changes/project-setup` so its conflicting specs are never archived.
 
 ## Capabilities
@@ -82,17 +94,18 @@ Every later ticket (DEV-1006 onwards) builds on this foundation, so it has to be
 - `web-api-status`: the web app's API connectivity indicator (FR-SYS-002).
 - `local-environment`: starting PostgreSQL and the stack locally with pinned, reproducible versions (NFR-OPS-001).
 - `quality-gates`: root build, lint, typecheck and test commands and the rules they enforce (NFR-MNT-001).
+- `git-hooks`: local Git hooks that enforce lint/format, commit-message format, secret hygiene and the quality gates before code leaves the machine (NFR-MNT-001, NFR-SEC-005).
 
 ### Modified Capabilities
 - None. `openspec/specs/` is empty.
 
 ## Affected packages / services
 
-Root workspace · `packages/shared` · `packages/database` · `services/auth` · `services/tracker` (new) · `services/api-gateway` · `apps/web` · `docker-compose.yml` and Dockerfiles · `docs/`
+Root workspace (incl. `.husky/`, `commitlint.config.mjs`, `scripts/`, `CLAUDE.md`) · `packages/shared` · `packages/database` · `services/auth` · `services/tracker` (new) · `services/api-gateway` · `apps/web` · `docker-compose.yml` and Dockerfiles · `docs/`
 
 ## New / changed dependencies (exact versions)
 
-Every existing `^` range becomes an exact pin. Versions were checked with `pnpm view` on 2026-10-29.
+Every existing `^` range becomes an exact pin. Versions were checked with `pnpm view` on 2026-10-29 (Git-hook tools on 2026-10-30).
 
 | Package | Version | Where | Reason |
 | --- | --- | --- | --- |
@@ -125,6 +138,10 @@ Every existing `^` range becomes an exact pin. Versions were checked with `pnpm 
 | @testing-library/react | 16.3.3 | web (dev) | **New.** Component tests (SDS §11) |
 | @testing-library/dom | 10.4.2 | web (dev) | **New.** Peer of RTL |
 | pnpm (packageManager) | 11.28.9 | root | Pinned package manager (matches local install) |
+| husky | 9.1.7 | root (dev) | **New.** Git hooks; `prepare: husky`. Engines node >=18 |
+| lint-staged | 17.6.0 | root (dev) | **New.** Run ESLint/Prettier on staged files. Engines node >=22.22.1, so root `engines.node` becomes `>=22.22.1 <23` (local Node is 22.23.1) |
+| @commitlint/cli | 21.2.4 | root (dev) | **New.** Commit-message lint. Engines node >=22.12.0 |
+| @commitlint/config-conventional | 21.2.4 | root (dev) | **New.** Conventional-commit base rules (same release as the CLI) |
 
 Docker images (exact tags confirmed with `docker pull` in task 7.1 and recorded in `docs/versions.md`):
 - `postgres:16.x-alpine`
@@ -148,10 +165,13 @@ All work happens on `feature/DEV-1-project-setup`, one commit per task.
 
 The database has no schema yet, so there is no data migration to undo.
 
+Git hooks only: revert their commits and run `git config --unset core.hooksPath` so Git stops looking in `.husky/_`.
+
 ## Impact
 
 - **APIs:**
   - `GET /health` on :4000, :4001 and :4002.
   - `GET /api/v1/health` on the gateway.
   - Existing proxy `/api/v1/auth/*`.
+- **Developer workflow:** after `pnpm install`, every commit must use `type(DEV-N): subject` with a `Refs: DEV-N` footer, and every push runs the four gates (about a minute). Existing commits are not rewritten.
 - **Breaking (local dev only):** Postgres moves from host port 5432 to 5433, and the credentials change to `dev/dev`, database `tracker`. Local `.env` files must be updated from the `.env.example` files.

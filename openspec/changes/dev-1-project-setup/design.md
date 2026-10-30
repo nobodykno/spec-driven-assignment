@@ -8,7 +8,7 @@ See proposal.md (Why) for the gaps in the existing scaffold. Here is what's alre
 - The local toolchain is Node 22.23.1 and pnpm 11.28.9.
 - `packages/database` is the only package allowed to import `sequelize` (CLAUDE.md).
 
-Follows SDS §2.1, §3, §3.1, §4, §5.4, §6.1, §6.4, §10, §11 and §12.
+Follows SDS §2.1, §3, §3.1, §4, §5.4, §6.1, §6.4, §7.4 (secrets only from env), §10, §11 and §12.
 
 ## Goals / Non-Goals
 
@@ -22,7 +22,8 @@ Follows SDS §2.1, §3, §3.1, §4, §5.4, §6.1, §6.4, §10, §11 and §12.
 - JWT verification, `X-Internal-Token`, rate limiting, helmet/CORS and pino logging (DEV-1006 and later). The gateway in this change is only a health check plus the existing auth proxy.
 - Proxying tracker routes (DEV-1007).
 - Tailwind, shadcn/ui, TanStack Query and React Router (DEV-1011). The web app gets only what is needed to show API status.
-- Playwright and e2e (DEV-1016). CI pipelines.
+- Playwright and e2e (DEV-1016). CI pipelines (the pre-push hook is the only gate before GitHub for now).
+- Full secret scanning (entropy checks, history scans). The staged-secret check catches only the obvious cases listed in D13.
 
 ## Decisions
 
@@ -161,6 +162,26 @@ Context7 is still not configured, so these were checked against the installed pa
 | eslint-plugin-react-hooks | 7.1.1 | flat config | `configs.flat.recommended` is the flat-config object; `configs.recommended` is the legacy form |
 | eslint | 10.13.0 | config helpers | `eslint/config` exports `defineConfig` and `globalIgnores` |
 
+### D13. Git hooks (husky 9, lint-staged 17, commitlint 21)
+- **Install:** root `"prepare": "husky"` sets `core.hooksPath=.husky/_` on every `pnpm install`. Dockerfiles set `ENV HUSKY=0` before `pnpm install`, so builds without `.git` skip hook setup instead of depending on husky's no-`.git` behaviour.
+- **`.husky/pre-commit`:** `pnpm lint-staged` then `node scripts/check-staged-secrets.mjs`.
+  - `lint-staged.config.mjs`: `*.{ts,tsx,js,mjs}` → `eslint --fix --no-warn-ignored`, `prettier --write --ignore-unknown`; `*.{json,md,yaml,yml}` → `prettier --write --ignore-unknown`. `.prettierignore` still excludes `*.md`, `openspec/` and `.claude/` (D7 note), so those are passed but left untouched.
+- **`scripts/check-staged-secrets.mjs`:** dependency-free. Lists staged files with `git diff --cached --name-only --diff-filter=ACMR -z` and reads the **staged** blob with `git show :<path>`, so unstaged edits can't hide or fake a finding. Pure `findSecrets([{ path, content }])` is exported for tests; the CLI part only gathers input and sets the exit code.
+  - File names: basename `.env` or `.env.*`, except `.env.example`. The content of these files is never read.
+  - Content: `-----BEGIN [A-Z ]*PRIVATE KEY-----`; `JWT_SECRET=` (optionally quoted / `export`-ed) with a value that is not empty or a placeholder (`change-me`, `changeme`, `<...>`, `${...}`, `your-...`, `xxx...`); `AKIA[0-9A-Z]{16}`; `aws_secret_access_key` followed by a 40-character base64-like value.
+  - Output names the file and the rule, never the matched text. Binary files (NUL byte) are skipped.
+  - Test fixtures build the secret strings by concatenation, so the test file itself never matches when it is committed.
+- **`.husky/commit-msg`:** `pnpm commitlint --edit "$1"`.
+  - `commitlint.config.mjs` extends `@commitlint/config-conventional` and sets: `type-enum` (feat, fix, refactor, test, docs, chore, build, ci, perf, style); `header-max-length` 72; `body-max-line-length` 72; `subject-full-stop` never `.`; `subject-case` never sentence/start/pascal/upper-case (the config-conventional rule). This means "subject starts lowercase", not "the whole subject is lowercase", so `return 503 SERVICE_UNAVAILABLE` stays legal.
+  - A local plugin adds `scope-jira-key` (scope required, matches `^DEV-\d+$`) and `footer-refs-scope` (a `Refs: DEV-N` line equal to the scope). The built-in `scope-empty` rule is turned off, so the plugin rule owns scope checks.
+  - Main-branch housekeeping: the config reads the branch with `git rev-parse --abbrev-ref HEAD` (overridable with `COMMITLINT_BRANCH` for tests). On `main`, `docs:` and `chore:` with no scope skip both plugin rules. Every other case, including a detached HEAD during a rebase, is strict.
+  - Merge commits are ignored (commitlint default ignores).
+  - Tests (`scripts/commitlint.test.mjs`) run the real CLI: `pnpm exec commitlint --config commitlint.config.mjs` with the message on stdin and `COMMITLINT_BRANCH` set. They assert the exit code, so they cover the exact config the hook uses.
+- **`.husky/pre-push`:** `pnpm build && pnpm lint && pnpm typecheck && pnpm test`. The gates need no database (quality-gates spec), so pushing works with Docker stopped.
+- **No bypass:** `CLAUDE.md` gets "Never bypass hooks with --no-verify. If a hook fails, fix the cause." DEV-1002's PreToolUse hook can later block `--no-verify` mechanically.
+- **Docs location:** the "Git hooks" section goes in `CLAUDE.md`, not `docs/workflow.md`, because `docs/workflow.md` is created by DEV-1005 and does not exist yet.
+- **Versions** (checked with `pnpm view` on 2026-10-30): husky 9.1.7 (node >=18); lint-staged 17.6.0 (node >=22.22.1, so the root `engines.node` floor rises from 22.12.0, and local Node 22.23.1 satisfies it); @commitlint/cli and @commitlint/config-conventional 21.2.4 (node >=22.12.0, released together). lint-staged 16.4.0 (node >=20.17) is the fallback if the engines bump is rejected.
+
 ## Risks / Trade-offs
 
 - [The http-proxy-middleware v4 API changed from v3] → task 5.3 is test-first: the 503 test fails until the `on.error` wiring is correct.
@@ -170,9 +191,14 @@ Context7 is still not configured, so these were checked against the installed pa
 - [`pnpm deploy` behaviour in pnpm 11] → verified by `docker compose build` in task 7.4.
 - [Deleting `openspec/changes/project-setup` removes history] → it remains in git history (commit a629415). Keeping it would mean its `health-check`/`api-routing` specs could be archived alongside, and conflict with, this change's specs.
 
+- [Hooks slow down commits and pushes] → lint-staged only touches staged files. Pre-push runs the full gates, about a minute today. That is the point of the hook: the alternative is finding failures in the PR.
+- [Existing commits on this branch don't follow the new format (no `Refs:` footer, some headers > 72)] → commitlint only checks new commits. History is not rewritten.
+- [`--no-verify` skips every hook] → covered by the CLAUDE.md rule now, and mechanically by DEV-1002's PreToolUse hook later.
+- [The secret check uses simple patterns and can miss secrets] → it targets the obvious cases (NFR-SEC-005). Secrets still come only from env (SDS §7.4).
+
 ## Migration Plan
 
-1. Run `pnpm install` after pulling.
+1. Run `pnpm install` after pulling. This also installs the Git hooks.
 2. Copy the new `.env.example` values to local `.env` files: port 5433, `dev/dev`, `tracker`.
 3. `pnpm db:down` (old container), then `pnpm db:up`.
 
