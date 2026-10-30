@@ -5,30 +5,26 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const HOOK = '.claude/hooks/pre-tool-guard.mjs';
+const MAX_DEPTH = 3;
 // Quoted strings, separators (operators, grouping, substitution), redirections, or bare words.
 const TOKEN = /"([^"]*)"|'([^']*)'|(&&|\|\||[;|&\n(){}`])|[<>]+|([^\s"';|&(){}`<>]+)/g;
+// Command substitutions anywhere in the text, including inside double quotes.
+const SUBSTITUTION = /\$\(([^()]*)\)|`([^`]*)`/g;
+// An env-file name anywhere in the raw text: `.env`, `.env.<x>`, `.env*` (group 1 = suffix).
+const ENV_IN_TEXT =
+  /(?:^|[\s/=@:'"`(<>{},;|&])\.env(?:\.([A-Za-z0-9_*-]+)|\*)?(?=$|[\s'"`)<>;|&,}/])/g;
+const HUSKY_OFF = /(?:^|[\s;&|(])(?:export\s+)?HUSKY=["']?0["']?(?=$|[\s;&|)])/;
 const ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/;
-// Words that run the command after them (shell keywords and wrapper programs).
+// Words that run another command later on the same line (keywords and wrapper programs).
 const WRAPPERS = new Set([
-  'sudo',
-  'command',
-  'exec',
-  'nohup',
-  'time',
-  'xargs',
-  'then',
-  'do',
-  'else',
-  '!',
+  ...['sudo', 'command', 'exec', 'nohup', 'time', 'timeout', 'nice', 'ionice', 'stdbuf', 'xargs'],
+  ...['if', 'elif', 'then', 'else', 'while', 'until', 'do', '!'],
 ]);
-const GIT_VALUE_OPTIONS = new Set([
-  '-C',
-  '-c',
-  '--git-dir',
-  '--work-tree',
-  '--namespace',
-  '--config-env',
-]);
+const GUARDED = new Set(['rm', 'git', 'printenv', 'env', 'docker', 'docker-compose', 'bash', 'sh']);
+const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash']);
+const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace']);
+const PUSH_VALUE_OPTIONS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
+const CONFIG_READS = new Set(['--get', '--get-all', '--unset', '--unset-all', '--list', '-l']);
 const FILE_TOOLS = new Set(['Read', 'Edit', 'MultiEdit', 'Write']);
 const SEARCH_TOOL_FIELDS = { Grep: ['path', 'glob'], Glob: ['pattern', 'path'] };
 const ENV_FILES = '.env files hold secrets and secrets come only from the environment';
@@ -54,12 +50,20 @@ const block = (rule) => ({
 });
 
 /**
- * @param {unknown} value a path, shell word or glob
+ * @param {unknown} value a path or glob from a file tool
  * @returns {boolean} true for `.env`, `.env.<x>` and globs such as `.env*`, but not `.env.example`
  */
 export function isEnvPath(value) {
   const base = String(value).split('/').at(-1);
   return base !== '.env.example' && (base === '.env' || /^\.env[.*]/.test(base));
+}
+
+/**
+ * @param {string} text raw shell text
+ * @returns {boolean} true when the text names an env file other than `.env.example`
+ */
+export function mentionsEnvFile(text) {
+  return [...text.matchAll(ENV_IN_TEXT)].some(([, suffix]) => suffix !== 'example');
 }
 
 /**
@@ -84,33 +88,37 @@ export function splitCommand(command) {
 const shortFlags = (args) => args.filter((a) => /^-[A-Za-z]+$/.test(a)).join('');
 const hasFlag = (args, long, short) => args.includes(long) || shortFlags(args).includes(short);
 const commandName = (word) => word.split('/').at(-1);
+const isNoVerify = (arg) => arg.startsWith('--no-verif');
 
-const dropOptions = (words) => {
-  const first = words.findIndex((word) => !word.startsWith('-'));
-  return first === -1 ? [] : words.slice(first);
-};
-// `env VAR=x cmd` runs cmd; a bare `env` prints the environment (checked as env-dump).
-const isEnvWrapper = (words) => commandName(words[0]) === 'env' && words.length > 1;
-
-/** Drops leading assignments and wrappers; returns { words, assignments } for the real command. */
+/** Drops leading assignments; after a wrapper, continues at the next guarded command (if any). */
 function unwrap(words) {
   let rest = [...words];
-  const assignments = [];
-  while (rest.length > 0) {
-    if (ASSIGNMENT.test(rest[0])) {
-      assignments.push(rest.shift());
-    } else if (WRAPPERS.has(commandName(rest[0])) || isEnvWrapper(rest)) {
-      rest = dropOptions(rest.slice(1));
-    } else {
-      break;
-    }
+  while (rest.length > 0 && ASSIGNMENT.test(rest[0])) {
+    rest = rest.slice(1);
   }
-  return { words: rest, assignments };
+  const name = commandName(rest[0] ?? '');
+  if (WRAPPERS.has(name) || (name === 'env' && rest.length > 1)) {
+    const next = rest.findIndex((word, i) => i > 0 && GUARDED.has(commandName(word)));
+    return next === -1 ? [] : unwrap(rest.slice(next));
+  }
+  return rest;
 }
 
 function checkRm(args) {
   const recursive = hasFlag(args, '--recursive', 'r') || shortFlags(args).includes('R');
   return recursive && hasFlag(args, '--force', 'f') ? 'rm-recursive-force' : null;
+}
+
+function positionalPushArgs(args) {
+  const positional = [];
+  for (let i = 0; i < args.length; i += 1) {
+    if (PUSH_VALUE_OPTIONS.has(args[i])) {
+      i += 1;
+    } else if (!args[i].startsWith('-')) {
+      positional.push(args[i]);
+    }
+  }
+  return positional;
 }
 
 function pushesToMain(refspecs, currentBranch) {
@@ -125,7 +133,7 @@ function pushesToMain(refspecs, currentBranch) {
 }
 
 function checkGitPush(args, currentBranch) {
-  if (args.includes('--no-verify')) {
+  if (args.some(isNoVerify)) {
     return 'no-verify';
   }
   const forced = args.some((a) => a.startsWith('--force') || a.startsWith('+'));
@@ -135,8 +143,7 @@ function checkGitPush(args, currentBranch) {
   if (args.includes('--all') || args.includes('--mirror')) {
     return 'push-main';
   }
-  const refspecs = args.filter((a) => !a.startsWith('-')).slice(1);
-  return pushesToMain(refspecs, currentBranch) ? 'push-main' : null;
+  return pushesToMain(positionalPushArgs(args).slice(1), currentBranch) ? 'push-main' : null;
 }
 
 /** Splits `git [global options] <subcommand> args` and collects `-c key=value` settings. */
@@ -145,7 +152,7 @@ function parseGit(args) {
   let i = 0;
   while (i < args.length && args[i].startsWith('-')) {
     const takesValue = GIT_VALUE_OPTIONS.has(args[i]);
-    if (takesValue && ['-c', '--config-env'].includes(args[i])) {
+    if (args[i] === '-c') {
       config.push(args[i + 1] ?? '');
     }
     i += takesValue ? 2 : 1;
@@ -153,22 +160,23 @@ function parseGit(args) {
   return { subcommand: args[i], rest: args.slice(i + 1), config };
 }
 
+const setsHooksPath = (words) => words.some((w) => w.toLowerCase().startsWith('core.hookspath'));
+
 function checkGit(args, currentBranch) {
   const { subcommand, rest, config } = parseGit(args);
-  if (config.some((setting) => setting.toLowerCase().startsWith('core.hookspath'))) {
+  const configWrite = subcommand === 'config' && !rest.some((arg) => CONFIG_READS.has(arg));
+  if (setsHooksPath(config) || (configWrite && setsHooksPath(rest))) {
     return 'no-verify';
   }
   if (subcommand === 'push') {
     return checkGitPush(rest, currentBranch);
   }
-  if (subcommand === 'commit' && hasFlag(rest, '--no-verify', 'n')) {
-    return 'no-verify';
-  }
-  return null;
+  const noVerify = rest.some(isNoVerify) || shortFlags(rest).includes('n');
+  return subcommand === 'commit' && noVerify ? 'no-verify' : null;
 }
 
 function checkDocker(name, args) {
-  const isCompose = name === 'docker-compose' || args[0] === 'compose';
+  const isCompose = name === 'docker-compose' || args.includes('compose');
   const down = args.indexOf('down');
   if (!isCompose || down === -1) {
     return null;
@@ -176,16 +184,17 @@ function checkDocker(name, args) {
   return hasFlag(args.slice(down + 1), '--volumes', 'v') ? 'docker-volumes' : null;
 }
 
-function checkSimpleCommand(words, currentBranch) {
-  if (words.some(isEnvPath)) {
-    return 'env-file-shell';
-  }
-  const { words: command, assignments } = unwrap(words);
-  if (assignments.some((a) => a === 'HUSKY=0')) {
-    return 'no-verify';
-  }
-  const [first = '', ...args] = command;
+function checkShell(args, currentBranch, depth) {
+  const script = args[args.indexOf('-c') + 1];
+  return args.includes('-c') && script ? checkBash(script, currentBranch, depth + 1) : null;
+}
+
+function checkSimpleCommand(words, currentBranch, depth) {
+  const [first = '', ...args] = unwrap(words);
   const name = commandName(first);
+  if (SHELLS.has(name)) {
+    return checkShell(args, currentBranch, depth);
+  }
   const checks = {
     rm: () => checkRm(args),
     git: () => checkGit(args, currentBranch),
@@ -197,12 +206,37 @@ function checkSimpleCommand(words, currentBranch) {
   return checks[name]?.() ?? null;
 }
 
-function checkBash(command, currentBranch) {
+// Standalone quoted words (`-m "..."`) are data for the HUSKY check; `HUSKY="0"` keeps its quotes.
+const withoutQuotedWords = (command) => command.replace(/(^|\s)(?:"[^"]*"|'[^']*')/g, '$1""');
+
+function checkText(command) {
+  if (mentionsEnvFile(command)) {
+    return 'env-file-shell';
+  }
+  return HUSKY_OFF.test(withoutQuotedWords(command)) ? 'no-verify' : null;
+}
+
+function checkSubstitutions(command, currentBranch, depth) {
+  for (const [, dollar, backtick] of command.matchAll(SUBSTITUTION)) {
+    const inner = (dollar ?? backtick ?? '').trim();
+    const rule = inner && depth < MAX_DEPTH ? checkBash(inner, currentBranch, depth + 1) : null;
+    if (rule) {
+      return rule;
+    }
+  }
+  return null;
+}
+
+function checkBash(command, currentBranch, depth = 0) {
   if (typeof command !== 'string' || command.trim() === '') {
     return 'malformed-input';
   }
+  const textRule = checkText(command) ?? checkSubstitutions(command, currentBranch, depth);
+  if (textRule) {
+    return textRule;
+  }
   for (const words of splitCommand(command)) {
-    const rule = checkSimpleCommand(words, currentBranch);
+    const rule = checkSimpleCommand(words, currentBranch, depth);
     if (rule) {
       return rule;
     }

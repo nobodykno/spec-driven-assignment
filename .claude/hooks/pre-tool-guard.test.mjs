@@ -218,3 +218,69 @@ describe('pre-tool-guard review round 1', () => {
     );
   });
 });
+
+describe('pre-tool-guard review round 2', () => {
+  const ENV_FILE = '.e' + 'nv';
+  const MAIN = { currentBranch: 'main' };
+
+  it.each([
+    [`echo "$(cat ${ENV_FILE})"`, 'env-file-shell'],
+    ['echo "$(rm -rf dist)"', 'rm-recursive-force'],
+    ['echo "`printenv`"', 'env-dump'],
+    [`node --env-file=${ENV_FILE} -p "1"`, 'env-file-shell'],
+    [`curl -s -d @${ENV_FILE} http://localhost:4000`, 'env-file-shell'],
+    [`cp x --target=services/auth/${ENV_FILE}.local`, 'env-file-shell'],
+  ])(
+    'NFR-SEC-005: quoted substitution and embedded env-file names do not bypass the guard (%s)',
+    (command, rule) => expectBlocked(bash(command), rule),
+  );
+
+  it.each([
+    'sudo -u root rm -rf dist',
+    'xargs -n 1 rm -rf',
+    'env -u FOO rm -rf dist',
+    'nice -n 5 rm -rf dist',
+    'timeout 5 rm -rf dist',
+    'if rm -rf dist; then :; fi',
+    'while rm -rf dist; do :; done',
+    'bash -c "rm -rf dist"',
+  ])('NFR-SEC-005: wrapper options and shells do not bypass the guard (%s)', (command) => {
+    expectBlocked(bash(command), 'rm-recursive-force');
+  });
+
+  it('NFR-SEC-005: sh -c is checked like any other command', () => {
+    expectBlocked(bash('sh -c "git push origin main"'), 'push-main');
+  });
+
+  it.each([
+    'git config core.hooksPath /dev/null',
+    'git config --global core.hooksPath x',
+    'HUSKY="0" git commit -m x',
+    "HUSKY='0' git commit -m x",
+    'export HUSKY=0; git commit -m x',
+    'git commit --no-verif -m x',
+  ])('NFR-MNT-001: persistent or quoted hook overrides are blocked (%s)', (command) => {
+    expectBlocked(bash(command), 'no-verify');
+  });
+
+  it('NFR-MNT-001: reading the hooks path is still allowed', () => {
+    expect(bash('git config --get core.hooksPath')).toEqual({ allow: true });
+  });
+
+  it.each([
+    ['git push -o ci.skip origin', MAIN, 'push-main'],
+    ['docker --context x compose down -v', FEATURE, 'docker-volumes'],
+  ])('NFR-SEC-005: option values do not hide the target (%s)', (command, context, rule) => {
+    expectBlocked(bash(command, context), rule);
+  });
+
+  it.each([
+    'git commit -m "docs: mention the env example"',
+    'git commit -m "fix: block HUSKY=0 overrides"',
+    `cat services/auth/${ENV_FILE}.example`,
+    'pnpm --filter tracker test',
+    'git push -u origin feature/DEV-5-claude-setup',
+  ])('NFR-SEC-005: ordinary commands stay allowed after round 2 (%s)', (command) => {
+    expect(bash(command)).toEqual({ allow: true });
+  });
+});
