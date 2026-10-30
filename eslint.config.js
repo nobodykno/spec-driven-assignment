@@ -47,7 +47,10 @@ export default defineConfig(
         { selector: 'typeLike', format: ['PascalCase'] },
         { selector: 'enumMember', format: ['PascalCase'] },
         // Keys mirror external names (HTTP headers, env vars, JSON bodies).
-        { selector: ['objectLiteralProperty', 'typeProperty'], format: null },
+        {
+          selector: ['objectLiteralProperty', 'objectLiteralMethod', 'typeProperty'],
+          format: null,
+        },
         { selector: 'import', format: null },
       ],
       '@typescript-eslint/no-explicit-any': 'error',

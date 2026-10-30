@@ -1,7 +1,7 @@
 packages:
-  - "apps/*"
-  - "services/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'services/*'
+  - 'packages/*'
 
 # pnpm 11 build-script allowlist (replaces onlyBuiltDependencies).
 allowBuilds:

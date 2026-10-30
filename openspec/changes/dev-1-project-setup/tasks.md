@@ -198,7 +198,7 @@ Rules for every task:
   - `NFR-MNT-001: warns on console and on functions over 30 lines`
   - verify: `pnpm exec vitest run --dir scripts` fails
 - [x] 11.3 Implement D15: update `eslint.config.js`, add `@mindfiredigital/eslint-plugin-hub@2.2.0` (or apply the documented fallback), and replace `.prettierrc.json` with `.prettierrc`. Verify: `pnpm exec vitest run --dir scripts` passes. **[NFR-MNT-001]**
-- [ ] 11.4 Fix existing code: `pnpm format`, rename `apps/web/src/App.tsx` / `App.test.tsx` to `app.tsx` / `app.test.tsx` with a named `App` export, and add explicit return types and other manual fixes. Verify: `pnpm lint` exits 0 with zero errors, and `pnpm build && pnpm typecheck && pnpm test` pass. **[NFR-MNT-001]**
+- [x] 11.4 Fix existing code: `pnpm format`, rename `apps/web/src/App.tsx` / `App.test.tsx` to `app.tsx` / `app.test.tsx` with a named `App` export, and add explicit return types and other manual fixes. Verify: `pnpm lint` exits 0 with zero errors, and `pnpm build && pnpm typecheck && pnpm test` pass. **[NFR-MNT-001]**
 - [ ] 11.5 Add `.vscode/settings.json` and `.vscode/extensions.json` (D15) and update `.gitignore`. Verify: `git check-ignore .vscode/settings.json` prints nothing. **[NFR-MNT-001]**
 - [ ] 11.6 Update `scripts/commitlint.test.mjs` first for the area-scope convention:
   - accepts `feat(auth): add login endpoint` + `Refs: DEV-9`

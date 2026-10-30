@@ -1,24 +1,24 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Error codes from SDS §6.4.
 export const ErrorCodeSchema = z.enum([
-  "VALIDATION_ERROR",
-  "ASSIGNEE_NOT_MEMBER",
-  "UNAUTHORIZED",
-  "INVALID_CREDENTIALS",
-  "INVALID_REFRESH_TOKEN",
-  "FORBIDDEN",
-  "NOT_FOUND",
-  "USER_NOT_FOUND",
-  "EMAIL_TAKEN",
-  "ALREADY_MEMBER",
-  "LAST_OWNER",
-  "PROJECT_ARCHIVED",
-  "TASK_ARCHIVED",
-  "INVALID_STATUS_TRANSITION",
-  "RATE_LIMITED",
-  "INTERNAL_ERROR",
-  "SERVICE_UNAVAILABLE",
+  'VALIDATION_ERROR',
+  'ASSIGNEE_NOT_MEMBER',
+  'UNAUTHORIZED',
+  'INVALID_CREDENTIALS',
+  'INVALID_REFRESH_TOKEN',
+  'FORBIDDEN',
+  'NOT_FOUND',
+  'USER_NOT_FOUND',
+  'EMAIL_TAKEN',
+  'ALREADY_MEMBER',
+  'LAST_OWNER',
+  'PROJECT_ARCHIVED',
+  'TASK_ARCHIVED',
+  'INVALID_STATUS_TRANSITION',
+  'RATE_LIMITED',
+  'INTERNAL_ERROR',
+  'SERVICE_UNAVAILABLE',
 ]);
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
@@ -50,7 +50,7 @@ export class AppError extends Error {
     public readonly details?: ErrorDetail[],
   ) {
     super(message);
-    this.name = "AppError";
+    this.name = 'AppError';
   }
 
   toResponse(): ErrorResponse {
