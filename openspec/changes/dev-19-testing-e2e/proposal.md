@@ -1,8 +1,8 @@
 Ticket: DEV-19
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 20:00 IST
 
 # Proposal: DEV-19 Testing — authorization, regression and end-to-end tests
 
