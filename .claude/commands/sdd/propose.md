@@ -10,8 +10,8 @@ Arguments: $ARGUMENTS
 - Use the issue-tracker MCP to fetch ticket $1: title, description, acceptance criteria, dependencies, status.
 - If the MCP is unavailable, returns an auth error, the ticket is missing, or the response is malformed:
   - STOP and tell the user exactly what failed.
-  - Only continue if the user explicitly says to use a fixture. Then read `docs/tickets/$1.md`
-    and record "Ticket source: FIXTURE (<reason>)". Never present fixture data as live.
+  - Document the failure (date/time, call, error) in `docs/mcp-setup.md` and wait for the user.
+  - No offline fixture is kept. Never invent or reconstruct ticket data.
 - Check that every dependency ticket is done. If not, STOP and report which ones are blocking.
 
 ## 2. Load context
