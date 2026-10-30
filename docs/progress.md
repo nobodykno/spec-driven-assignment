@@ -93,3 +93,5 @@ Branch `feature/DEV-6-agents`.
 | --- | --- | --- |
 | 2026-10-30 | Propose | Ticket fetched via MCP (dependency DEV-5 Done). Change `dev-6-agents` created (capability `agent-roles`), validated `--strict`. Waiting at checkpoint A. |
 | 2026-10-30 16:10 | Approve | User replied `approved` in chat. |
+| 2026-10-30 | Apply 1.1–1.3 | Docs check: frontmatter hooks supported, `Bash(...)` specifiers in subagent `tools` not documented, so the guard is an allowlist and the reviewer gets it too (design refinement). Guard + tests (221 hook tests pass). |
+| 2026-10-30 | Human request | Mid-apply the user asked for a "Token efficiency" section in `CLAUDE.md` and five `Read(...)` deny rules; committed on the user's `commit` (057b344). Outside the approved plan: listed as a deviation. |

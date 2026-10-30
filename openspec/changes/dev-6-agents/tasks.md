@@ -25,7 +25,7 @@ Rules for every task:
 
 ## 2. Agent checker (D4)
 
-- [ ] 2.1 Write `scripts/check-agents.test.mjs` first:
+- [x] 2.1 Write `scripts/check-agents.test.mjs` first:
   - `NFR-MNT-001: valid definitions pass the checker` (fixture set)
   - `NFR-MNT-001: broken definition fails the checker` (missing file, name mismatch, empty description, reviewer with Edit, `Bash(git push:*)`, missing hook script)
   - `NFR-MNT-001: documentation out of date fails the checker`
