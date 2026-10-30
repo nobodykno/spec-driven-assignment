@@ -1,7 +1,12 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { checkDatabase, closeDatabase } from './index.js';
 
 describe('checkDatabase', () => {
+  // Models bind the shared instance at import; drop it so the URL set below is used.
+  beforeAll(async () => {
+    await closeDatabase();
+  });
+
   afterAll(async () => {
     await closeDatabase();
   });

@@ -321,7 +321,7 @@ These operations run in a single Sequelize managed transaction:
 ## 7. Security design
 
 ### 7.1 Passwords
-bcrypt with cost factor 12. The hash is never returned, logged or included in error messages. Login returns the same error for an unknown email and a wrong password, and runs a dummy hash comparison for unknown emails so response timing doesn't reveal which accounts exist.
+bcrypt with cost factor 12 (implemented with the pure-JS `bcryptjs` package, which produces standard `$2b$` hashes and avoids a native build). The hash is never returned, logged or included in error messages. Login returns the same error for an unknown email and a wrong password, and runs a dummy hash comparison for unknown emails so response timing doesn't reveal which accounts exist.
 
 ### 7.2 Tokens
 
