@@ -20,9 +20,9 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 
 ## 4. Docs
 
-- [ ] 4.1 `docs/environment.md`: test database and e2e preconditions. **[NFR-TST-001, NFR-TST-002]**
-- [ ] 4.2 `docs/test-results.md` from real output (both commands plus the coverage table). **[NFR-TST-001]**
+- [x] 4.1 `docs/environment.md`: test database and e2e preconditions. **[NFR-TST-001, NFR-TST-002]**
+- [x] 4.2 `docs/test-results.md` from real output (both commands plus the coverage table). **[NFR-TST-001]**
 
 ## 5. Quality gates
 
-- [ ] 5.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass; `pnpm test:e2e` passes.
+- [x] 5.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass; `pnpm test:e2e` passes.

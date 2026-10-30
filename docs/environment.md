@@ -23,3 +23,15 @@ and replace every `change-me` value with a long random string.
 
 The Docker stack does not run migrations. After `pnpm db:up`, run `pnpm db:migrate` (and `pnpm db:seed`
 for the demo users) before starting the services, otherwise tracker requests fail with 500.
+
+## Running the tests
+
+- `pnpm test` needs Postgres: run `pnpm db:up` first. The tracker's authorization and regression
+  tests use a separate database, `tracker_test`, which the test run creates and migrates itself
+  (`pnpm --filter @app/database prepare:test-db`) and truncates between tests. The development
+  database `tracker` is never touched; the script refuses a name that does not end in `_test`.
+  Override with `TEST_DATABASE_URL`.
+- `pnpm test:e2e` drives a running app and fails (never skips) when nothing answers. Start the stack
+  with `JWT_SECRET` and `INTERNAL_TOKEN` exported, run `pnpm db:migrate`, then
+  `E2E_BASE_URL=http://localhost:8080 pnpm test:e2e` (nginx serves the web app and proxies `/api`).
+  Install the browser once with `pnpm exec playwright install chromium`.

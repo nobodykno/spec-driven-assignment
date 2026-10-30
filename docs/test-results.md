@@ -1,0 +1,89 @@
+# Test results
+
+Last full run: 2026-10-30 (IST), branch `feature/DEV-19-testing-e2e`, Docker stack up with the
+current images. Numbers below are copied from the command output.
+
+| Command | Result |
+| --- | --- |
+| `pnpm build` | passed |
+| `pnpm lint` | passed |
+| `pnpm typecheck` | passed |
+| `pnpm test` | passed: 413 tests (shared 39, database 1, api-gateway 14, auth 22, web 41, tracker 128, root scripts and hooks 168) |
+| `E2E_BASE_URL=http://localhost:8080 pnpm test:e2e` | passed: 2 tests (FR-SYS-002 API indicator, NFR-TST-002 journey) |
+
+## What DEV-19 added
+
+- `services/tracker/test/authz.test.ts`: FRS §2.2 matrix, 19 actions × 3 roles, plus the identical-404 and missing-token checks, against the real `tracker_test` database (59 tests).
+- `services/tracker/test/regression.test.ts`: conflict codes and the NFR-REL-001 rollback against real constraints (9 tests).
+- `e2e/journey.spec.ts`: register → project → member → task → assign → DONE → comment → activity through nginx, gateway, services and PostgreSQL. Screenshot: `docs/evidence/DEV-19/journey-task-activity.png`.
+- `scripts/coverage-by-requirement.mjs` (`pnpm coverage:requirements`): the table below.
+
+## Smoke test of the Docker stack
+
+Run with curl through the gateway on port 4000 after migrating the development database: register,
+duplicate email 409, login, wrong password 401, no token 401, project, member, outsider 404, member
+rename 403, task, assign, illegal transition 409, TODO → DONE through the allowed steps, comment,
+activity and filter all returned the expected status.
+
+## Coverage by requirement (NFR-TST-001)
+
+Every functional requirement (`FR-*`) has at least one test whose name starts with its ID: the script
+exits 0. Test titles built from a variable (the matrix rows) are not counted by the script, so the
+matrix adds to these numbers.
+
+| Requirement | Tests | Files |
+| --- | --- | --- |
+| FR-ACT-001 | 3 | services/tracker/src/services/activity-service.test.ts, services/tracker/test/comments-routes.test.ts, services/tracker/test/regression.test.ts |
+| FR-ACT-002 | 1 | services/tracker/test/comments-routes.test.ts |
+| FR-AUTH-001 | 6 | packages/shared/src/schemas/contracts.test.ts, scripts/coverage-by-requirement.test.mjs, services/auth/test/auth-routes.test.ts |
+| FR-AUTH-002 | 5 | packages/shared/src/schemas/contracts.test.ts, services/api-gateway/src/gateway-auth.test.ts, services/auth/src/auth-service.test.ts, services/auth/test/auth-routes.test.ts |
+| FR-AUTH-003 | 5 | services/auth/src/auth-service.test.ts, services/auth/test/auth-routes.test.ts |
+| FR-AUTH-004 | 3 | services/auth/src/auth-service.test.ts, services/auth/test/auth-routes.test.ts |
+| FR-AUTH-005 | 10 | apps/web/src/routes/routes.test.tsx, services/api-gateway/src/gateway-auth.test.ts, services/tracker/src/app.test.ts, services/tracker/test/authz.test.ts |
+| FR-AUTH-006 | 3 | services/tracker/src/project-access.test.ts |
+| FR-AUTH-007 | 2 | services/auth/test/auth-routes.test.ts |
+| FR-CMT-001 | 2 | packages/shared/src/schemas/contracts.test.ts, services/tracker/test/comments-routes.test.ts |
+| FR-CMT-002 | 2 | services/tracker/src/services/comment-service.test.ts, services/tracker/test/comments-routes.test.ts |
+| FR-CMT-003 | 4 | services/tracker/src/services/comment-service.test.ts, services/tracker/test/comments-routes.test.ts |
+| FR-CMT-004 | 1 | services/tracker/test/comments-routes.test.ts |
+| FR-FILT-001 | 8 | packages/shared/src/schemas/contracts.test.ts, services/tracker/src/services/task-query.test.ts, services/tracker/test/tasks-routes.test.ts |
+| FR-FILT-002 | 3 | services/tracker/src/services/task-query.test.ts |
+| FR-FILT-003 | 3 | packages/shared/src/schemas/contracts.test.ts, services/tracker/test/tasks-routes.test.ts |
+| FR-PROJ-001 | 3 | packages/shared/src/schemas/contracts.test.ts, services/tracker/test/projects-routes.test.ts |
+| FR-PROJ-002 | 3 | services/tracker/test/authz.test.ts, services/tracker/test/projects-routes.test.ts |
+| FR-PROJ-003 | 2 | services/tracker/src/project-access.test.ts, services/tracker/test/projects-routes.test.ts |
+| FR-PROJ-004 | 2 | services/tracker/src/project-access.test.ts, services/tracker/test/regression.test.ts |
+| FR-PROJ-005 | 3 | services/tracker/test/projects-routes.test.ts, services/tracker/test/regression.test.ts |
+| FR-PROJ-006 | 2 | services/tracker/test/projects-routes.test.ts, services/tracker/test/regression.test.ts |
+| FR-SYS-001 | 19 | packages/database/src/health.test.ts, packages/shared/src/schemas/common.test.ts, services/api-gateway/src/app.test.ts, services/api-gateway/src/proxy.test.ts, services/auth/src/app.test.ts, services/tracker/src/app.test.ts |
+| FR-SYS-002 | 9 | apps/web/src/app.test.tsx, e2e/web-api-status.spec.ts, scripts/coverage-by-requirement.test.mjs, services/api-gateway/src/app.test.ts |
+| FR-TASK-001 | 6 | packages/shared/src/schemas/contracts.test.ts, services/tracker/src/services/task-rules.test.ts, services/tracker/test/tasks-routes.test.ts |
+| FR-TASK-002 | 1 | services/tracker/test/tasks-routes.test.ts |
+| FR-TASK-003 | 1 | services/tracker/test/tasks-routes.test.ts |
+| FR-TASK-004 | 3 | services/tracker/src/services/task-service.test.ts, services/tracker/test/regression.test.ts, services/tracker/test/tasks-routes.test.ts |
+| FR-TASK-005 | 8 | packages/shared/src/schemas/contracts.test.ts, services/tracker/src/services/task-rules.test.ts, services/tracker/src/services/task-service.test.ts, services/tracker/test/regression.test.ts, services/tracker/test/tasks-routes.test.ts |
+| FR-TASK-006 | 3 | services/tracker/src/services/task-service.test.ts, services/tracker/test/regression.test.ts, services/tracker/test/tasks-routes.test.ts |
+| NFR-MNT-001 | 97 | .claude/hooks/agent-scope-guard.test.mjs, .claude/hooks/post-edit-format.test.mjs, .claude/hooks/pre-tool-guard.test.mjs, packages/shared/src/schemas/common.test.ts, scripts/check-agents.test.mjs, scripts/check-claude-settings.test.mjs, scripts/check-file-names.test.mjs, scripts/check-graph-docs.test.mjs, scripts/check-workflow.test.mjs, scripts/commitlint.test.mjs, scripts/lint-rules.test.mjs, services/auth/src/app.test.ts, services/tracker/src/app.test.ts |
+| NFR-MNT-002 | 0 | none |
+| NFR-OBS-001 | 0 | none |
+| NFR-OPS-001 | 17 | scripts/check-graph-docs.test.mjs, scripts/check-versions.test.mjs, scripts/coverage-by-requirement.test.mjs |
+| NFR-PERF-001 | 0 | none |
+| NFR-PERF-002 | 0 | none |
+| NFR-REL-001 | 2 | services/tracker/src/services/activity-service.test.ts, services/tracker/test/regression.test.ts |
+| NFR-SEC-001 | 0 | none |
+| NFR-SEC-002 | 0 | none |
+| NFR-SEC-003 | 0 | none |
+| NFR-SEC-004 | 0 | none |
+| NFR-SEC-005 | 43 | .claude/hooks/pre-tool-guard.test.mjs, scripts/check-claude-settings.test.mjs, scripts/check-staged-secrets.test.mjs |
+| NFR-SEC-006 | 0 | none |
+| NFR-TST-001 | 13 | .claude/hooks/agent-scope-guard.test.mjs, scripts/coverage-by-requirement.test.mjs |
+| NFR-TST-002 | 1 | e2e/journey.spec.ts |
+| NFR-USA-001 | 0 | none |
+
+### Non-functional requirements with no test named after them
+
+| Requirement | Status |
+| --- | --- |
+| NFR-PERF-001, NFR-PERF-002 | Covered by the 10,000-task performance check (DEV-12), recorded separately |
+| NFR-SEC-001..004, NFR-SEC-006 | Behaviour is exercised by FR-AUTH tests, but no test carries the NFR ID; flagged for the independent review (DEV-20) |
+| NFR-MNT-002, NFR-OBS-001, NFR-USA-001 | No automated test named after them; flagged for the independent review (DEV-20) |
