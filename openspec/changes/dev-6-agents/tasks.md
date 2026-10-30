@@ -39,7 +39,7 @@ Rules for every task:
 
 ## 3. Agent definitions (D1)
 
-- [ ] 3.1 Add `.claude/agents/implementer.md`, `test-writer.md`, `coordinator.md`; update `reviewer.md` (summary-is-a-claim rule, D1; checklist item 10 "Did the implementation session follow the token policy? Note any whole-file or whole-doc reads that weren't needed.", D6). Every agent file has the line "Follow docs/token-policy.md". Verify: `node scripts/check-agents.mjs` reports only the missing `docs/agents.md` sections. **[NFR-MNT-001, NFR-TST-001]**
+- [x] 3.1 Add `.claude/agents/implementer.md`, `test-writer.md`, `coordinator.md`; update `reviewer.md` (summary-is-a-claim rule, D1; checklist item 10 "Did the implementation session follow the token policy? Note any whole-file or whole-doc reads that weren't needed.", D6). Every agent file has the line "Follow docs/token-policy.md". Verify: `node scripts/check-agents.mjs` reports only the missing `docs/agents.md` sections. **[NFR-MNT-001, NFR-TST-001]**
 
 ## 4. Docs and token policy (D6)
 
