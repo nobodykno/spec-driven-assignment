@@ -93,7 +93,7 @@ Rules for every task:
 
 ## 7. Docker (NFR-OPS-001)
 
-- [ ] 7.1 Choose the exact image tags:
+- [x] 7.1 Choose the exact image tags (chosen 2026-10-30: `postgres:16.15-alpine`, `node:22.23.4-alpine`, `nginx:1.31.8-alpine`):
   - `postgres:16.<minor>-alpine`, `node:22.<minor>.<patch>-alpine`, `nginx:1.<minor>.<patch>-alpine`
   - confirm each with `docker pull <tag>`
   - verify: all three pulls exit 0
