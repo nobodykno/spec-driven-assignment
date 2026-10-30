@@ -1,7 +1,7 @@
 # agent-roles Specification
 
 ## Purpose
-TBD - created by archiving change dev-6-agents. Update Purpose after archive.
+Defines the specialised Claude Code subagents (implementer, test-writer, reviewer, coordinator), what each may and may not do, how their limits are enforced by an agent-scoped guard hook and checked in `pnpm lint`, how they are documented, and the token-efficiency policy every session and agent follows.
 
 ## Requirements
 
