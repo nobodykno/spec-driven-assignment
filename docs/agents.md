@@ -147,4 +147,4 @@ Results of the DEV-6 checks (task 5). The automated tests are in
 | 3 | reviewer given only a summary inspects the diff, edits nothing | pending |
 | 4 | implementer: edit on an unapproved change blocked; `git push` blocked | pending |
 | 5 | coordinator plans DEV-10 + DEV-11 without code edits | pending |
-| 6 | Read of `pnpm-lock.yaml` refused by the deny rules | pending |
+| 6 | Read of `pnpm-lock.yaml` refused by the deny rules | ✅ 2026-10-30: Read tool returned "File is in a directory that is denied by your permission settings." |

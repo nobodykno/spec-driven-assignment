@@ -50,7 +50,7 @@ Rules for every task:
 ## 5. Live checks (D5)
 
 - [ ] 5.1 Run live checks 2–5 by delegating to each agent on this branch (scratch changes reverted afterwards); ask the user to confirm check 1 (`/agents` list). Record each result in `docs/agents.md`. Verify: the checks table has a result per check. **[NFR-MNT-001, NFR-TST-001]**
-- [ ] 5.2 Check the deny rules live: a Read of `pnpm-lock.yaml` is refused. Record the result in `docs/agents.md`. **[NFR-MNT-001]**
+- [x] 5.2 Check the deny rules live: a Read of `pnpm-lock.yaml` is refused. Record the result in `docs/agents.md`. **[NFR-MNT-001]**
 
 ## 6. Quality gates
 
