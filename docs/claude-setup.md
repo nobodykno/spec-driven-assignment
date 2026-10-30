@@ -59,12 +59,29 @@ and exits 2.
 | `env-file-tool` | Read/Edit/MultiEdit/Write `file_path`, Grep `path`/`glob`, Glob `pattern`/`path` naming such a file |
 | `malformed-input` | unreadable payload (fails closed) |
 
-Chained commands (`&&`, `||`, `;`, `|`, newlines), grouping (`( )`, `{ }`), command substitution
-(`$( )`, backticks) and redirections (`<`, `>`) are split into simple commands, and each is checked.
-Leading assignments (`A=1 B=2`), wrappers (`sudo`, `command`, `exec`, `nohup`, `time`, `xargs`,
-`env VAR=x`, `then`/`do`/`else`), paths (`/bin/rm`) and git global options (`-C`, `-c`,
-`--no-pager`, …) are looked through. Quoted text is data: `echo "rm -rf /"` and
-`git commit -m "explain --no-verify"` are allowed.
+How a command is checked:
+1. **Raw text first:**
+   - An env-file name anywhere in the command blocks it: in quotes, in `--env-file=…`,
+     `@file` or `--target=…`, or inside a heredoc. `.env.example` is the exception.
+   - So does `HUSKY=0`, even when quoted or exported. A standalone quoted message, such as a
+     commit message that mentions it, is ignored.
+2. **Substitutions:** every `$( … )` and backtick body is checked as a command of its own,
+   including inside double quotes. So are `bash -c` / `sh -c` strings (recursion depth 3).
+3. **Simple commands:** chained commands (`&&`, `||`, `;`, `|`, newlines), groups (`( )`, `{ }`)
+   and redirections (`<`, `>`) are split into simple commands. In each one the guard skips:
+   - leading assignments (`A=1 B=2`)
+   - paths (`/bin/rm`)
+   - wrappers (`sudo`, `command`, `exec`, `nohup`, `time`, `timeout`, `nice`, `xargs`,
+     `env …`, `if/elif/then/else/while/until/do`). After a wrapper, checking continues at the
+     next guarded command, so wrapper options with values (`sudo -u root`, `xargs -n 1`)
+     don't hide it.
+   - git global options (`-C`, `-c`, `--no-pager`, …). `git -c core.hooksPath=…` and
+     `git config core.hooksPath …` count as hook bypasses.
+   - push option values (`-o`, `--repo`).
+   - Docker options before `compose` (`--context x`).
+   
+   Quoted words are data for these rules: `echo "rm -rf /"` and
+   `git commit -m "explain --no-verify"` are allowed.
 
 **PostToolUse `post-edit-format.mjs`** (matcher `Edit|MultiEdit|Write`). For a
 `ts/tsx/js/mjs/cjs/json/yaml/yml` file inside the project, it runs `prettier --write` and (for code)
@@ -72,9 +89,18 @@ Leading assignments (`A=1 B=2`), wrappers (`sudo`, `command`, `exec`, `nohup`, `
 itself (it fails open).
 
 **Limits.** The guard matches command patterns. It is not a shell interpreter, so deliberately
-obfuscated commands (`eval`, base64, aliases) are out of scope; the deny list, the default-mode
-prompt and CLAUDE.md remain. The hooks apply to the agent's tool calls only, not to commands a
-human runs.
+obfuscated commands (`eval`, base64, aliases, variables holding command names) are out of scope; the
+deny list, the default-mode prompt and CLAUDE.md remain. The hooks apply to the agent's tool calls
+only, not to commands a human runs.
+
+**Accepted false positives.** The raw-text scan errs on the side of blocking:
+- Any shell command that merely *mentions* an env-file name is blocked. That includes a commit
+  message, an `echo`, or a heredoc that writes documentation.
+- A substitution inside single quotes (`echo '$(rm -rf x)'`) is blocked although the shell
+  would not run it.
+
+The agent then writes such text with the Edit/Write tools, and rewords commit messages. This
+happened several times while building this ticket; the guard blocked its own author.
 
 **Disable the hooks:** remove the `hooks` key from `.claude/settings.json` (or revert DEV-5).
 Claude Code picks up the change without a restart.
@@ -98,12 +124,14 @@ Claude Code picks up the change without a restart.
 
 | Suite | Tests | Result |
 | --- | --- | --- |
-| `.claude/hooks/pre-tool-guard.test.mjs` | 92 | pass |
+| `.claude/hooks/pre-tool-guard.test.mjs` | 121 | pass |
 | `.claude/hooks/post-edit-format.test.mjs` | 6 | pass |
-| `scripts/check-claude-settings.test.mjs` | 15 | pass |
+| `scripts/check-claude-settings.test.mjs` | 20 | pass |
 
-The counts include the review round-1 additions: guard bypass cases, the formatter symlink case,
-and the settings policy, parenthesis and hook-script checks.
+The counts include the review round-1 and round-2 additions:
+- guard bypass cases: wrappers, substitutions, embedded env-file names, `git config`, quoted `HUSKY`
+- the formatter symlink case
+- the settings policy, parenthesis and hook-script checks, and broad allow rules covering ask-first commands
 
 ## Recommended local settings
 
