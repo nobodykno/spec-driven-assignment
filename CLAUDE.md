@@ -34,6 +34,8 @@
 - Gates:       pnpm build && pnpm lint && pnpm typecheck && pnpm test
 - One package: pnpm --filter <name> test
 - Database:    pnpm db:up   (Docker Postgres on host port 5433)
+- Format:      pnpm format
+- Browser e2e: pnpm test:e2e   (Playwright; app must be running, see design D14)
 
 ## Code rules
 - Coding guidelines: follow docs/CODING_GUIDELINES.md (naming, style, structure, TypeScript, errors). `pnpm lint` enforces them.

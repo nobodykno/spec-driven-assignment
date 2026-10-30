@@ -175,7 +175,7 @@ Rules for every task:
   - how versions were checked (D12) and the local-dev migration note (port 5433, `dev/dev/tracker`)
   - verify: every dependency in every `package.json` appears in the file with the same version (compare the files and note the comparison in the commit)
   - **[NFR-OPS-001]**
-- [ ] 10.2 Delete the superseded change `openspec/changes/project-setup` and update `CLAUDE.md` Commands if a script name changed. Verify: `openspec list` shows only `dev-1-project-setup`. **[NFR-MNT-001]**
+- [x] 10.2 Delete the superseded change `openspec/changes/project-setup` and update `CLAUDE.md` Commands if a script name changed. Verify: `openspec list` shows only `dev-1-project-setup`. **[NFR-MNT-001]**
 - [ ] 10.3 Update `CLAUDE.md` and the FRS:
   - a "Git hooks" section explaining each hook (pre-commit, commit-msg, pre-push)
   - the full commit convention (D15): types, area scopes, 72-character header, lowercase imperative subject, mandatory `Refs: DEV-N` footer
