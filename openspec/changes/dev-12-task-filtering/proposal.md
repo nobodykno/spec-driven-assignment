@@ -1,8 +1,8 @@
 Ticket: DEV-12
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 18:39 IST
 
 # Proposal: DEV-12 Task filtering, sorting and pagination
 
