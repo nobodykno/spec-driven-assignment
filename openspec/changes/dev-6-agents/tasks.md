@@ -31,7 +31,7 @@ Rules for every task:
   - `NFR-MNT-001: documentation out of date fails the checker`
   - verify: the tests fail
 - [x] 2.2 Implement `scripts/check-agents.mjs`; add `check:agents` to the `lint` script. Verify: `pnpm exec vitest run scripts/` passes, except the committed-files test, which passes once tasks 3.1 and 4.1 add the agents and docs. **[NFR-MNT-001]**
-- [ ] 2.3 Extend `scripts/check-agents.test.mjs` first (D6):
+- [x] 2.3 Extend `scripts/check-agents.test.mjs` first (D6):
   - `NFR-MNT-001: policy referenced everywhere` (fixture set with the line in every agent and sdd command)
   - `NFR-MNT-001: missing policy reference fails the checker` (agent without the line, `sdd/ship.md` without it, `docs/token-policy.md` missing)
   - verify: the new tests fail

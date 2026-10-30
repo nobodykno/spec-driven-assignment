@@ -2,7 +2,13 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ALLOWED_TOOLS, checkAgents, parseFrontmatter } from './check-agents.mjs';
+import {
+  ALLOWED_TOOLS,
+  POLICY_LINE,
+  SDD_COMMANDS,
+  checkAgents,
+  parseFrontmatter,
+} from './check-agents.mjs';
 
 const SCRIPT = join(fileURLToPath(import.meta.url), '..', 'check-agents.mjs');
 const HEADINGS = ['Scope', 'Permitted actions', 'Output', 'Restrictions', 'When used'];
@@ -25,6 +31,8 @@ const agentFile = (
     `          command: node "$CLAUDE_PROJECT_DIR/${GUARD}" --agent ${hook}`,
     '---',
     '',
+    POLICY_LINE,
+    '',
     `You are the ${name}.`,
   ].join('\n');
 
@@ -42,7 +50,13 @@ const validInput = () => {
   return {
     agents: Object.fromEntries(names.map((name) => [name, agentFile(name)])),
     docs: ['# Agents', ...names.map((name) => docSection(name))].join('\n\n'),
-    scriptExists: (path) => path === GUARD,
+    scriptExists: (path) => path === GUARD || path === 'docs/token-policy.md',
+    commands: Object.fromEntries(
+      SDD_COMMANDS.map((name) => [
+        name,
+        `---\ndescription: ${name}\n---\n\n${POLICY_LINE}\n\nSteps.`,
+      ]),
+    ),
   };
 };
 
@@ -156,5 +170,46 @@ describe('check-agents', () => {
     expect(checkAgents(input)).toEqual([]);
     input.agents.helper = '---\nname: helper\ndescription:\n---\nbody';
     expect(checkAgents(input)).toEqual(['helper: description is empty']);
+  });
+
+  it('NFR-MNT-001: policy referenced everywhere', () => {
+    expect(POLICY_LINE).toBe('Follow docs/token-policy.md');
+    expect(SDD_COMMANDS).toEqual(['propose', 'apply', 'verify', 'ship', 'run']);
+    expect(checkAgents(validInput())).toEqual([]);
+  });
+
+  it.each([
+    [
+      'agent without the line',
+      (i) => (i.agents.implementer = i.agents.implementer.replace(POLICY_LINE, '')),
+      'implementer: .claude/agents/implementer.md lacks "Follow docs/token-policy.md"',
+    ],
+    [
+      'line only in the frontmatter',
+      (i) =>
+        (i.agents.reviewer = i.agents.reviewer
+          .replace(POLICY_LINE, '')
+          .replace('name: reviewer', `name: reviewer\n# ${POLICY_LINE}`)),
+      'reviewer: .claude/agents/reviewer.md lacks "Follow docs/token-policy.md"',
+    ],
+    [
+      'sdd command without the line',
+      (i) => (i.commands.ship = '---\ndescription: ship\n---\n\nSteps.'),
+      'sdd/ship: .claude/commands/sdd/ship.md lacks "Follow docs/token-policy.md"',
+    ],
+    [
+      'sdd command missing',
+      (i) => delete i.commands.verify,
+      'sdd/verify: .claude/commands/sdd/verify.md is missing',
+    ],
+    [
+      'policy file missing',
+      (i) => (i.scriptExists = (path) => path === GUARD),
+      'docs/token-policy.md is missing',
+    ],
+  ])('NFR-MNT-001: missing policy reference fails the checker (%s)', (_, breakIt, message) => {
+    const input = validInput();
+    breakIt(input);
+    expect(checkAgents(input)).toContain(message);
   });
 });
