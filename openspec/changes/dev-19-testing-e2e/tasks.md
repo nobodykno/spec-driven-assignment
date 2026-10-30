@@ -12,7 +12,7 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 
 - [x] 2.1 `globalSetup` and truncate helper for `tracker_test`. Verify: `pnpm --filter tracker test`. **[NFR-TST-001]**
 - [x] 2.2 `test/authz.test.ts` matrix (projects, members, tasks, comments). Verify: `pnpm --filter tracker test`. **[FR-PROJ-003, FR-PROJ-005, FR-TASK-001, FR-CMT-002]**
-- [ ] 2.3 `test/regression.test.ts` conflict codes and NFR-REL-001 rollback. Verify: `pnpm --filter tracker test`. **[FR-PROJ-006, FR-TASK-005, NFR-REL-001, FR-ACT-001]**
+- [x] 2.3 `test/regression.test.ts` conflict codes and NFR-REL-001 rollback. Verify: `pnpm --filter tracker test`. **[FR-PROJ-006, FR-TASK-005, NFR-REL-001, FR-ACT-001]**
 
 ## 3. End-to-end
 
