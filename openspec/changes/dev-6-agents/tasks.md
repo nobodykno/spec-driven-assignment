@@ -49,10 +49,10 @@ Rules for every task:
 
 ## 5. Live checks (D5)
 
-- [ ] 5.1 Run live checks 2–5 by delegating to each agent on this branch (scratch changes reverted afterwards); ask the user to confirm check 1 (`/agents` list). Record each result in `docs/agents.md`. Verify: the checks table has a result per check. **[NFR-MNT-001, NFR-TST-001]**
+- [x] 5.1 Run live checks 2–5 by delegating to each agent on this branch (scratch changes reverted afterwards); ask the user to confirm check 1 (`/agents` list). Record each result in `docs/agents.md`. Verify: the checks table has a result per check. **[NFR-MNT-001, NFR-TST-001]**
 - [x] 5.2 Check the deny rules live: a Read of `pnpm-lock.yaml` is refused. Record the result in `docs/agents.md`. **[NFR-MNT-001]**
 
 ## 6. Quality gates
 
-- [ ] 6.1 Run `pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Verify: all exit 0. **[NFR-MNT-001]**
+- [x] 6.1 Run `pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Verify: all exit 0. **[NFR-MNT-001]**
 - [ ] 6.2 Before checkpoint B: ask the user to run `/cost` and paste the numbers; record the DEV-6 row in `docs/progress.md` and `docs/token-efficiency.md` ("not provided" if nothing is pasted). Verify: both rows exist. **[NFR-MNT-001]**

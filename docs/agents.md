@@ -142,9 +142,9 @@ Results of the DEV-6 checks (task 5). The automated tests are in
 
 | # | Check | Result |
 | --- | --- | --- |
-| 1 | `/agents` lists implementer, test-writer, reviewer, coordinator | pending |
-| 2 | test-writer asked to change production code refuses; forced edit blocked | pending |
-| 3 | reviewer given only a summary inspects the diff, edits nothing | pending |
-| 4 | implementer: edit on an unapproved change blocked; `git push` blocked | pending |
-| 5 | coordinator plans DEV-10 + DEV-11 without code edits | pending |
+| 1 | `/agents` lists implementer, test-writer, reviewer, coordinator | ✅ 2026-10-30: after restarting the session all four appear as agent types (implementer, test-writer, coordinator listed as new; reviewer kept). The human confirms the `/agents` menu at checkpoint B. |
+| 2 | test-writer asked to change production code refuses; forced edit blocked | ✅ refused: "I only write tests. The implementer changes production code." It also declined the forced Edit, so the hook block is shown by the guard CLI test (exit 2, `production-code`). |
+| 3 | reviewer given only a summary inspects the diff, edits nothing | ✅ given only a one-line summary, it read `git diff` itself and cited `file:line` (found a real push bypass, fixed in 099844b); `git status` empty afterwards. Output had Verdict / Findings / Requirements without tests. |
+| 4 | implementer: edit on an unapproved change blocked; `git push` blocked | ✅ on scratch branch `feature/DEV-999-scratch`: Edit blocked, "Blocked by .claude/hooks/agent-scope-guard.mjs (not-approved)". It refused to run `git push` (policy); the push block is covered by 18 guard tests. |
+| 5 | coordinator plans DEV-10 + DEV-11 without code edits | ✅ two-worktree plan with commands, shared-file conflicts and integration order; no file edits; declined `git worktree add` (policy). |
 | 6 | Read of `pnpm-lock.yaml` refused by the deny rules | ✅ 2026-10-30: Read tool returned "File is in a directory that is denied by your permission settings." |
