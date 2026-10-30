@@ -16,7 +16,8 @@
     "test": "vitest run",
     "migrate": "sequelize-cli db:migrate",
     "migrate:undo": "sequelize-cli db:migrate:undo",
-    "seed": "sequelize-cli db:seed:all"
+    "seed": "sequelize-cli db:seed:all",
+    "prepare:test-db": "node scripts/prepare-test-db.cjs"
   },
   "dependencies": {
     "pg": "8.23.1",
