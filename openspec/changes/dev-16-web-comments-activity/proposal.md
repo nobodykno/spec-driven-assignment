@@ -1,8 +1,8 @@
 Ticket: DEV-16
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 18:51 IST
 
 # Proposal: DEV-16 Frontend — comments, activity history and task editing
 
