@@ -20,6 +20,8 @@ Branch `feature/DEV-1-project-setup`.
 | 2026-10-30 | Apply 8.3 | Playwright headless check online/offline against `pnpm dev`; screenshots in `docs/evidence/DEV-1/`. |
 | 2026-10-30 | Apply 11 | Guidelines doc, ESLint/Prettier rules with tests, code fixed (lint 0 errors), VS Code settings, area-scope commit convention. |
 | 2026-10-30 | Apply 10 | `docs/versions.md`, old `project-setup` change removed, Git hooks section in CLAUDE.md, FRS row. |
+| 2026-10-30 | Apply 12 | All gates from a frozen install; manual scenario checks (restart, port, typecheck, lockfile). |
+| 2026-10-30 | Verify | Reviewer subagent, 3 rounds: CHANGES REQUIRED → CHANGES REQUIRED → APPROVE. 14 + 5 + 4 findings; code findings fixed in 14 commits; 3 governance findings escalated to the human. Gates: lint 0 errors, 98 script tests + 55 package tests. |
 
 ### Checks run
 
@@ -42,6 +44,9 @@ Branch `feature/DEV-1-project-setup`.
 | `@mindfiredigital/eslint-plugin-hub` postinstall prompts on stdin and hung `pnpm install` (twice; `allowBuilds: false` did not help) | Skipped per the planned fallback: `@typescript-eslint/naming-convention` + `scripts/check-file-names.mjs` (11.3). |
 | `eslint-config-prettier` turns off `curly` as well as `semi`/`quotes` | Re-enabled all three after it (11.3). |
 | `docs/CODING_GUIDELINES.md` did not exist | Written from the rules given in chat, labelled as such (11.1). |
+| Reviewer: JWT_SECRET check missed ENV/YAML/JSON forms, then over-matched TypeScript | Widened in two rounds, then made quote-aware for code files; tests for every form. |
+| Reviewer: swallowed errors, `.then` chains, e2e not type-checked | Logged server-side, async/await, `tsconfig.e2e.json` in the typecheck gate. |
+| Reviewer subagent status looked stale between turns | The agent only progressed while the session was active; waiting inside a turn let it finish. |
 
 ### Human interventions
 
