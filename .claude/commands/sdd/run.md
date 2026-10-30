@@ -3,6 +3,8 @@ description: Full ticket loop. Propose → approve → apply → verify → ship
 argument-hint: <JIRA-KEY> <change-name>   e.g. DEV-9 auth
 ---
 
+Follow docs/token-policy.md
+
 Ticket: **$0**. Change name: `$0` in lowercase plus `-$1` (e.g. DEV-9 auth → `dev-9-auth`).
 Arguments: $ARGUMENTS
 
@@ -42,8 +44,10 @@ to create or change, tasks, risks and open questions. Wait for the reply.
   in IST) and commit `docs(workflow): approve <change-name>` with `Refs: $0`.
 
 ## b. Apply
+- For a change with several task groups or a `[PARALLEL]` pair, ask the `coordinator` subagent
+  for the task order and worktree plan first; run the commands it plans yourself.
 - Follow `.claude/commands/sdd/apply.md` (tests first, one task at a time, one local commit per
-  task, quality gates). Local commits need no approval.
+  task, quality gates). Local commits need no approval. Subagents: `docs/agents.md`.
 
 ## c. Verify
 - Follow `.claude/commands/sdd/verify.md`. Use the `reviewer` subagent as the isolated reviewer;
@@ -52,6 +56,8 @@ to create or change, tasks, risks and open questions. Wait for the reply.
   then stop and explain.
 
 ### CHECKPOINT B: commit
+First do the token measurement (`sdd/verify.md` §5, `docs/token-policy.md`): ask the user for
+`/cost`, record the row. Then show its numbers along with the rest.
 Show: commits (`git log --oneline main..HEAD`), files changed (`git diff --stat main...HEAD`), gate
 results, the traceability table (FRS ID → scenario → test → result), review findings (fixed /
 accepted with reason) and deviations. Wait for the user to reply `commit`.

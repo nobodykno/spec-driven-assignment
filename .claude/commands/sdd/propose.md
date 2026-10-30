@@ -3,6 +3,8 @@ description: Start a ticket. Fetch it via MCP, read FRS/SDS, create the OpenSpec
 argument-hint: <TICKET-KEY> <change-name>   e.g. DEV-1006 auth
 ---
 
+Follow docs/token-policy.md
+
 You are starting work on ticket **$0**. The change name is the ticket key in lowercase plus "-$1" (e.g. DEV-1006 auth → `dev-1006-auth`).
 Arguments: $ARGUMENTS
 

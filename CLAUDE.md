@@ -57,10 +57,18 @@
 
 ## Claude Code setup (details: docs/claude-setup.md)
 - Layer rules: services/CLAUDE.md, apps/web/CLAUDE.md
+- Subagents: implementer, test-writer, reviewer, coordinator (.claude/agents/, details: docs/agents.md);
+  each has an agent-scoped guard hook
 - Skills: zod-contract, express-endpoint, sequelize-migration (.claude/skills/)
 - Hooks: PreToolUse guard blocks rm -rf, force push, push to main, --no-verify, printenv/env,
   docker compose down -v and any .env access; PostToolUse formats and lints every edited file.
   A blocked call means: change the approach, do not work around the hook.
+
+## Token efficiency (mandatory)
+- Follow docs/token-policy.md in every session and subagent: grep then read line ranges (never
+  whole FRS/SDS or folders), compact test output, re-run only failing files, one ticket per session.
+- Sonnet by default; Opus only for DEV-9 and DEV-20 after telling the user to switch with /model.
+- Before CHECKPOINT B ask the user for /cost and record it in docs/token-efficiency.md.
 
 ## Never
 - Read, print or commit .env files or secrets

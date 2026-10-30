@@ -66,6 +66,7 @@ Branch `feature/DEV-5-claude-setup`.
 | 2026-10-30 15:01 | Approve | Approved in chat, including archive-before-merge so the agent never pushes to main. |
 | 2026-10-30 | Apply 1–8 | sdd fixes; guard + formatter hooks (test-first); settings checker; live hook check (hooks active without restart); 3 skills, each demoed on a scratch branch; nested CLAUDE.md; docs/claude-setup.md. |
 | 2026-10-30 | Verify | Reviewer subagent, 3 rounds, each CHANGES REQUIRED (18 + 10 + 8 findings). All fixed or accepted; round-3 fixes not re-reviewed (3-round cap). Gates: lint 0 errors, 260 root + 55 package tests. |
+| 2026-10-30 15:46 | Ship | User replied `commit` (accepting the un-re-reviewed round-3 fixes). Archived on the branch (68ab6d7, +9 requirements), pushed through the pre-push gates, PR #2 merged (fbb193d), branch deleted, nothing pushed to `main` directly; Jira DEV-5 commented and moved to Done. `/permissions` check still open for the human. |
 
 ### Problems and fixes
 
@@ -83,3 +84,20 @@ Branch `feature/DEV-5-claude-setup`.
 - Approval in chat (plan, decision 1: archive before merge; decision 2: no broad docker ask rule).
 - Pending: one look at `/permissions` (acceptance criterion) and the decision on the un-re-reviewed round-3 fixes.
 
+
+## DEV-6 (DEV-1003) Autonomous agents — change `dev-6-agents`
+
+Branch `feature/DEV-6-agents`.
+
+| Date (IST) | Stage | What happened |
+| --- | --- | --- |
+| 2026-10-30 | Propose | Ticket fetched via MCP (dependency DEV-5 Done). Change `dev-6-agents` created (capability `agent-roles`), validated `--strict`. Waiting at checkpoint A. |
+| 2026-10-30 16:10 | Approve | User replied `approved` in chat. |
+| 2026-10-30 | Apply 1.1–1.3 | Docs check: frontmatter hooks supported, `Bash(...)` specifiers in subagent `tools` not documented, so the guard is an allowlist and the reviewer gets it too (design refinement). Guard + tests (221 hook tests pass). |
+| 2026-10-30 | Human request | Mid-apply the user asked for a "Token efficiency" section in `CLAUDE.md` and five `Read(...)` deny rules; committed on the user's `commit` (057b344). Outside the approved plan: listed as a deviation. |
+| 2026-10-30 | Re-plan | User asked (pasted request) to add a token-efficiency policy via `/opsx:update`: requirement "Agents follow the token-efficiency policy", design D6, tasks 2.3–2.4, 4.2–4.3, 5.2, 6.2. Status back to Draft; tasks 1.1–2.2 stay done. Waiting at checkpoint A. |
+| 2026-10-30 16:33 | Re-approve | User replied `approved` to the updated plan. |
+| 2026-10-30 | Apply 2.3–5.2 | Token-policy checks (test-first), 3 new agents + reviewer update, `docs/agents.md`, `docs/token-policy.md`, `docs/token-efficiency.md`, sdd commands reference the policy. Live check 6 (lock-file read denied). New agents needed a session restart to load (human). |
+| 2026-10-30 | Human request | User switched the remaining tickets to FAST MODE (batched checkpoints per group, one reviewer round, medium/low accepted). DEV-6 finished under it. |
+| 2026-10-30 | Verify | Live checks 1–5 via the real subagents (all pass; agents refused forced violations on policy). Gates pass (366 root + 55 package tests). Reviewer round 1: CHANGES REQUIRED (1 high, 3 medium, 4 low); high + 3 medium fixed (099844b), lows accepted. Report: `verification.md`. |
+| 2026-10-30 | Checkpoint B | User replied `commit` without pasting `/cost` or confirming `/agents`: tokens/cost "not provided", `/agents` menu unconfirmed (agents shown as loaded after restart). Measurement: Opus 5.5, ~45 files read (est.), 1 review round. |

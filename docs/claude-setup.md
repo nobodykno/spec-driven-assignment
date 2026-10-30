@@ -3,6 +3,10 @@
 How the coding agent is configured in this repository (DEV-5 / DEV-1002), and how each part was
 tested. Design: `openspec/changes/dev-5-claude-setup/design.md`.
 
+Subagents (implementer, test-writer, reviewer, coordinator) and their scope guard:
+[`docs/agents.md`](agents.md) (DEV-6). Token rules for every session and agent:
+[`docs/token-policy.md`](token-policy.md).
+
 ## Acceptance criteria → evidence
 
 | DEV-5 acceptance criterion | Evidence (section below) |
