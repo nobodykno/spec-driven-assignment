@@ -30,7 +30,7 @@ Rules for every task:
   - `NFR-MNT-001: broken definition fails the checker` (missing file, name mismatch, empty description, reviewer with Edit, `Bash(git push:*)`, missing hook script)
   - `NFR-MNT-001: documentation out of date fails the checker`
   - verify: the tests fail
-- [ ] 2.2 Implement `scripts/check-agents.mjs`; add `check:agents` to the `lint` script. Verify: `pnpm exec vitest run scripts/` passes. **[NFR-MNT-001]**
+- [x] 2.2 Implement `scripts/check-agents.mjs`; add `check:agents` to the `lint` script. Verify: `pnpm exec vitest run scripts/` passes, except the committed-files test, which passes once tasks 3.1 and 4.1 add the agents and docs. **[NFR-MNT-001]**
 
 ## 3. Agent definitions (D1)
 

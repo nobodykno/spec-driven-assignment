@@ -32,8 +32,8 @@ Follows SDS §3 (`.claude/`) and §11 (test naming, test-first).
 ### D1. Agent files and tool sets
 | Agent | `tools` | Hook |
 | --- | --- | --- |
-| implementer | Read, Grep, Glob, Edit, Write, `Bash(pnpm:*)`, `Bash(git status:*)`, `Bash(git diff:*)`, `Bash(git log:*)`, `Bash(git add:*)`, `Bash(git commit:*)` | scope guard `implementer` |
-| test-writer | Read, Grep, Glob, Edit, Write, `Bash(pnpm:*)`, `Bash(git status:*)`, `Bash(git diff:*)` | scope guard `test-writer` |
+| implementer | Read, Grep, Glob, Edit, Write, MultiEdit, Skill, `Bash(pnpm:*)`, `Bash(git status:*)`, `Bash(git diff:*)`, `Bash(git log:*)`, `Bash(git add:*)`, `Bash(git commit:*)` | scope guard `implementer` |
+| test-writer | Read, Grep, Glob, Edit, Write, Skill, `Bash(pnpm:*)`, `Bash(git status:*)`, `Bash(git diff:*)`, `Bash(git log:*)` | scope guard `test-writer` |
 | reviewer | Read, Grep, Glob, `Bash(git diff:*)`, `Bash(git log:*)` (unchanged) | none needed: no edit tool |
 | coordinator | Read, Grep, Glob, Edit, `Bash(git status:*)`, `Bash(git log:*)`, `Bash(git branch:*)`, `Bash(git worktree list:*)`, `Bash(openspec:*)` | scope guard `coordinator` |
 
