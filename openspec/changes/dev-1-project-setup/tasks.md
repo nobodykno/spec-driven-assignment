@@ -3,7 +3,7 @@
 Rules for every task:
 - Write the test first and watch it fail, then implement.
 - Test names start with the FRS ID, e.g. `it('FR-SYS-001: ...')`.
-- One commit per task: `feat(DEV-1): <n.m> <summary>` (or `chore`/`docs`/`test`). Once group 9 is in, every commit also needs the footer `Refs: DEV-1`, and the header is at most 72 characters. From task 11.7 on, the scope is an area instead of the ticket key: `feat(web): 8.3 add playwright check` + `Refs: DEV-1`.
+- One commit per task. Up to 11.6: `feat(DEV-1): <n.m> <summary>`. From 11.7: `type(area): <n.m> <summary>` (design D15). Once group 9 is in, every commit also needs the footer `Refs: DEV-1`, and the header is at most 72 characters. From task 11.7 on, the scope is an area instead of the ticket key: `feat(web): 8.3 add playwright check` + `Refs: DEV-1`.
 
 `[PARALLEL]` marks groups that can run in separate worktrees once their prerequisites are done.
 
@@ -205,7 +205,7 @@ Rules for every task:
   - rejects a missing scope, an unknown scope (`feat(DEV-9)`), and a missing `Refs` footer, including on `main`
   - keeps the type, header, case, period and body-length cases
   - verify: the updated tests fail
-- [ ] 11.7 Update `commitlint.config.mjs` (D15) and the convention text in `CLAUDE.md`, `.claude/commands/sdd/apply.md`, `.claude/commands/sdd/run.md` and this file's rules. Verify: `pnpm exec vitest run --dir scripts` passes, and the commit for this task passes the new hook. **[NFR-MNT-001]**
+- [x] 11.7 Update `commitlint.config.mjs` (D15) and the convention text in `CLAUDE.md`, `.claude/commands/sdd/apply.md`, `.claude/commands/sdd/run.md` and this file's rules. Verify: `pnpm exec vitest run --dir scripts` passes, and the commit for this task passes the new hook. **[NFR-MNT-001]**
 
 ## 12. Quality gates (all IDs)
 

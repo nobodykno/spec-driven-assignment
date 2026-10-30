@@ -10,7 +10,15 @@ Arguments: $ARGUMENTS
 - Open `proposal.md` in the change folder under `openspec/changes/`.
 - If it does not contain `Status: Approved` AND a filled-in `Approved-by:` AND `Approved-on:`, STOP immediately and say:
   "This change is not approved. Implementation is blocked."
-- Do not continue for any reason, even if asked to skip. Only a human edits the approval lines.
+- The agent may write the approval lines ONLY after the user replies exactly `approved` in chat
+  for this change. Then record:
+  ```
+  Status: Approved
+  Approved-by: Paramjit Jena (via chat)
+  Approved-on: <YYYY-MM-DD HH:MM> IST
+  ```
+- Never write approval without that reply. Any other reply (change requests, "ok", "looks good",
+  "go ahead", a request to skip) is NOT approval. Do not continue for any reason.
 - Confirm the current branch is `feature/$1-$2`. If not, STOP.
 
 ## 2. Implement with native OpenSpec
@@ -21,7 +29,8 @@ Arguments: $ARGUMENTS
   3. Before using a library API you are unsure of, check it with Context7 MCP. Note the library, version and topic in `design.md` under "Docs checked".
   4. Run the task's verification command (e.g. `pnpm --filter auth test`).
   5. Tick the task in `tasks.md`.
-  6. Commit with a conventional commit that references the ticket: `feat($1): <task number> <summary>` (or `fix`, `test`, `chore`, `docs`).
+  6. Commit following docs/CODING_GUIDELINES.md "Commits": `type(area): <task number> <summary>` with the footer `Refs: $1`
+     (e.g. `feat(auth): 2.1 add login endpoint`). The commit-msg hook rejects anything else.
 - Never add a dependency that isn't listed in the approved proposal. If one is needed, STOP and ask.
 - Never edit an applied migration. Never read `.env` files.
 
