@@ -1,12 +1,8 @@
+import { createApp } from './app.js';
 
+const port = Number(process.env.PORT ?? 4000);
+const authServiceUrl = process.env.AUTH_SERVICE_URL ?? 'http://localhost:4001';
 
-
-
-
-import app from "./app.js";
-
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-  console.log(`API Gateway listening on port ${PORT}`);
+createApp({ authServiceUrl }).listen(port, () => {
+  console.log(`API gateway listening on port ${port}`);
 });

@@ -1,7 +1,8 @@
-import app from "./app.js";
+import { checkDatabase } from '@app/database';
+import { createApp } from './app.js';
 
-const PORT = process.env.PORT || 4001;
+const port = Number(process.env.PORT ?? 4001);
 
-app.listen(PORT, () => {
-  console.log(`Auth service listening on port ${PORT}`);
+createApp({ checkDatabase }).listen(port, () => {
+  console.log(`Auth service listening on port ${port}`);
 });

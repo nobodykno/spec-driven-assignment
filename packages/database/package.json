@@ -13,15 +13,16 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "sequelize-cli db:migrate"
   },
   "dependencies": {
-    "pg": "^8.14.1",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.7"
+    "pg": "8.23.1",
+    "pg-hstore": "2.3.4",
+    "sequelize": "6.37.8"
   },
   "devDependencies": {
-    "@types/node": "^26.6.5",
-    "sequelize-cli": "^6.6.2"
+    "@types/node": "22.20.5",
+    "sequelize-cli": "6.6.5"
   }
 }

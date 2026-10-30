@@ -1,28 +1,17 @@
-# Build stage
-FROM node:22-slim AS builder
+# Build context: repository root (see docker-compose.yml). Follows SDS §12 / design D9.
+FROM node:22.23.4-alpine AS build
+ENV HUSKY=0
+RUN corepack enable && corepack prepare pnpm@11.28.9 --activate
+WORKDIR /repo
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm fetch
+COPY . .
+RUN pnpm install --frozen-lockfile --offline
+RUN pnpm --filter "web..." build
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-WORKDIR /app
-
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json .npmrc ./
-COPY packages/shared/package.json packages/shared/
-COPY apps/web/package.json apps/web/
-
-RUN pnpm install --frozen-lockfile --ignore-scripts && \
-    cd node_modules/esbuild && node install.js || true
-
-COPY packages/shared/ packages/shared/
-COPY apps/web/ apps/web/
-
-RUN pnpm --filter @app/shared build && \
-    pnpm --filter web build
-
-# Production stage
-FROM nginx:alpine
-
-COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
-
-EXPOSE 80
-
+FROM nginx:1.31.8-alpine
+COPY apps/web/nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+USER nginx
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

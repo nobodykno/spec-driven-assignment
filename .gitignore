@@ -4,17 +4,19 @@ node_modules/
 # Build output
 dist/
 
-# Environment files
+# Environment files (only the .env.example templates are committed)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Test coverage
 coverage/
 
-# IDE
+# IDE (shared editor settings are kept, see docs/CODING_GUIDELINES.md)
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 *.swp
 *.swo
 
@@ -26,3 +28,10 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Playwright output (screenshots kept in docs/evidence/)
+test-results/
+playwright-report/

@@ -1,13 +1,48 @@
-import { Sequelize } from "sequelize";
+import { Sequelize } from 'sequelize';
 
-const databaseUrl = process.env.DATABASE_URL || "postgres://localhost:5432/app";
+// SDS §12.3 default for local development (Docker Postgres on host port 5433).
+const DEFAULT_DATABASE_URL = 'postgresql://dev:dev@localhost:5433/tracker';
+const CONNECT_TIMEOUT_MS = 2000;
 
-export const sequelize = new Sequelize(databaseUrl, {
-  dialect: "postgres",
-  logging: false,
-});
+let sequelize: Sequelize | undefined;
 
-export async function connectDatabase(): Promise<void> {
-  await sequelize.authenticate();
-  console.log("Database connection established successfully.");
+export function getSequelize(): Sequelize {
+  sequelize ??= new Sequelize(process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL, {
+    dialect: 'postgres',
+    logging: false,
+    dialectOptions: { connectionTimeoutMillis: CONNECT_TIMEOUT_MS },
+    pool: { acquire: CONNECT_TIMEOUT_MS },
+  });
+  return sequelize;
+}
+
+/**
+ * FR-SYS-001: resolves true when the database accepts a connection within
+ * `timeoutMs`, false otherwise. Never throws and never logs.
+ */
+export async function checkDatabase(timeoutMs = CONNECT_TIMEOUT_MS): Promise<boolean> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<boolean>((resolve) => {
+    timer = setTimeout(() => resolve(false), timeoutMs);
+  });
+  // A failed connection is the expected "database down" answer, not an error to rethrow.
+  const probe = (async (): Promise<boolean> => {
+    try {
+      await getSequelize().authenticate();
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+  try {
+    return await Promise.race([probe, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function closeDatabase(): Promise<void> {
+  const current = sequelize;
+  sequelize = undefined;
+  await current?.close();
 }

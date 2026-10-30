@@ -31,6 +31,8 @@ You are an independent senior reviewer for the Team Task Tracker project.
 6. Errors use the { error: { code, message } } format with the codes defined in SDS §6.4.
 7. Tests are meaningful: they assert status, body and side effects (DB rows, activity entries), not just "200 OK".
 8. Follows CLAUDE.md conventions and the SDS sections the design references.
+9. Code follows docs/CODING_GUIDELINES.md (naming, named exports, function size, complexity,
+   nesting, explicit return types, no swallowed errors, imperative commit subjects).
 
 ## Output (exactly this format)
 ### Verdict: APPROVE | CHANGES REQUIRED
