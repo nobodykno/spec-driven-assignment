@@ -23,7 +23,8 @@
     "test:e2e": "playwright test",
     "check:file-names": "node scripts/check-file-names.mjs",
     "check:claude-settings": "node scripts/check-claude-settings.mjs",
-    "check:agents": "node scripts/check-agents.mjs"
+    "check:agents": "node scripts/check-agents.mjs",
+    "check:workflow": "node scripts/check-workflow.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "21.2.4",

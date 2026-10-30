@@ -6,7 +6,7 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 ## 1. Checker (D1, D4)
 
 - [x] 1.1 Write `scripts/check-workflow.test.mjs` first: gate (approved / draft / blank approver), command-vs-doc sync. Verify: `pnpm exec vitest run scripts/check-workflow.test.mjs` fails. **[NFR-MNT-001]**
-- [ ] 1.2 Implement `scripts/check-workflow.mjs`; add `check:workflow` to `pnpm lint`. Verify: the test passes. **[NFR-MNT-001]**
+- [x] 1.2 Implement `scripts/check-workflow.mjs`; add `check:workflow` to `pnpm lint`. Verify: the test passes. **[NFR-MNT-001]**
 
 ## 2. Commands (D2)
 
