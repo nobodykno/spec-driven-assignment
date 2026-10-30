@@ -22,11 +22,13 @@ export function App(): JSX.Element {
   useEffect(() => {
     // Abort on unmount so StrictMode's second effect run doesn't race the first.
     const controller = new AbortController();
-    void fetchApiStatus(controller.signal).then((status) => {
+    const load = async (): Promise<void> => {
+      const status = await fetchApiStatus(controller.signal);
       if (!controller.signal.aborted) {
         setApiStatus(status);
       }
-    });
+    };
+    void load();
     return () => controller.abort();
   }, []);
 
