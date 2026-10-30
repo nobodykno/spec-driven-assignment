@@ -153,7 +153,7 @@ Every existing `^` range becomes an exact pin. Versions were checked with `pnpm 
 | lint-staged | 17.6.0 | root (dev) | **New.** Run ESLint/Prettier on staged files. Engines node >=22.22.1, so root `engines.node` becomes `>=22.22.1 <23` (local Node is 22.23.1) |
 | @commitlint/cli | 21.2.4 | root (dev) | **New.** Commit-message lint. Engines node >=22.12.0 |
 | @commitlint/config-conventional | 21.2.4 | root (dev) | **New.** Conventional-commit base rules (same release as the CLI) |
-| @mindfiredigital/eslint-plugin-hub | 2.2.0 | root (dev) | **New.** Naming rules (kebab-case files, camelCase vars/functions, PascalCase classes). Flat config supported (README, `configs['flat/general']`); peer `eslint >=8.56`. ESLint 10 compatibility is checked in task 11.3 |
+| ~~@mindfiredigital/eslint-plugin-hub~~ | ~~2.2.0~~ | — | **Skipped in task 11.3 (fallback D15).** Flat config is supported, but its `postinstall` (`lib/utils/check-eslint-config.js`) looks for an ESLint config in its own package folder, finds none and waits on stdin for "install ESLint? (y/n)". "y" would run `npm init @eslint/config@latest`. `pnpm install` hung, and pnpm 11 `allowBuilds: false` did not stop the script. Replaced by `@typescript-eslint/naming-convention` (already installed) and `scripts/check-file-names.mjs` |
 | @playwright/test | 1.64.1 | root (dev) | **New.** Headless browser check for FR-SYS-002 (task 8.3). Engines node >=20. Chromium is downloaded by `pnpm exec playwright install chromium` into the user cache, not the repo. DEV-1016 reuses it for the e2e journey |
 
 Docker images (exact tags confirmed with `docker pull` in task 7.1 and recorded in `docs/versions.md`):
