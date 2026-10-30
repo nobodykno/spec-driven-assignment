@@ -25,4 +25,4 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 
 ## 5. Quality gates
 
-- [ ] 5.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass.
+- [x] 5.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass.
