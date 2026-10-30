@@ -1,8 +1,8 @@
 Ticket: DEV-8
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 16:58 IST
 
 # Proposal: DEV-8 OpenSpec workflow
 
