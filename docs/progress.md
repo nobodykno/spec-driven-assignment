@@ -84,3 +84,11 @@ Branch `feature/DEV-5-claude-setup`.
 - Approval in chat (plan, decision 1: archive before merge; decision 2: no broad docker ask rule).
 - Pending: one look at `/permissions` (acceptance criterion) and the decision on the un-re-reviewed round-3 fixes.
 
+
+## DEV-6 (DEV-1003) Autonomous agents — change `dev-6-agents`
+
+Branch `feature/DEV-6-agents`.
+
+| Date (IST) | Stage | What happened |
+| --- | --- | --- |
+| 2026-10-30 | Propose | Ticket fetched via MCP (dependency DEV-5 Done). Change `dev-6-agents` created (capability `agent-roles`), validated `--strict`. Waiting at checkpoint A. |
