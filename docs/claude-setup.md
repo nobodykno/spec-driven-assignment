@@ -31,7 +31,7 @@ prompts the human.
 | List | Rules | Why |
 | --- | --- | --- |
 | allow | `curl -s` to localhost; `docker compose stop/start/up/exec/logs/ps`; `pnpm dev`, `pnpm db:*`, Playwright, `pnpm test:e2e`; `git merge main`, `git worktree` | autonomous local checks the user approved |
-| ask | `git push`, `gh repo create`, `gh pr create`, `gh pr merge`, `pnpm add/remove/install`, `pnpm --filter * add`, all Jira write tools | outward-facing or dependency changes need a human |
+| ask | `git push`, `gh repo create`, `gh pr create`, `gh pr merge`, `pnpm add/remove/install/i/up/update`, `pnpm --filter * add`, `--filter=* add`, `-F * add`, `-w add`, all Jira write tools | outward-facing or dependency changes need a human |
 | deny | `.env` / `.env.local/.development/.production/.test` reads, `printenv`, `env`, `git push --force`/`-f`, `rm -rf`, `npm`, `yarn`, `docker compose down -v`, `wget` | backstop for the hook (prefix match only) |
 
 Other Docker commands (`docker run`, `docker build`, `docker volume rm`, …) match no rule, so they
@@ -51,16 +51,20 @@ and exits 2.
 | --- | --- |
 | `rm-recursive-force` | `rm` with a recursive and a force flag (`-rf`, `-fr`, `-Rf`, `-r -f`, long forms) |
 | `force-push` | `git push --force`, `-f`, `--force-with-lease`, `+refspec` |
-| `push-main` | `git push` to `main` / `HEAD:main` / `refs/heads/main`, or a plain push while on `main` |
-| `no-verify` | `git commit --no-verify` / `-n`, `git push --no-verify` |
+| `push-main` | `git push` to `main` / `HEAD:main` / `refs/heads/main`; `HEAD` or `@` while on `main`; `--all`, `--mirror`; a plain push while on `main` or when the branch is unknown |
+| `no-verify` | `git commit --no-verify` / `-n`, `git push --no-verify`, `git -c core.hooksPath=…`, `HUSKY=0 git …` |
 | `env-dump` | `printenv`, bare `env` |
 | `docker-volumes` | `docker compose down -v` / `--volumes`, `docker-compose down -v` |
 | `env-file-shell` | any shell word naming `.env` / `.env.*` (not `.env.example`) |
 | `env-file-tool` | Read/Edit/MultiEdit/Write `file_path`, Grep `path`/`glob`, Glob `pattern`/`path` naming such a file |
 | `malformed-input` | unreadable payload (fails closed) |
 
-Chained commands (`&&`, `||`, `;`, `|`, newlines) are checked part by part. Quoted text is data:
-`echo "rm -rf /"` and `git commit -m "explain --no-verify"` are allowed.
+Chained commands (`&&`, `||`, `;`, `|`, newlines), grouping (`( )`, `{ }`), command substitution
+(`$( )`, backticks) and redirections (`<`, `>`) are split into simple commands, and each is checked.
+Leading assignments (`A=1 B=2`), wrappers (`sudo`, `command`, `exec`, `nohup`, `time`, `xargs`,
+`env VAR=x`, `then`/`do`/`else`), paths (`/bin/rm`) and git global options (`-C`, `-c`,
+`--no-pager`, …) are looked through. Quoted text is data: `echo "rm -rf /"` and
+`git commit -m "explain --no-verify"` are allowed.
 
 **PostToolUse `post-edit-format.mjs`** (matcher `Edit|MultiEdit|Write`). For a
 `ts/tsx/js/mjs/cjs/json/yaml/yml` file inside the project, it runs `prettier --write` and (for code)
@@ -82,16 +86,24 @@ Claude Code picks up the change without a restart.
 - `:*` that is not at the end (e.g. `Bash(curl -s:* http://localhost*)`)
 - one rule in two lists
 - an unknown `defaultMode`
-- a hook script that is missing
+- unbalanced parentheses inside a rule
+- a hook script that is missing (any `node "<path>"` command)
 - the guard or formatter hook not being registered
+- the ask-first policy not being met: `defaultMode` other than `default`; a missing ask rule for
+  `git push`, `gh pr create/merge`, `pnpm add/remove/install` or Jira writes; an `allow` for
+  `Bash(docker:*)`, `git push`, `gh pr merge` or `pnpm add`. This makes the "asks first" scenarios
+  testable (`NFR-SEC-005: requires the ask rules, default mode and no broad docker allow`).
 
 ## Automated test results
 
 | Suite | Tests | Result |
 | --- | --- | --- |
-| `.claude/hooks/pre-tool-guard.test.mjs` | 62 | pass |
-| `.claude/hooks/post-edit-format.test.mjs` | 5 | pass |
-| `scripts/check-claude-settings.test.mjs` | 11 | pass |
+| `.claude/hooks/pre-tool-guard.test.mjs` | 92 | pass |
+| `.claude/hooks/post-edit-format.test.mjs` | 6 | pass |
+| `scripts/check-claude-settings.test.mjs` | 15 | pass |
+
+The counts include the review round-1 additions: guard bypass cases, the formatter symlink case,
+and the settings policy, parenthesis and hook-script checks.
 
 ## Recommended local settings
 
