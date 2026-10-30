@@ -21,7 +21,7 @@ Rules for every task:
   - `NFR-MNT-001: malformed input and unknown agent blocked`
   - a CLI test that pipes a real payload and asserts exit 2 and the stderr message
   - verify: `pnpm exec vitest run .claude/hooks/agent-scope-guard.test.mjs` fails
-- [ ] 1.3 Implement `.claude/hooks/agent-scope-guard.mjs`. Verify: `pnpm exec vitest run .claude/hooks/` passes. **[NFR-MNT-001, NFR-TST-001]**
+- [x] 1.3 Implement `.claude/hooks/agent-scope-guard.mjs`. Verify: `pnpm exec vitest run .claude/hooks/` passes. **[NFR-MNT-001, NFR-TST-001]**
 
 ## 2. Agent checker (D4)
 
