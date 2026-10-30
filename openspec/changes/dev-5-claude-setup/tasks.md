@@ -87,7 +87,7 @@ Rules for every task:
 
 ## 8. Quality gates
 
-- [ ] 8.1 Run `pnpm install --frozen-lockfile && pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Every command exits 0. **[NFR-MNT-001]**
+- [x] 8.1 Run `pnpm install --frozen-lockfile && pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Every command exits 0. **[NFR-MNT-001]**
 - [ ] 8.2 Run `openspec validate dev-5-claude-setup --strict`, and check that every spec scenario maps to a test or to a recorded 5.3/6.x check. Verify: validate exits 0. **[all]**
 
 ## Workflow follow-up
