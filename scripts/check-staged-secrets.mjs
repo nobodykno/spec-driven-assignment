@@ -5,7 +5,9 @@ import { basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
-const JWT_SECRET = /^[\t ]*(?:-[\t ]*)?(?:export[\t ]+)?JWT_SECRET[\t ]*=[\t ]*["']?([^"'\s#]*)/gm;
+// `KEY=value`, `export`/`ENV KEY=value`, `- KEY=value`, YAML `KEY: value` and JSON `"KEY": "value"`.
+const JWT_SECRET =
+  /^[\t ]*(?:-[\t ]*)?(?:(?:export|ENV)[\t ]+)?["']?JWT_SECRET["']?[\t ]*[=:][\t ]*["']?([^"'\s#,]*)/gm;
 const JWT_PLACEHOLDER = /^(?:change-?me|<.*>|\$\{.*\}|your[-_].*|x+)$/i;
 const AWS_ACCESS_KEY = /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/;
 const AWS_SECRET_KEY =

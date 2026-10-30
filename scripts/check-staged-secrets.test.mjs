@@ -59,6 +59,29 @@ describe('check-staged-secrets', () => {
     },
   );
 
+  it.each([
+    ['Dockerfile', 'ENV JWT_' + 'SECRET=docker-real-value-1'],
+    [
+      'docker-compose.yml',
+      'services:\n  auth:\n    environment:\n      JWT_' + 'SECRET: compose-real-2',
+    ],
+    ['config/app.json', '{\n  "JWT_' + 'SECRET": "json-real-value-3"\n}'],
+  ])(
+    'NFR-SEC-005: rejects JWT_SECRET in Dockerfile, compose and JSON form (%s)',
+    (path, content) => {
+      const findings = findSecrets([file(path, content)]);
+      expect(findings).toEqual([`${path}: contains a real JWT_SECRET value`]);
+    },
+  );
+
+  it.each([
+    ['docker-compose.yml', '      JWT_' + 'SECRET: ${JWT_SECRET}'],
+    ['Dockerfile', 'ENV JWT_' + 'SECRET=change-me'],
+    ['config/app.json', '{ "JWT_' + 'SECRET": "" }'],
+  ])('NFR-SEC-005: allows JWT_SECRET placeholders in other forms (%s)', (path, content) => {
+    expect(findSecrets([file(path, content)])).toEqual([]);
+  });
+
   it('NFR-SEC-005: rejects AWS-style access and secret keys', () => {
     const findings = findSecrets([
       file('config/a.json', `{"key":"${AWS_ACCESS_KEY}"}`),
