@@ -4,7 +4,7 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 
 ## 1. Database
 
-- [ ] 1.1 Migration create tasks with enums and the four SDS §5.3 indexes (reversible). Verify: `pnpm --filter @app/database build`. **[FR-TASK-001, NFR-PERF-002]**
+- [x] 1.1 Migration create tasks with enums and the four SDS §5.3 indexes (reversible). Verify: `pnpm --filter @app/database build`. **[FR-TASK-001, NFR-PERF-002]**
 
 ## 2. Tracker
 
