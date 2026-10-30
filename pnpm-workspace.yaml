@@ -3,5 +3,6 @@ packages:
   - "services/*"
   - "packages/*"
 
-onlyBuiltDependencies:
-  - esbuild
+# pnpm 11 build-script allowlist (replaces onlyBuiltDependencies).
+allowBuilds:
+  esbuild: true

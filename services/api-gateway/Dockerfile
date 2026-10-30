@@ -1,38 +1,20 @@
-# Build stage
-FROM node:22-slim AS builder
+# Build context: repository root (see docker-compose.yml). Follows SDS §12 / design D9.
+FROM node:22.23.4-alpine AS build
+ENV HUSKY=0
+RUN corepack enable && corepack prepare pnpm@11.28.9 --activate
+WORKDIR /repo
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm fetch
+COPY . .
+RUN pnpm install --frozen-lockfile --offline
+RUN pnpm --filter "api-gateway..." build
+RUN pnpm --filter api-gateway deploy --prod /out
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-WORKDIR /app
-
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json .npmrc ./
-COPY packages/shared/package.json packages/shared/
-COPY services/api-gateway/package.json services/api-gateway/
-
-RUN pnpm install --frozen-lockfile --ignore-scripts
-
-COPY packages/shared/ packages/shared/
-COPY services/api-gateway/ services/api-gateway/
-
-RUN pnpm --filter @app/shared build && \
-    pnpm --filter api-gateway build
-
-# Production stage
-FROM node:22-slim
-
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-WORKDIR /app
-
-COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-workspace.yaml /app/package.json ./
-COPY --from=builder /app/packages/shared/package.json /app/packages/shared/dist/ packages/shared/
-COPY --from=builder /app/services/api-gateway/package.json /app/services/api-gateway/dist/ services/api-gateway/
-
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
-
+FROM node:22.23.4-alpine
 ENV NODE_ENV=production
 ENV PORT=4000
-
+WORKDIR /app
+COPY --from=build --chown=node:node /out ./
+USER node
 EXPOSE 4000
-
-CMD ["node", "services/api-gateway/index.js"]
+CMD ["node", "dist/index.js"]

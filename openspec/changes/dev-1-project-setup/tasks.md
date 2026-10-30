@@ -99,7 +99,7 @@ Rules for every task:
   - verify: all three pulls exit 0
   - **[NFR-OPS-001]**
 - [x] 7.2 Rewrite the `postgres` service in `docker-compose.yml` (D9: exact tag, `5433:5432`, `tracker_pgdata`, `dev/dev/tracker`, healthcheck) and set `db:up` to use `--wait`. Verify: `pnpm db:up` exits 0, `docker compose ps postgres` shows `healthy`, and `psql postgresql://dev:dev@localhost:5433/tracker -c 'select 1'` (or `pg_isready -h localhost -p 5433`) succeeds. **[NFR-OPS-001]**
-- [ ] 7.3 Write or rewrite the Dockerfiles for auth, tracker, api-gateway and web (D9):
+- [x] 7.3 Write or rewrite the Dockerfiles for auth, tracker, api-gateway and web (D9):
   - exact base tags, `pnpm@11.28.9`
   - no `|| true`, `pnpm deploy --prod`
   - `ENV HUSKY=0` before `pnpm install` (design D13)
