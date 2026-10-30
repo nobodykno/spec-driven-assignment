@@ -4,8 +4,11 @@ import {
   type CreationOptional,
   type InferAttributes,
   type InferCreationAttributes,
+  type NonAttribute,
   type Sequelize,
 } from 'sequelize';
+import type { Project } from './project.js';
+import type { User } from './user.js';
 
 export class Task extends Model<InferAttributes<Task>, InferCreationAttributes<Task>> {
   declare id: CreationOptional<string>;
@@ -18,6 +21,9 @@ export class Task extends Model<InferAttributes<Task>, InferCreationAttributes<T
   declare assigneeId: CreationOptional<string | null>;
   declare createdById: string;
   declare archivedAt: CreationOptional<Date | null>;
+  declare project?: NonAttribute<Project>;
+  declare assignee?: NonAttribute<User>;
+  declare createdBy?: NonAttribute<User>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }

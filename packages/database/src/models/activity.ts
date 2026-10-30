@@ -4,8 +4,11 @@ import {
   type CreationOptional,
   type InferAttributes,
   type InferCreationAttributes,
+  type NonAttribute,
   type Sequelize,
 } from 'sequelize';
+import type { Task } from './task.js';
+import type { User } from './user.js';
 
 export type ActivityActionValue =
   'TASK_CREATED' | 'TASK_UPDATED' | 'TASK_ASSIGNED' | 'TASK_STATUS_CHANGED' | 'TASK_ARCHIVED';
@@ -17,6 +20,8 @@ export class Activity extends Model<InferAttributes<Activity>, InferCreationAttr
   declare actorId: string;
   declare action: ActivityActionValue;
   declare metadata: CreationOptional<Record<string, unknown>>;
+  declare task?: NonAttribute<Task>;
+  declare actor?: NonAttribute<User>;
   declare createdAt: CreationOptional<Date>;
 }
 
