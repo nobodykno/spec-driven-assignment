@@ -3,6 +3,8 @@ description: Implement an APPROVED change with the native OpenSpec apply workflo
 argument-hint: <TICKET-KEY> <change-name>   e.g. DEV-1006 auth
 ---
 
+Follow docs/token-policy.md
+
 Ticket: **$0**. Change name: ticket key in lowercase plus "-$1" (e.g. `dev-1006-auth`).
 Arguments: $ARGUMENTS
 

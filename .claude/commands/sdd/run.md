@@ -3,6 +3,8 @@ description: Full ticket loop. Propose → approve → apply → verify → ship
 argument-hint: <JIRA-KEY> <change-name>   e.g. DEV-9 auth
 ---
 
+Follow docs/token-policy.md
+
 Ticket: **$0**. Change name: `$0` in lowercase plus `-$1` (e.g. DEV-9 auth → `dev-9-auth`).
 Arguments: $ARGUMENTS
 
@@ -54,6 +56,8 @@ to create or change, tasks, risks and open questions. Wait for the reply.
   then stop and explain.
 
 ### CHECKPOINT B: commit
+First do the token measurement (`sdd/verify.md` §5, `docs/token-policy.md`): ask the user for
+`/cost`, record the row. Then show its numbers along with the rest.
 Show: commits (`git log --oneline main..HEAD`), files changed (`git diff --stat main...HEAD`), gate
 results, the traceability table (FRS ID → scenario → test → result), review findings (fixed /
 accepted with reason) and deviations. Wait for the user to reply `commit`.

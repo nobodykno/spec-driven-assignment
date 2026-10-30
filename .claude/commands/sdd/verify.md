@@ -3,6 +3,8 @@ description: Verify a change against its spec (native OpenSpec verify), run an i
 argument-hint: <TICKET-KEY> <change-name>   e.g. DEV-1006 auth
 ---
 
+Follow docs/token-policy.md
+
 Ticket: **$0**. Change name: ticket key in lowercase plus "-$1" (e.g. `dev-1006-auth`).
 Arguments: $ARGUMENTS
 
@@ -27,7 +29,12 @@ Write `verification.md` inside the change folder, containing:
 - Reviewer findings: severity | file:line | issue | status (fixed / accepted with reason)
 - Deviations from the spec or SDS
 
-## 5. Result
+## 5. Token measurement
+- Ask the user to run `/cost` and paste the numbers. Record the ticket's row in `docs/progress.md`
+  and `docs/token-efficiency.md` (model, tokens/cost, files read (est.), fix rounds, policy
+  violations), as described in `docs/token-policy.md` "Measurement". Nothing pasted → "not provided".
+
+## 6. Result
 - If any gate fails, any FRS ID has no test, or any critical/high finding is unresolved: report **NOT READY** and list what blocks it (Rule 24).
 - Otherwise report **READY FOR PR** and tell the user to run `/sdd:ship $0 $1`.
 - Commit the report: `docs(workflow): verification report for <change-name>` with the footer `Refs: $0`.

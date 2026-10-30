@@ -64,18 +64,11 @@
   docker compose down -v and any .env access; PostToolUse formats and lints every edited file.
   A blocked call means: change the approach, do not work around the hook.
 
-## Token efficiency
-- Docs: read only the FRS/SDS sections for the ticket's requirement IDs and SDS section numbers
-  (find them with grep, then read those line ranges). Never read FRS.md or SDS.md whole.
-- Code: query the code graph first (when available), then grep/glob for specific symbols; read
-  line ranges, not whole files. Never list or read node_modules, dist, coverage, build output or
-  lock files.
-- Command output: compact test reporter, failures only; pipe long output through `tail -n 40`;
-  quiet flags (`curl -s`, `docker compose logs --tail 50`).
-- Fix loops: re-run only the failing test file until it passes; run the full gates once at the end.
-- Subagents: give the reviewer only the change folder, the diff and the relevant FRS IDs; ask for
-  a concise report in its fixed format.
-- MCP: call Jira only to fetch or update a ticket.
+## Token efficiency (mandatory)
+- Follow docs/token-policy.md in every session and subagent: grep then read line ranges (never
+  whole FRS/SDS or folders), compact test output, re-run only failing files, one ticket per session.
+- Sonnet by default; Opus only for DEV-9 and DEV-20 after telling the user to switch with /model.
+- Before CHECKPOINT B ask the user for /cost and record it in docs/token-efficiency.md.
 
 ## Never
 - Read, print or commit .env files or secrets
