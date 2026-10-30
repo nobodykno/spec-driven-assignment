@@ -10,8 +10,8 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 
 ## 2. Commands (D2)
 
-- [ ] 2.1 Add `.claude/commands/sdd/archive.md` (refuse unverified, native archive, FRS status note, commit). Verify: `node scripts/check-workflow.mjs`. **[NFR-MNT-001]**
-- [ ] 2.2 Point `/sdd:run` stage d at `/sdd:archive`; `/sdd:apply` names the gate script. Verify: checker passes. **[NFR-MNT-001]**
+- [x] 2.1 Add `.claude/commands/sdd/archive.md` (refuse unverified, native archive, FRS status note, commit). Verify: `node scripts/check-workflow.mjs`. **[NFR-MNT-001]**
+- [x] 2.2 Point `/sdd:run` stage d at `/sdd:archive`; `/sdd:apply` names the gate script. Verify: checker passes. **[NFR-MNT-001]**
 
 ## 3. Documentation (D3)
 

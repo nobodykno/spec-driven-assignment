@@ -10,7 +10,8 @@ Arguments: $ARGUMENTS
 
 ## 1. Approval gate (Rule 3), mandatory
 - Open `proposal.md` in the change folder under `openspec/changes/`.
-- If it does not contain `Status: Approved` AND a filled-in `Approved-by:` AND `Approved-on:`, STOP immediately and say:
+- If it does not contain `Status: Approved` AND a filled-in `Approved-by:` AND `Approved-on:` (the rule is
+  `checkApproval` in `scripts/check-workflow.mjs`), STOP immediately and say:
   "This change is not approved. Implementation is blocked."
 - The agent may write the approval lines ONLY after the user replies exactly `approved` in chat
   for this change. Then record:
