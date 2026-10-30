@@ -56,6 +56,17 @@ Comparison: this table was checked against every `package.json` (root, `apps/web
 `packages/shared`, `packages/database`, `services/auth`, `services/tracker`,
 `services/api-gateway`). All 50 pinned entries match; `workspace:*` links are not listed.
 
+## Graph tools (DEV-1015, installed 2026-10-30)
+
+Installed outside the repo with `uv tool install <package>==<version>` (no manual Python install).
+`pnpm check:graph-docs` fails when one of these has no exact version.
+
+| Tool | Version | Where |
+| --- | --- | --- |
+| uv | 0.13.6 | Homebrew (`brew install uv`) |
+| code-review-graph | 2.3.9 | `uv tool install code-review-graph==2.3.9` (PyPI) |
+| graphifyy | 0.9.97 | `uv tool install graphifyy==0.9.97` (PyPI; CLI `graphify`) |
+
 ## How versions were checked
 
 - npm packages: `pnpm view <pkg> version engines peerDependencies` (2026-10-29; Git-hook tools and
