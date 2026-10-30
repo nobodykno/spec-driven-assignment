@@ -28,6 +28,11 @@ and the files are kebab-case with named exports.
      run and truncated between tests. Role × action authorization matrix:
      `services/tracker/test/authz.test.ts`.
 
+   The service `vitest.config.ts` already includes `test/**/*.test.ts`. The **first** integration
+   test in a service also adds the test-database setup: a Vitest `globalSetup` that runs the
+   migrations against `tracker_test`, and a `beforeEach` that truncates the tables (SDS §11). Until
+   then, `test/` doesn't exist (no integration tests before DEV-1006).
+
    Together they cover:
    - success: status and body parsed with the response schema
    - validation failure: 400 `VALIDATION_ERROR` with `details`
