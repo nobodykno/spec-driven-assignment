@@ -2,11 +2,13 @@ Ticket: DEV-1
 Ticket source: live MCP
 Status: Approved
 Approved-by: Paramjit Jena (via chat)
-Approved-on: 2026-10-30 13:30 IST
+Approved-on: 2026-10-30 14:08 IST
 
 # Proposal: DEV-1 Project setup
 
 > **Re-opened 2026-10-30** to add Git hooks to the scope (husky, lint-staged, commitlint, staged-secret check, pre-push gates). The earlier approval (Paramjit Jena, 2026-10-29) covered tasks 1–6, which are already implemented; the new scope needs a fresh approval before any hook code is written.
+
+> **Re-opened again 2026-10-30** to add `@playwright/test` (dev only) for the browser check of FR-SYS-002 in task 8.3, and to enforce `docs/CODING_GUIDELINES.md` with tooling (group 11). The Git hooks scope was approved 2026-10-30 13:30 IST (Paramjit Jena, via chat) and is implemented.
 
 > Jira issue `DEV-1` is titled "[DEV-1001] Project setup". The FRS traceability table (§5) refers to this ticket as **DEV-1001**. Both keys mean the same ticket.
 
@@ -29,7 +31,7 @@ Every later ticket (DEV-1006 onwards) builds on this foundation, so it has to be
 | FR-SYS-001 | `GET /health` on gateway, auth and tracker; 503 when the database is down |
 | FR-SYS-002 | **(new in DEV-1)** Gateway exposes `GET /api/v1/health`; the web app shows "API: online" / "API: offline". Added to `docs/FRS.md` in this change |
 | NFR-OPS-001 | Docker Compose stack with exact image tags; `pnpm db:up` starts PostgreSQL 16 on host port 5433 and it becomes healthy; no floating versions anywhere |
-| NFR-MNT-001 | TypeScript strict, ESLint (no `any`, no `@ts-ignore`), Prettier check, Vitest, all wired into root `build` / `lint` / `typecheck` / `test`. Git hooks enforce them locally: lint-staged on commit, commit-message format (Jira scope) on commit-msg, all four gates on push |
+| NFR-MNT-001 | TypeScript strict, ESLint (no `any`, no `@ts-ignore`), Prettier check, Vitest, all wired into root `build` / `lint` / `typecheck` / `test`. Git hooks enforce them locally: lint-staged on commit, commit-message format (area scope, `Refs: DEV-N` footer) on commit-msg, all four gates on push. ESLint and Prettier enforce `docs/CODING_GUIDELINES.md` (naming, quotes/semicolons, complexity, nesting, return types, named exports) |
 | NFR-SEC-005 | Pre-commit hook rejects staged `.env` / `.env.*` files (except `.env.example`) and obvious secrets (private keys, real `JWT_SECRET=` values, AWS-style keys) |
 
 ## SDS sections followed / changed
@@ -67,6 +69,7 @@ Every later ticket (DEV-1006 onwards) builds on this foundation, so it has to be
   - Upgrade to React 19 and Vite 8.
   - Render "API: online" / "API: offline" from `GET /api/v1/health`.
   - Add a Vitest + React Testing Library test.
+  - Browser check with Playwright (headless Chromium): `pnpm test:e2e` runs `e2e/web-api-status.spec.ts` against the running dev server and saves screenshots to `docs/evidence/DEV-1/`.
   - Stop tracking the committed `tsconfig.tsbuildinfo`.
 - **Docker:**
   - `docker-compose.yml`: PostgreSQL 16 on 5433 with an exact tag, a named volume, a healthcheck and `dev`/`dev`/`tracker` credentials.
@@ -75,10 +78,18 @@ Every later ticket (DEV-1006 onwards) builds on this foundation, so it has to be
 - **Git hooks (husky):**
   - Root `"prepare": "husky"`, so `pnpm install` installs the hooks.
   - `.husky/pre-commit`: `pnpm lint-staged` (ESLint `--fix` + Prettier `--write` on staged files), then `node scripts/check-staged-secrets.mjs`.
-  - `.husky/commit-msg`: `pnpm commitlint --edit "$1"` with `commitlint.config.mjs` (config-conventional plus project rules and a local plugin: Jira-key scope, matching `Refs: DEV-N` footer).
+  - `.husky/commit-msg`: `pnpm commitlint --edit "$1"` with `commitlint.config.mjs` (config-conventional plus project rules: scope is one of the areas `auth, tracker, gateway, web, shared, database, docker, workflow, docs`, and a local plugin requires a `Refs: DEV-N` footer).
   - `.husky/pre-push`: `pnpm build && pnpm lint && pnpm typecheck && pnpm test`.
   - Tests for the commitlint rules and the secret check under `scripts/`.
   - Root `engines.node` floor raised to `>=22.22.1` (lint-staged 17 requirement).
+- **Coding guidelines (`docs/CODING_GUIDELINES.md`) enforced by tooling:**
+  - `eslint.config.js` (flat config): `semi`, single `quotes`, `eqeqeq`, `curly`, `max-depth` 3, `max-lines-per-function` 30 (warn), `complexity` 10, `no-console` (warn), `@typescript-eslint/no-explicit-any`, `explicit-function-return-type`, `no-unused-vars`, named exports only (`no-restricted-exports`, config files exempt), kebab-case file names, then `eslint-config-prettier`.
+  - `@mindfiredigital/eslint-plugin-hub` 2.2.0 for naming rules: it ships flat configs (`flat/general`). If it fails under ESLint 10, it is removed and the reason is documented in `docs/versions.md`, with file-name checks done by a small script instead.
+  - `.prettierrc`: `semi`, `singleQuote`, `tabWidth` 2, `printWidth` 100, `trailingComma` all, `bracketSpacing`, `arrowParens` always (replaces `.prettierrc.json`).
+  - `.vscode/settings.json` (format on save, ESLint fix on save) and `.vscode/extensions.json` (ESLint, Prettier, GitLens). `.gitignore` keeps these two files.
+  - All existing code reformatted and fixed: single quotes, `App.tsx` → `app.tsx` with a named export, explicit return types. `pnpm lint` passes with zero errors.
+  - `CLAUDE.md`: a "Coding guidelines" line pointing to `docs/CODING_GUIDELINES.md`; reviewer agent checklist gains "code follows docs/CODING_GUIDELINES.md".
+- **Commit convention (replaces the Jira-key scope):** `type(area): subject` with a mandatory `Refs: DEV-N` footer. Types `feat, fix, docs, style, refactor, test, chore, build, ci, perf`; header ≤ 72; lowercase, imperative subject. Updated in `commitlint.config.mjs` and its tests, `CLAUDE.md`, `.claude/commands/sdd/apply.md` and `run.md`.
 - **Docs:**
   - New `docs/versions.md`.
   - FRS: add FR-SYS-002 and update the traceability table.
@@ -105,7 +116,7 @@ Root workspace (incl. `.husky/`, `commitlint.config.mjs`, `scripts/`, `CLAUDE.md
 
 ## New / changed dependencies (exact versions)
 
-Every existing `^` range becomes an exact pin. Versions were checked with `pnpm view` on 2026-10-29 (Git-hook tools on 2026-10-30).
+Every existing `^` range becomes an exact pin. Versions were checked with `pnpm view` on 2026-10-29 (Git-hook tools and Playwright on 2026-10-30).
 
 | Package | Version | Where | Reason |
 | --- | --- | --- | --- |
@@ -142,6 +153,8 @@ Every existing `^` range becomes an exact pin. Versions were checked with `pnpm 
 | lint-staged | 17.6.0 | root (dev) | **New.** Run ESLint/Prettier on staged files. Engines node >=22.22.1, so root `engines.node` becomes `>=22.22.1 <23` (local Node is 22.23.1) |
 | @commitlint/cli | 21.2.4 | root (dev) | **New.** Commit-message lint. Engines node >=22.12.0 |
 | @commitlint/config-conventional | 21.2.4 | root (dev) | **New.** Conventional-commit base rules (same release as the CLI) |
+| @mindfiredigital/eslint-plugin-hub | 2.2.0 | root (dev) | **New.** Naming rules (kebab-case files, camelCase vars/functions, PascalCase classes). Flat config supported (README, `configs['flat/general']`); peer `eslint >=8.56`. ESLint 10 compatibility is checked in task 11.3 |
+| @playwright/test | 1.64.1 | root (dev) | **New.** Headless browser check for FR-SYS-002 (task 8.3). Engines node >=20. Chromium is downloaded by `pnpm exec playwright install chromium` into the user cache, not the repo. DEV-1016 reuses it for the e2e journey |
 
 Docker images (exact tags confirmed with `docker pull` in task 7.1 and recorded in `docs/versions.md`):
 - `postgres:16.x-alpine`
@@ -173,5 +186,5 @@ Git hooks only: revert their commits and run `git config --unset core.hooksPath`
   - `GET /health` on :4000, :4001 and :4002.
   - `GET /api/v1/health` on the gateway.
   - Existing proxy `/api/v1/auth/*`.
-- **Developer workflow:** after `pnpm install`, every commit must use `type(DEV-N): subject` with a `Refs: DEV-N` footer, and every push runs the four gates (about a minute). Existing commits are not rewritten.
+- **Developer workflow:** after `pnpm install`, every commit must use `type(area): subject` with a `Refs: DEV-N` footer, and every push runs the four gates (about a minute). Existing commits are not rewritten.
 - **Breaking (local dev only):** Postgres moves from host port 5432 to 5433, and the credentials change to `dev/dev`, database `tracker`. Local `.env` files must be updated from the `.env.example` files.

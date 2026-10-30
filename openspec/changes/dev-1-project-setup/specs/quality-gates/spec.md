@@ -51,6 +51,33 @@ Every TypeScript workspace SHALL compile with `strict: true`, and a type error i
 - **WHEN** a source file is not formatted according to the Prettier config
 - **THEN** `pnpm lint` exits non-zero and names the file
 
+### Requirement: Coding guideline rules
+`pnpm lint` SHALL enforce `docs/CODING_GUIDELINES.md`. These are errors: single quotes and semicolons, `===`, braces on every block, nesting depth at most 3, cyclomatic complexity at most 10, explicit return types on exported functions, named exports only (config files exempt) and kebab-case file names. These are warnings: functions over 30 lines and `console` use.
+
+#### Scenario: Guideline-compliant code passes [NFR-MNT-001]
+- **WHEN** `pnpm lint` runs on the repository after the guideline fixes
+- **THEN** it exits 0 with zero errors
+
+#### Scenario: Style violations rejected [NFR-MNT-001]
+- **WHEN** a source file uses double quotes, omits a semicolon, uses `==` or an `if` without braces
+- **THEN** ESLint reports `quotes`, `semi`, `eqeqeq` or `curly` as errors
+
+#### Scenario: Structural violations rejected [NFR-MNT-001]
+- **WHEN** a function nests blocks 4 deep or has complexity 11
+- **THEN** ESLint reports `max-depth` or `complexity` as errors
+
+#### Scenario: TypeScript and export violations rejected [NFR-MNT-001]
+- **WHEN** an exported function has no return type, or a non-config module has a default export
+- **THEN** ESLint reports `@typescript-eslint/explicit-function-return-type` or `no-restricted-exports` as errors
+
+#### Scenario: Non-kebab-case file name rejected [NFR-MNT-001]
+- **WHEN** a source file is named `UserService.ts`
+- **THEN** lint fails and names the file
+
+#### Scenario: Soft limits warn [NFR-MNT-001]
+- **WHEN** a function is longer than 30 lines or calls `console.log`
+- **THEN** ESLint reports a warning and `pnpm lint` still exits 0
+
 ### Requirement: Shared error format
 Services SHALL return errors as `{ "error": { "code", "message", "details?" } }` using only the codes listed in SDS §6.4, and unexpected errors SHALL become 500 `INTERNAL_ERROR` without a stack trace.
 

@@ -18,31 +18,27 @@ Defines the local Git hooks that stop broken, unformatted, badly described or se
 - **THEN** the install exits 0 and no hooks are installed
 
 ### Requirement: Commit message format
-The commit-msg hook SHALL run commitlint with config-conventional plus the project rules: type in `feat, fix, refactor, test, docs, chore, build, ci, perf, style`; scope required and matching `^DEV-\d+$`; header at most 72 characters; subject not starting with a capital letter and not ending with a period; body lines at most 72 characters; a `Refs: DEV-N` footer equal to the scope. On branch `main` only, `docs:` and `chore:` commits MAY omit the scope and the footer.
+The commit-msg hook SHALL run commitlint with config-conventional plus the project rules: type in `feat, fix, docs, style, refactor, test, chore, build, ci, perf`; scope required and one of `auth, tracker, gateway, web, shared, database, docker, workflow, docs`; header at most 72 characters; subject not starting with a capital letter and not ending with a period; body lines at most 72 characters; and a mandatory `Refs: DEV-N` footer (Jira key) on every commit, on every branch.
 
 #### Scenario: Valid commit message accepted [NFR-MNT-001]
-- **WHEN** the message is `feat(DEV-9): 2.1 add login endpoint` with the footer `Refs: DEV-9`
+- **WHEN** the message is `feat(auth): 2.1 add login endpoint` with the footer `Refs: DEV-9`
 - **THEN** commitlint exits 0 and the commit is created
 
-#### Scenario: Commit message without a Jira scope rejected [NFR-MNT-001]
-- **WHEN** the message is `feat: add login endpoint` on a feature branch
-- **THEN** the commit is rejected and commitlint reports the scope rule
+#### Scenario: Commit message without a scope rejected [NFR-MNT-001]
+- **WHEN** the message is `feat: add login endpoint` with the footer `Refs: DEV-9`
+- **THEN** the commit is rejected and commitlint reports `scope-empty`
 
-#### Scenario: Scope that is not a Jira key rejected [NFR-MNT-001]
-- **WHEN** the message is `feat(auth): add login endpoint` with the footer `Refs: DEV-9`
-- **THEN** the commit is rejected
+#### Scenario: Scope that is not an area rejected [NFR-MNT-001]
+- **WHEN** the message is `feat(DEV-9): add login endpoint` or `feat(login): add login endpoint` with the footer `Refs: DEV-9`
+- **THEN** the commit is rejected and commitlint reports `scope-enum`
 
-#### Scenario: Missing or mismatched Refs footer rejected [NFR-MNT-001]
-- **WHEN** the scope is `DEV-9` and the footer is missing or says `Refs: DEV-10`
-- **THEN** the commit is rejected
+#### Scenario: Missing Refs footer rejected [NFR-MNT-001]
+- **WHEN** a message on any branch, including `main`, has no `Refs: DEV-N` footer, or the footer is not a Jira key (`Refs: auth`)
+- **THEN** the commit is rejected and commitlint reports `footer-refs`
 
 #### Scenario: Unknown type, long header or badly cased subject rejected [NFR-MNT-001]
-- **WHEN** the type is `feature`, or the header is longer than 72 characters, or the subject starts with a capital letter or ends with a period, or a body line is longer than 72 characters
+- **WHEN** the type is `feature` or `revert`, or the header is longer than 72 characters, or the subject starts with a capital letter or ends with a period, or a body line is longer than 72 characters
 - **THEN** the commit is rejected
-
-#### Scenario: Unscoped housekeeping allowed only on main [NFR-MNT-001]
-- **WHEN** the message is `docs: update key mapping`
-- **THEN** it is accepted on branch `main` and rejected on any other branch
 
 ### Requirement: Staged secret check
 The pre-commit hook SHALL fail when a staged file is named `.env` or `.env.*` (except `.env.example`), or when a staged file's content contains a private key block, a `JWT_SECRET=` assignment with a real value, or an AWS-style access key or secret key.

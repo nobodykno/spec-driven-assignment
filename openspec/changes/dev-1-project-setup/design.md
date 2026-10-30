@@ -22,7 +22,7 @@ Follows SDS §2.1, §3, §3.1, §4, §5.4, §6.1, §6.4, §7.4 (secrets only fro
 - JWT verification, `X-Internal-Token`, rate limiting, helmet/CORS and pino logging (DEV-1006 and later). The gateway in this change is only a health check plus the existing auth proxy.
 - Proxying tracker routes (DEV-1007).
 - Tailwind, shadcn/ui, TanStack Query and React Router (DEV-1011). The web app gets only what is needed to show API status.
-- Playwright and e2e (DEV-1016). CI pipelines (the pre-push hook is the only gate before GitHub for now).
+- The full Playwright e2e journey (DEV-1016). DEV-1 only adds Playwright for one browser check (D14). CI pipelines (the pre-push hook is the only gate before GitHub for now).
 - Full secret scanning (entropy checks, history scans). The staged-secret check catches only the obvious cases listed in D13.
 
 ## Decisions
@@ -173,14 +173,34 @@ Context7 is still not configured, so these were checked against the installed pa
   - Test fixtures build the secret strings by concatenation, so the test file itself never matches when it is committed.
 - **`.husky/commit-msg`:** `pnpm commitlint --edit "$1"`.
   - `commitlint.config.mjs` extends `@commitlint/config-conventional` and sets: `type-enum` (feat, fix, refactor, test, docs, chore, build, ci, perf, style); `header-max-length` 72; `body-max-line-length` 72; `subject-full-stop` never `.`; `subject-case` never sentence/start/pascal/upper-case (the config-conventional rule). This means "subject starts lowercase", not "the whole subject is lowercase", so `return 503 SERVICE_UNAVAILABLE` stays legal.
-  - A local plugin adds `scope-jira-key` (scope required, matches `^DEV-\d+$`) and `footer-refs-scope` (a `Refs: DEV-N` line equal to the scope). The built-in `scope-empty` rule is turned off, so the plugin rule owns scope checks.
-  - Main-branch housekeeping: the config reads the branch with `git rev-parse --abbrev-ref HEAD` (overridable with `COMMITLINT_BRANCH` for tests). On `main`, `docs:` and `chore:` with no scope skip both plugin rules. Every other case, including a detached HEAD during a rebase, is strict.
+  - **Superseded by D15 (2026-10-30):** the scope is now an area, not a Jira key. `scope-enum` lists the areas and `scope-empty` is `never`. A local plugin rule `footer-refs` requires a `Refs: DEV-N` footer on every commit. The main-branch housekeeping exception and `COMMITLINT_BRANCH` are removed, because the footer is mandatory everywhere.
   - Merge commits are ignored (commitlint default ignores).
   - Tests (`scripts/commitlint.test.mjs`) run the real CLI: `pnpm exec commitlint --config commitlint.config.mjs` with the message on stdin and `COMMITLINT_BRANCH` set. They assert the exit code, so they cover the exact config the hook uses.
 - **`.husky/pre-push`:** `pnpm build && pnpm lint && pnpm typecheck && pnpm test`. The gates need no database (quality-gates spec), so pushing works with Docker stopped.
 - **No bypass:** `CLAUDE.md` gets "Never bypass hooks with --no-verify. If a hook fails, fix the cause." DEV-1002's PreToolUse hook can later block `--no-verify` mechanically.
 - **Docs location:** the "Git hooks" section goes in `CLAUDE.md`, not `docs/workflow.md`, because `docs/workflow.md` is created by DEV-1005 and does not exist yet.
 - **Versions** (checked with `pnpm view` on 2026-10-30): husky 9.1.7 (node >=18); lint-staged 17.6.0 (node >=22.22.1, so the root `engines.node` floor rises from 22.12.0, and local Node 22.23.1 satisfies it); @commitlint/cli and @commitlint/config-conventional 21.2.4 (node >=22.12.0, released together). lint-staged 16.4.0 (node >=20.17) is the fallback if the engines bump is rejected.
+
+### D14. Browser check with Playwright
+- `@playwright/test` 1.64.1 at the root, `playwright.config.ts` with `testDir: "e2e"`, Chromium only, headless, `baseURL` from `E2E_BASE_URL` (default `http://localhost:5173`). No `webServer` block: the agent starts and stops the dev processes in the background, so the same spec can run against the dev server or the Docker stack.
+- `e2e/web-api-status.spec.ts` reads `E2E_EXPECT=online|offline`, loads `/`, waits for the `status` role to show `API: online` or `API: offline`, and saves a full-page screenshot to `docs/evidence/DEV-1/web-api-<state>.png`.
+- Root script `test:e2e`: `playwright test`. It is not part of `pnpm test`, so the quality gates still need no browser, server or database.
+- Online run: Postgres, auth, gateway and the web dev server up. Offline run: the gateway stopped and the page reloaded, which is the real "gateway not running" scenario, not a mocked route.
+- `test-results/` and `playwright-report/` are git-ignored. The screenshots in `docs/evidence/` are committed.
+
+### D15. Coding guidelines enforcement (`docs/CODING_GUIDELINES.md`)
+- **ESLint** (`eslint.config.js`, flat config; the repo is on ESLint 10.13.0, which uses the same flat format as ESLint 9):
+  - core: `eqeqeq` always, `curly` all, `max-depth` 3, `complexity` 10, `max-lines-per-function` [warn, 30, skip blank lines and comments], `no-console` warn, `prefer-const`, `no-var`, `no-eval`, `no-implied-eval`, `no-new-func`.
+  - `semi` always and `quotes` single (avoid-escape) are placed **after** `eslint-config-prettier`, because that config turns them off. They match `.prettierrc`, so the two never fight. Both rules are deprecated in ESLint core, but still shipped and working in ESLint 10.
+  - TypeScript: `no-explicit-any` error, `explicit-function-return-type` error (allow typed function expressions), `no-unused-vars` error (args starting with `_` ignored).
+  - Named exports only: `no-restricted-exports` with `restrictDefaultExports` everywhere except `*.config.{js,mjs,ts}`, where tools require a default export.
+  - Naming: `@mindfiredigital/eslint-plugin-hub` rules `file-kebabcase`, `vars-camelcase`, `class-pascalcase`, `function-camelcase` (error). The MERN preset's `react-filename-pascalcase` is **not** used, because it contradicts the kebab-case rule. If the plugin fails under ESLint 10 (its parser dependency is `@typescript-eslint/typescript-estree` 5.x), it is removed, the reason goes into `docs/versions.md`, and `scripts/check-file-names.mjs` (with tests) enforces kebab-case file names.
+  - Tests: `max-lines-per-function` is off for `*.test.*` and `e2e/**`, because `describe` blocks are long by design.
+- **Prettier** `.prettierrc`: `{ "semi": true, "singleQuote": true, "tabWidth": 2, "printWidth": 100, "trailingComma": "all", "bracketSpacing": true, "arrowParens": "always" }`. The `.prettierignore` from D7 is unchanged.
+- **Rule tests** (`scripts/lint-rules.test.mjs`): use the ESLint Node API (`new ESLint().lintText(code, { filePath })`) on small fixtures and assert the reported rule ids, so the config is tested like the commitlint config.
+- **Logging:** "use the logger, not console" needs a logger. pino arrives with DEV-1006 (SDS §4 / design Non-Goals). Until then `no-console` stays a warning, and the three `listen` messages in `index.ts` stay. They are the only console calls in app code. CLI scripts in `scripts/` are exempt, because console is their user interface.
+- **Commit convention** (supersedes the D13 scope rules): `scope-enum` [auth, tracker, gateway, web, shared, database, docker, workflow, docs], `scope-empty` never, `type-enum` [feat, fix, docs, style, refactor, test, chore, build, ci, perf], `header-max-length` 72, `subject-case` as in D13, plugin rule `footer-refs` (a `Refs: DEV-<n>` line). Root tooling (hooks, ESLint, scripts, OpenSpec, Claude config) uses the `workflow` scope. "Imperative mood" can't be linted reliably; the reviewer checks it.
+- **Editor:** `.vscode/settings.json` sets `editor.formatOnSave`, `editor.defaultFormatter: esbenp.prettier-vscode` and `editor.codeActionsOnSave: { "source.fixAll.eslint": "explicit" }`. `.vscode/extensions.json` recommends `dbaeumer.vscode-eslint`, `esbenp.prettier-vscode` and `eamodio.gitlens`. `.gitignore` changes `.vscode/` to `.vscode/*` with `!.vscode/settings.json` and `!.vscode/extensions.json`.
 
 ## Risks / Trade-offs
 
@@ -194,6 +214,8 @@ Context7 is still not configured, so these were checked against the installed pa
 - [Hooks slow down commits and pushes] → lint-staged only touches staged files. Pre-push runs the full gates, about a minute today. That is the point of the hook: the alternative is finding failures in the PR.
 - [Existing commits on this branch don't follow the new format (no `Refs:` footer, some headers > 72)] → commitlint only checks new commits. History is not rewritten.
 - [`--no-verify` skips every hook] → covered by the CLAUDE.md rule now, and mechanically by DEV-1002's PreToolUse hook later.
+- [The guideline rules flag existing code (double quotes everywhere, default exports, missing return types)] → task 11.4 fixes it in one mechanical commit; `prettier --write` does most of it.
+- [`@mindfiredigital/eslint-plugin-hub` was last released in July 2025 and pulls in heavy dependencies (babel, pdfkit, json2csv)] → it is dev-only and pinned. If it misbehaves under ESLint 10, the fallback in D15 applies.
 - [The secret check uses simple patterns and can miss secrets] → it targets the obvious cases (NFR-SEC-005). Secrets still come only from env (SDS §7.4).
 
 ## Migration Plan

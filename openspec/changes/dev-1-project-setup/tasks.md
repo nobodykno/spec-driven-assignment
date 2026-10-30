@@ -3,7 +3,7 @@
 Rules for every task:
 - Write the test first and watch it fail, then implement.
 - Test names start with the FRS ID, e.g. `it('FR-SYS-001: ...')`.
-- One commit per task: `feat(DEV-1): <n.m> <summary>` (or `chore`/`docs`/`test`). Once group 9 is in, every commit also needs the footer `Refs: DEV-1`, and the header is at most 72 characters.
+- One commit per task: `feat(DEV-1): <n.m> <summary>` (or `chore`/`docs`/`test`). Once group 9 is in, every commit also needs the footer `Refs: DEV-1`, and the header is at most 72 characters. From task 11.7 on, the scope is an area instead of the ticket key: `feat(web): 8.3 add playwright check` + `Refs: DEV-1`.
 
 `[PARALLEL]` marks groups that can run in separate worktrees once their prerequisites are done.
 
@@ -127,7 +127,16 @@ Rules for every task:
   - `FR-SYS-002: shows API: offline on unexpected body`
   - `FR-SYS-002: shows loading while pending`
   - verify: `pnpm --filter web test` runs (and the cases that are not implemented yet fail)
-- [ ] 8.2 Update `App.tsx`/`main.tsx` for React 19 to meet 8.1 and keep the Vite `/api` proxy to `:4000`. Verify: `pnpm --filter web test && pnpm --filter web build`, then with `pnpm db:up && pnpm dev` open http://localhost:5173 and see "API: online". Stop the gateway and reload to see "API: offline". **[FR-SYS-002]**
+- [x] 8.2 Update `App.tsx`/`main.tsx` for React 19 to meet 8.1 and keep the Vite `/api` proxy to `:4000`. Verify: `pnpm --filter web test && pnpm --filter web build`. The browser check is task 8.3. **[FR-SYS-002]**
+
+- [ ] 8.3 Browser check with Playwright (design D14):
+  - add `@playwright/test@1.64.1` (root, dev), `playwright.config.ts`, `e2e/web-api-status.spec.ts`, the root script `test:e2e`, and git-ignore `test-results/` and `playwright-report/`
+  - `pnpm exec playwright install chromium`
+  - with Postgres, auth, gateway and the web dev server running in the background: `E2E_EXPECT=online pnpm test:e2e` passes and saves `docs/evidence/DEV-1/web-api-online.png`
+  - stop the gateway: `E2E_EXPECT=offline pnpm test:e2e` passes and saves `docs/evidence/DEV-1/web-api-offline.png`
+  - stop the background processes
+  - verify: both runs exit 0 and both screenshots exist
+  - **[FR-SYS-002]**
 
 ## 9. Git hooks (NFR-MNT-001, NFR-SEC-005)
 
@@ -169,16 +178,39 @@ Rules for every task:
 - [ ] 10.2 Delete the superseded change `openspec/changes/project-setup` and update `CLAUDE.md` Commands if a script name changed. Verify: `openspec list` shows only `dev-1-project-setup`. **[NFR-MNT-001]**
 - [ ] 10.3 Update `CLAUDE.md` and the FRS:
   - a "Git hooks" section explaining each hook (pre-commit, commit-msg, pre-push)
-  - the full commit convention: types, `DEV-N` scope, 72-character header, `Refs: DEV-N` footer, the main-only housekeeping exception
+  - the full commit convention (D15): types, area scopes, 72-character header, lowercase imperative subject, mandatory `Refs: DEV-N` footer
   - "Never bypass hooks with --no-verify. If a hook fails, fix the cause."
   - `docs/FRS.md` traceability: add NFR-SEC-005 to the DEV-1001 row
   - verify: read the section back against D13
   - **[NFR-MNT-001, NFR-SEC-005]**
 
-## 11. Quality gates (all IDs)
+## 11. Coding guidelines (NFR-MNT-001)
 
-- [ ] 11.1 Run the full gates from a clean install: `pnpm install --frozen-lockfile && pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Every command exits 0 with Postgres stopped. Then make a real commit and push through the hooks, without `--no-verify`. **[NFR-MNT-001, NFR-SEC-005, NFR-OPS-001, FR-SYS-001, FR-SYS-002]**
-- [ ] 11.2 Run `openspec validate dev-1-project-setup --strict` and check that every spec scenario has a matching test name or a 7.x/8.2/9.6 manual verification step. Verify: validate exits 0. **[all]**
+- [ ] 11.1 Add `docs/CODING_GUIDELINES.md`. Add a "Coding guidelines" line to `CLAUDE.md` pointing to it, and add "code follows docs/CODING_GUIDELINES.md" to the checklist in `.claude/agents/reviewer.md`. Verify: the file exists and both references point to it. **[NFR-MNT-001]**
+- [ ] 11.2 Write `scripts/lint-rules.test.mjs` first (ESLint Node API on fixtures, D15). Each test asserts the rule id:
+  - `NFR-MNT-001: clean guideline-style code passes`
+  - `NFR-MNT-001: rejects double quotes and missing semicolons`
+  - `NFR-MNT-001: rejects == and if without braces`
+  - `NFR-MNT-001: rejects nesting deeper than 3 and complexity over 10`
+  - `NFR-MNT-001: rejects a missing return type on an exported function`
+  - `NFR-MNT-001: rejects a default export outside config files`
+  - `NFR-MNT-001: rejects a file name that is not kebab-case`
+  - `NFR-MNT-001: warns on console and on functions over 30 lines`
+  - verify: `pnpm exec vitest run --dir scripts` fails
+- [ ] 11.3 Implement D15: update `eslint.config.js`, add `@mindfiredigital/eslint-plugin-hub@2.2.0` (or apply the documented fallback), and replace `.prettierrc.json` with `.prettierrc`. Verify: `pnpm exec vitest run --dir scripts` passes. **[NFR-MNT-001]**
+- [ ] 11.4 Fix existing code: `pnpm format`, rename `apps/web/src/App.tsx` / `App.test.tsx` to `app.tsx` / `app.test.tsx` with a named `App` export, and add explicit return types and other manual fixes. Verify: `pnpm lint` exits 0 with zero errors, and `pnpm build && pnpm typecheck && pnpm test` pass. **[NFR-MNT-001]**
+- [ ] 11.5 Add `.vscode/settings.json` and `.vscode/extensions.json` (D15) and update `.gitignore`. Verify: `git check-ignore .vscode/settings.json` prints nothing. **[NFR-MNT-001]**
+- [ ] 11.6 Update `scripts/commitlint.test.mjs` first for the area-scope convention:
+  - accepts `feat(auth): add login endpoint` + `Refs: DEV-9`
+  - rejects a missing scope, an unknown scope (`feat(DEV-9)`), and a missing `Refs` footer, including on `main`
+  - keeps the type, header, case, period and body-length cases
+  - verify: the updated tests fail
+- [ ] 11.7 Update `commitlint.config.mjs` (D15) and the convention text in `CLAUDE.md`, `.claude/commands/sdd/apply.md`, `.claude/commands/sdd/run.md` and this file's rules. Verify: `pnpm exec vitest run --dir scripts` passes, and the commit for this task passes the new hook. **[NFR-MNT-001]**
+
+## 12. Quality gates (all IDs)
+
+- [ ] 12.1 Run the full gates from a clean install: `pnpm install --frozen-lockfile && pnpm build && pnpm lint && pnpm typecheck && pnpm test`. Every command exits 0 with Postgres stopped. Then make a real commit and push through the hooks, without `--no-verify`. **[NFR-MNT-001, NFR-SEC-005, NFR-OPS-001, FR-SYS-001, FR-SYS-002]**
+- [ ] 12.2 Run `openspec validate dev-1-project-setup --strict` and check that every spec scenario has a matching test name or a 7.x/8.2/9.6 manual verification step. Verify: validate exits 0. **[all]**
 
 ## Workflow follow-up
 
