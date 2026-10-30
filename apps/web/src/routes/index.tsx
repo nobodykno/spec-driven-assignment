@@ -6,6 +6,7 @@ import { ProjectSettingsPage } from '../features/projects/pages/project-settings
 import { ProjectsPage } from '../features/projects/pages/projects-page.tsx';
 import { GuestRoute, ProtectedRoute } from './route-guards.tsx';
 import { RootLayout } from './root-layout.tsx';
+import { taskRoutes } from './task-routes.tsx';
 
 function NotFoundPage(): JSX.Element {
   return <p className="p-6">Page not found.</p>;
@@ -28,6 +29,7 @@ export const appRoutes: RouteObject[] = [
         children: [
           { path: '/projects', element: <ProjectsPage /> },
           { path: '/projects/:projectId/settings', element: <ProjectSettingsPage /> },
+          ...taskRoutes,
         ],
       },
       { path: '/', element: <Navigate to="/projects" replace /> },
