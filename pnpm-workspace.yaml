@@ -6,3 +6,6 @@ packages:
 # pnpm 11 build-script allowlist (replaces onlyBuiltDependencies).
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - express-rate-limit@8.7.2

@@ -39,6 +39,17 @@ Every version is pinned exactly (NFR-OPS-001). `pnpm check:versions` fails on an
 | @vitejs/plugin-react | 6.1.2 | apps/web | dev |
 | jsdom | 30.1.3 | apps/web | dev |
 | vite | 8.3.5 | apps/web | dev |
+| react-router | 8.5.1 | apps/web | prod |
+| @tanstack/react-query | 5.105.0 | apps/web | prod |
+| react-hook-form | 7.91.0 | apps/web | prod |
+| @hookform/resolvers | 6.0.2 | apps/web | prod |
+| tailwindcss, @tailwindcss/vite | 4.3.3 | apps/web | prod |
+| class-variance-authority | 0.7.1 | apps/web | prod |
+| clsx | 2.1.1 | apps/web | prod |
+| tailwind-merge | 3.7.0 | apps/web | prod |
+| @radix-ui/react-slot | 1.5.0 | apps/web | prod |
+| @radix-ui/react-label | 2.1.17 | apps/web | prod |
+| @testing-library/user-event | 14.6.8 | apps/web | dev |
 | zod | 4.6.7 | packages/shared | prod |
 | sequelize | 6.37.8 | packages/database | prod |
 | pg | 8.23.1 | packages/database | prod |
@@ -51,6 +62,16 @@ Every version is pinned exactly (NFR-OPS-001). `pnpm check:versions` fails on an
 | supertest | 7.3.1 | auth, tracker, api-gateway | dev |
 | @types/supertest | 7.2.1 | auth, tracker, api-gateway | dev |
 | tsx | 4.23.15 | auth, tracker, api-gateway | dev |
+| bcryptjs | 3.0.3 | auth (prod), packages/database (dev, seeder) | prod/dev |
+| jsonwebtoken | 9.0.3 | auth, api-gateway | prod |
+| @types/jsonwebtoken | 9.0.10 | auth, api-gateway | dev |
+| cookie-parser | 1.4.7 | auth | prod |
+| @types/cookie-parser | 1.4.10 | auth | dev |
+| helmet | 8.3.0 | auth, tracker, api-gateway | prod |
+| cors | 2.8.6 | api-gateway | prod |
+| @types/cors | 2.8.19 | api-gateway | dev |
+| express-rate-limit | 8.7.2 | api-gateway | prod |
+| pino | 10.4.0 | auth, tracker, api-gateway | prod |
 
 Comparison: this table was checked against every `package.json` (root, `apps/web`,
 `packages/shared`, `packages/database`, `services/auth`, `services/tracker`,
