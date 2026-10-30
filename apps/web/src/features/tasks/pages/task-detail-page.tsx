@@ -5,7 +5,12 @@ import { QueryState } from '../../../components/query-state.tsx';
 import { Badge } from '../../../components/ui/badge.tsx';
 import { Card } from '../../../components/ui/card.tsx';
 import { ApiError } from '../../../lib/api-client.ts';
+import { useAuthState } from '../../../lib/auth-store.ts';
+import { ActivityTimeline } from '../../activity/components/activity-timeline.tsx';
+import { CommentsSection } from '../../comments/components/comments-section.tsx';
+import { useProjectQuery } from '../../projects/api/projects-api.ts';
 import { useTaskQuery } from '../api/tasks-api.ts';
+import { TaskActions } from '../components/task-actions.tsx';
 
 function Field({
   label,
@@ -48,7 +53,29 @@ function TaskFields({ task }: { task: Task }): JSX.Element {
   );
 }
 
-// FR-UI-006: task detail page with all fields. Comments and activity (DEV-16) render below.
+// Actions, comments and activity need the project (members, caller role) and the signed-in user.
+function TaskExtras({ task }: { task: Task }): JSX.Element | null {
+  const auth = useAuthState();
+  const project = useProjectQuery(task.projectId);
+  if (auth.status !== 'authenticated' || !project.data) {
+    return null;
+  }
+  const readOnly = task.archivedAt !== null || project.data.status === 'ARCHIVED';
+  return (
+    <>
+      <TaskActions task={task} project={project.data} />
+      <CommentsSection
+        taskId={task.id}
+        userId={auth.user.id}
+        role={project.data.myRole}
+        readOnly={readOnly}
+      />
+      <ActivityTimeline taskId={task.id} />
+    </>
+  );
+}
+
+// FR-UI-006: task detail page with all fields. FR-UI-007..009: actions, comments and activity.
 export function TaskDetailPage(): JSX.Element {
   const { taskId = '' } = useParams();
   const query = useTaskQuery(taskId);
@@ -76,7 +103,7 @@ export function TaskDetailPage(): JSX.Element {
           {task ? <TaskFields task={task} /> : null}
         </QueryState>
       )}
-      <div data-slot="task-extras" />
+      {task ? <TaskExtras task={task} /> : null}
     </div>
   );
 }

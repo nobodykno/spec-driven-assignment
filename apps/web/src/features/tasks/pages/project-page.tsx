@@ -1,11 +1,13 @@
-import { type PaginationMeta, type Task } from '@app/shared';
+import { type PaginationMeta, type ProjectDetail, type Task } from '@app/shared';
 import { type JSX } from 'react';
 import { Link, useParams } from 'react-router';
 import { QueryState } from '../../../components/query-state.tsx';
 import { Badge } from '../../../components/ui/badge.tsx';
 import { Button } from '../../../components/ui/button.tsx';
+import { Card } from '../../../components/ui/card.tsx';
 import { useProjectQuery } from '../../projects/api/projects-api.ts';
 import { useTasksQuery } from '../api/tasks-api.ts';
+import { CreateTaskForm } from '../components/task-form.tsx';
 import { TaskFilterBar } from '../components/task-filter-bar.tsx';
 import { useTaskFilters } from '../lib/use-task-filters.ts';
 
@@ -62,24 +64,49 @@ function Pagination({ meta, onPage }: PaginationProps): JSX.Element {
   );
 }
 
+function ProjectHeader({
+  projectId,
+  project,
+}: {
+  projectId: string;
+  project?: ProjectDetail;
+}): JSX.Element {
+  return (
+    <div className="flex items-center justify-between">
+      <h1 className="text-2xl font-semibold">{project?.name ?? 'Project'}</h1>
+      {project?.myRole === 'OWNER' ? (
+        <Button asChild variant="outline" size="sm">
+          <Link to={`/projects/${projectId}/settings`}>Settings</Link>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+// FR-UI-007: members of an active project can create tasks.
+function NewTaskPanel({ project }: { project?: ProjectDetail }): JSX.Element | null {
+  if (project?.status !== 'ACTIVE') {
+    return null;
+  }
+  return (
+    <Card>
+      <h2 className="mb-3 text-lg font-semibold">New task</h2>
+      <CreateTaskForm projectId={project.id} members={project.members} />
+    </Card>
+  );
+}
+
 // FR-UI-005: task list with filters, sorting and pagination, all reflected in the URL.
 export function ProjectPage(): JSX.Element {
   const { projectId = '' } = useParams();
   const { filters, setFilters } = useTaskFilters();
   const project = useProjectQuery(projectId);
   const tasks = useTasksQuery(projectId, filters);
-  const isOwner = project.data?.myRole === 'OWNER';
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{project.data?.name ?? 'Project'}</h1>
-        {isOwner ? (
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/projects/${projectId}/settings`}>Settings</Link>
-          </Button>
-        ) : null}
-      </div>
+      <ProjectHeader projectId={projectId} project={project.data} />
+      <NewTaskPanel project={project.data} />
       <TaskFilterBar filters={filters} onChange={setFilters} />
       <QueryState
         isLoading={tasks.isPending}
