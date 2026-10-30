@@ -94,6 +94,11 @@ export default defineConfig(
     rules: { 'no-console': 'off' },
   },
   {
+    // sequelize-cli passes the Sequelize class as a parameter named `Sequelize` (its documented contract).
+    files: ['packages/database/migrations/**', 'packages/database/seeders/**'],
+    rules: { '@typescript-eslint/naming-convention': 'off' },
+  },
+  {
     // SDS §3.1: only services access models; routes and controllers never import @app/database.
     files: ['services/*/src/routes/**', 'services/*/src/controllers/**'],
     rules: {

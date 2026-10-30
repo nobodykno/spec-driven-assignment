@@ -64,3 +64,18 @@ Request: "add `GET /ping` to services/tracker returning `PingResponse`, clock in
 | Verify | `pnpm --filter tracker test` 8/8, `typecheck` OK, `pnpm lint` 0 errors |
 | Checklist | all 8 items met (auth/membership/transaction items not applicable to a public read-only endpoint) |
 | Negative check | a controller importing `@app/database` is rejected by ESLint: `'@app/database' import is restricted … Only services access models (SDS §3.1)  no-restricted-imports`. This checklist item is enforced by a lint rule added in this task |
+
+### `sequelize-migration` (6.3)
+
+Request: "throwaway table `skill_demo` (uuid pk, label, timestamps) with an index on label".
+
+| Step | Result |
+| --- | --- |
+| Applied migrations | none yet (`git log -- packages/database/migrations`: only the folder's `.gitkeep`) |
+| File | `packages/database/migrations/20261030094257-create-skill-demo.cjs` (UTC timestamp, kebab-case, `.cjs`) |
+| `up` / `down` | `createTable` + `addIndex` in one transaction; `down` removes the index and drops the table in a transaction |
+| `pnpm db:migrate` | `20261030094257-create-skill-demo: migrated (0.067s)` |
+| `psql \d skill_demo` | columns `id uuid default gen_random_uuid()`, `label text not null`, `created_at`/`updated_at timestamptz default now()`; indexes `skill_demo_pkey`, `skill_demo_label_idx` |
+| `pnpm db:migrate:undo` | `reverted (0.063s)`; `\d skill_demo` → `Did not find any relation named "skill_demo"`; `SequelizeMeta` back to 0 rows |
+| Checklist | all items met. The model item doesn't apply: the throwaway table had no model |
+| Found by the format hook | while the agent wrote the migration, the PostToolUse hook reported `Parameter name 'Sequelize' must match … camelCase (naming-convention)`. sequelize-cli passes the Sequelize class under that name, so `naming-convention` is now off for `packages/database/migrations/**` and `seeders/**` (a probe migration lints clean) |

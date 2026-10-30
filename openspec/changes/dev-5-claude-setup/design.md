@@ -91,6 +91,8 @@ Tests use fixture objects. This is the automated part of "`/permissions` shows n
 
 - **Lint-enforced layering (added in task 6.2):** the express-endpoint checklist item "no model import in controllers/routes" is enforced by ESLint `no-restricted-imports` for `@app/database` in `services/*/src/{routes,controllers}/**`.
 
+- **Migration naming (found in task 6.3):** `@typescript-eslint/naming-convention` is off for `packages/database/{migrations,seeders}/**`, because sequelize-cli's contract names the second parameter `Sequelize`.
+
 ### D8. Nested instructions
 - **`services/CLAUDE.md`:**
   - layering

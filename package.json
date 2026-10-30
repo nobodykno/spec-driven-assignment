@@ -18,6 +18,7 @@
     "db:up": "docker compose up -d --wait postgres",
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @app/database migrate",
+    "db:migrate:undo": "pnpm --filter @app/database migrate:undo",
     "prepare": "husky",
     "test:e2e": "playwright test",
     "check:file-names": "node scripts/check-file-names.mjs",
