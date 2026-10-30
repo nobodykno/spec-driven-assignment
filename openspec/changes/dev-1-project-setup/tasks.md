@@ -149,7 +149,7 @@ Rules for every task:
   - `NFR-MNT-001: rejects an unknown type, a header over 72, a capitalised subject, a trailing period, a body line over 72`
   - `NFR-MNT-001: allows unscoped docs:/chore: on main only`
   - verify: `pnpm exec vitest run --dir scripts` fails (no config yet)
-- [ ] 9.5 Implement `commitlint.config.mjs` with the local plugin (D13). Verify: `pnpm exec vitest run --dir scripts` passes. **[NFR-MNT-001]**
+- [x] 9.5 Implement `commitlint.config.mjs` with the local plugin (D13). Verify: `pnpm exec vitest run --dir scripts` passes. **[NFR-MNT-001]**
 - [ ] 9.6 Add `lint-staged.config.mjs` and the hooks `.husky/pre-commit`, `.husky/commit-msg` and `.husky/pre-push` (D13). Verify by hand on a scratch branch, then delete it:
   - a staged file with only bad formatting is fixed and committed
   - a staged `const x: any = 1` is rejected by ESLint
