@@ -19,9 +19,9 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 
 ## 4. Token efficiency (D4)
 
-- [ ] 4.1 Run task baseline and graph-assisted; record tokens, files, time, findings. Verify: table rows filled. **[NFR-MNT-001]**
-- [ ] 4.2 Run review baseline and graph-assisted with impact radius / detect-changes output; record. Verify: checker passes. **[NFR-MNT-001]**
-- [ ] 4.3 Write method and limitations; no reduction claim beyond the measured numbers. Verify: checker passes. **[NFR-MNT-001]**
+- [x] 4.1 Run task baseline and graph-assisted; record tokens, files, time, findings. Verify: table rows filled. **[NFR-MNT-001]**
+- [x] 4.2 Run review baseline and graph-assisted with impact radius / detect-changes output; record. Verify: checker passes. **[NFR-MNT-001]**
+- [x] 4.3 Write method and limitations; no reduction claim beyond the measured numbers. Verify: checker passes. **[NFR-MNT-001]**
 
 ## 5. Quality gates
 
