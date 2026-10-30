@@ -97,6 +97,43 @@ In a Claude Code session on the branch (recorded in `docs/agents.md`):
 4. Delegate to `implementer` on a Draft scratch change → edit blocked; `git push` blocked.
 5. Delegate to `coordinator`: plan DEV-10 + DEV-11 → plan with two worktrees, no code edits.
 
+### D6. Token-efficiency policy (added by `/opsx:update`)
+- **Source of truth:** `docs/token-policy.md` has five sections:
+  - **Reading:** only the FRS/SDS sections for the ticket's IDs, found with grep. Never whole
+    FRS/SDS/ASSIGNMENT documents. Code is explored graph → grep/glob → line ranges, never whole
+    folders. Never read `node_modules`, `dist`, coverage, build output, lock files or logs.
+  - **Commands:** compact test reporter, failures only. Re-run only the failing file in fix loops,
+    and the full gates once per task group. `tail -n 40`, `curl -s`,
+    `docker compose logs --tail 50`, `pnpm --silent`.
+  - **Sessions and agents:**
+    - One ticket per session, and `/clear` at the end.
+    - Ask the user to `/compact` at about half the tasks.
+    - Subagents get only what they need. The reviewer gets the change folder, the diff and the
+      FRS IDs, and returns the fixed short format.
+    - Never run two reviewers on one change at once.
+  - **Models:** Sonnet by default. Opus only for DEV-9 (auth) and DEV-20 (independent review),
+    after the agent tells the user to switch with `/model`. The agent cannot switch models itself.
+  - **MCP:** call Jira only to fetch the ticket at the start and to update it at the end.
+- **`CLAUDE.md`:** a short "Token efficiency (mandatory)" section of 3–4 lines that links to the
+  policy. It replaces the longer section from 057b344, so the rules live in one place.
+- **Enforcement:**
+  - The agent checker (D4) is extended. It fails when `docs/token-policy.md` is missing, or when
+    the exact line `Follow docs/token-policy.md` is missing from any `.claude/agents/*.md` (body,
+    after the frontmatter) or from `.claude/commands/sdd/{propose,apply,verify,ship,run}.md`
+    (first line after the frontmatter).
+  - The reviewer checklist gains item 10 (token policy).
+  - The deny rules in `.claude/settings.json` (057b344) block the reads. The settings checker
+    already accepts them.
+- **Measurement:**
+  - `/sdd:verify` and `/sdd:run` checkpoint B gain a step. Before checkpoint B, ask the user to
+    run `/cost` and paste the result.
+  - Record in `docs/progress.md`: ticket, model, tokens/cost, files read (count of Read calls in
+    the session, estimated by the agent and labelled as such), fix rounds, policy violations.
+  - Append the same row to the `docs/token-efficiency.md` table.
+  - If nothing is pasted, the row says "not provided", never an estimate of cost.
+- **Not enforceable by code:** session hygiene (`/clear`, `/compact`) and model choice. These are
+  instructions only, and the reviewer and the progress log report deviations.
+
 ## Risks / Trade-offs
 
 - **Frontmatter hooks unsupported** → fallback D2 (global registration + `agent_type`).
@@ -104,6 +141,10 @@ In a Claude Code session on the branch (recorded in `docs/agents.md`):
   enforced by code → covered by the live checks and the reviewer checklist.
 - **Shell writes** by the test-writer can take many forms → the guard covers the common forms;
   the test-writer has no general shell besides `pnpm` and read-only git, which limits the surface.
+- **Policy vs. reality:** "files read" can only be counted by the agent itself, so it is labelled
+  an estimate. Cost numbers come from the user's `/cost` paste only.
+- **This session** runs on Opus, started before the policy. DEV-6's progress row records that as
+  the model used. The Sonnet default applies from the next ticket.
 
 ## Docs checked
 

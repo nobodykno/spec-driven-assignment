@@ -84,3 +84,30 @@ The agent scope guard SHALL block a call when the agent name is unknown or the h
 #### Scenario: Documentation out of date fails the checker [NFR-MNT-001]
 - **WHEN** an agent's frontmatter lists a tool that its `docs/agents.md` section does not mention, or a section is missing
 - **THEN** the agent checker exits 1 and names the agent and the tool or section
+
+### Requirement: Agents follow the token-efficiency policy
+The repository SHALL keep a token-efficiency policy in `docs/token-policy.md`, linked from a "Token efficiency (mandatory)" section in `CLAUDE.md`. Every `sdd` command and every agent SHALL reference it, the reviewer SHALL check compliance, build output and lock files SHALL be denied to `Read`, and each ticket's token use SHALL be recorded before checkpoint B.
+
+#### Scenario: Policy referenced everywhere [NFR-MNT-001]
+- **WHEN** `node scripts/check-agents.mjs` runs on the committed files
+- **THEN** it finds `docs/token-policy.md`, the line "Follow docs/token-policy.md" in every agent file and in `sdd/{propose,apply,verify,ship,run}.md`, and exits 0
+
+#### Scenario: Missing policy reference fails the checker [NFR-MNT-001]
+- **WHEN** an agent file or an `sdd` command lacks the line "Follow docs/token-policy.md", or `docs/token-policy.md` is missing
+- **THEN** the checker exits 1 and names the file
+
+#### Scenario: Build output and lock files are not read [NFR-MNT-001]
+- **WHEN** the agent tries to read `node_modules/**`, `**/dist/**`, `coverage/**` or `pnpm-lock.yaml`
+- **THEN** the permission deny rules refuse the read, and `node scripts/check-claude-settings.mjs` still exits 0
+
+#### Scenario: Reviewer checks policy compliance [NFR-MNT-001]
+- **WHEN** the reviewer reviews a change
+- **THEN** its checklist asks whether the implementation session followed the token policy, and it notes whole-file or whole-doc reads that were not needed
+
+#### Scenario: Token use recorded per ticket [NFR-MNT-001]
+- **WHEN** a ticket reaches checkpoint B
+- **THEN** the user has been asked to run `/cost`, and `docs/progress.md` and the `docs/token-efficiency.md` table have a row for the ticket with model, tokens/cost, files read, fix rounds and policy violations
+
+#### Scenario: Measurement missing [NFR-MNT-001]
+- **WHEN** the user has not pasted `/cost` numbers
+- **THEN** the row says "not provided" for tokens/cost instead of an estimate, and checkpoint B lists it as open

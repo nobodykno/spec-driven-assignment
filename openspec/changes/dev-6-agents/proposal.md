@@ -1,8 +1,8 @@
 Ticket: DEV-6
 Ticket source: live MCP
-Status: Approved
-Approved-by: Paramjit Jena (via chat)
-Approved-on: 2026-10-30 16:10 IST
+Status: Draft
+Approved-by:
+Approved-on:
 
 # Proposal: DEV-6 Autonomous agents
 
@@ -60,12 +60,31 @@ Workflow tickets are specified in their OpenSpec change, not in the FRS (FRS §5
 - **Docs:** `docs/agents.md`: per agent its scope, permitted tools/actions, expected output,
   restrictions and when it is used, plus live check results. `docs/claude-setup.md` and `CLAUDE.md`
   link to it. `/sdd:apply` and `/sdd:run` say when each agent is used.
+- **Token-efficiency policy** (added by `/opsx:update` after the first approval, at the user's
+  request; first approval 2026-10-30 16:10 IST, tasks 1.1–2.2 were done under it):
+  - `docs/token-policy.md` covers reading, commands, sessions and agents, models, and MCP.
+    `CLAUDE.md` gets a short "Token efficiency (mandatory)" section that links to it. It replaces
+    the longer "Token efficiency" section from commit 057b344.
+  - **Enforced:**
+    - The line "Follow docs/token-policy.md" goes at the top of `.claude/commands/sdd/{propose,apply,verify,ship,run}.md`
+      and every `.claude/agents/*.md`. The agent checker fails when the line is missing.
+    - The reviewer checklist gains a token-policy item.
+    - `.claude/settings.json` denies `Read` on `node_modules`, `dist`, `coverage` and
+      `pnpm-lock.yaml`. These rules are already in commit 057b344 and are kept.
+  - **Measured:**
+    - Before checkpoint B of every ticket, the agent asks the user to run `/cost` and paste the
+      numbers.
+    - The agent records the ticket, model, tokens/cost, files read, fix rounds and policy
+      violations in `docs/progress.md`.
+    - `docs/token-efficiency.md` keeps a table with one row per ticket. DEV-18 adds the formal
+      baseline vs graph-assisted comparison.
 
 ## Capabilities
 
 ### New Capabilities
 - `agent-roles`: the specialised subagents, what each may and may not do, how their limits are
-  enforced and checked, and how they are documented.
+  enforced and checked, how they are documented, and the token-efficiency policy every session
+  and agent follows.
 
 ### Modified Capabilities
 - None. `agent-guardrails` (global guard hook) is unchanged; the new guard is agent-scoped and
@@ -74,7 +93,9 @@ Workflow tickets are specified in their OpenSpec change, not in the FRS (FRS §5
 ## Affected packages / services
 
 Root workspace only: `.claude/agents/`, `.claude/hooks/`, `scripts/`, `package.json` (`lint`
-script), `CLAUDE.md`, `.claude/commands/sdd/{apply,run}.md`, `docs/`. No application code changes.
+script), `.claude/settings.json` (deny rules), `CLAUDE.md`,
+`.claude/commands/sdd/{propose,apply,verify,ship,run}.md`, `docs/` (`agents.md`,
+`token-policy.md`, `token-efficiency.md`, `progress.md`). No application code changes.
 
 ## New / changed dependencies (exact versions)
 
@@ -102,4 +123,9 @@ All work is on `feature/DEV-6-agents`, one commit per task.
 - **Workflow:** `/sdd:apply` may delegate test writing to `test-writer` and implementation to
   `implementer`; `/sdd:verify` keeps using `reviewer`; `/sdd:run` may use `coordinator` for
   `[PARALLEL]` pairs.
+- **Every ticket from now on:**
+  - Sessions follow `docs/token-policy.md`.
+  - Before checkpoint B the user is asked to run `/cost`.
+  - Model choice: Sonnet by default. Opus only for DEV-9 and DEV-20, after the agent tells the
+    user to switch with `/model`.
 - **No runtime or API impact.**
