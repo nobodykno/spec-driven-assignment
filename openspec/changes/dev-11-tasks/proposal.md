@@ -1,8 +1,8 @@
 Ticket: DEV-11
 Ticket source: live MCP
-Status: Draft
-Approved-by:
-Approved-on:
+Status: Approved
+Approved-by: Paramjit Jena (via chat)
+Approved-on: 2026-10-30 18:29 IST
 
 # Proposal: DEV-11 Tasks — CRUD, assignment, status, priority, deadlines
 
