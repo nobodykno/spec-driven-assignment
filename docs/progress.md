@@ -27,6 +27,9 @@ Branch `feature/DEV-1-project-setup`.
 - Docker: `pnpm db:up` healthy on 5433; `docker compose up --build -d --wait` healthy; curl checks
   for 7.4 and the database-down check for 7.5 (503 in 0.327 s, back to 200 after restart).
 - Browser: Playwright `E2E_EXPECT=online|offline pnpm test:e2e`, both passed.
+- Scenario checks (12.2): table row survived a Postgres restart; nothing listens on 5432; an
+  implicit `any` fails `pnpm typecheck` (TS7006); a stale lockfile fails `pnpm install --frozen-lockfile`
+  (`ERR_PNPM_OUTDATED_LOCKFILE`); gates pass with Postgres stopped.
 - Hooks: formatting fix committed; `any`, `feat: x`, staged `.env` rejected; pre-push blocked a push.
 
 ### Problems and fixes

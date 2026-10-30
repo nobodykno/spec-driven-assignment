@@ -64,6 +64,13 @@ describe('eslint guideline rules', { timeout: 30_000 }, () => {
     expect(errors).toContain('@typescript-eslint/explicit-function-return-type');
   });
 
+  it('NFR-MNT-001: rejects explicit any and ts-ignore', async () => {
+    const anyResult = await lint('export const x: any = 1;\n');
+    const ignoreResult = await lint('// @ts-ignore\nexport const y: number = 1;\n');
+    expect(anyResult.errors).toContain('@typescript-eslint/no-explicit-any');
+    expect(ignoreResult.errors).toContain('@typescript-eslint/ban-ts-comment');
+  });
+
   it('NFR-MNT-001: rejects a default export outside config files', async () => {
     const code = 'const value = 1;\nexport default value;\n';
     expect((await lint(code)).errors).toContain('no-restricted-exports');
