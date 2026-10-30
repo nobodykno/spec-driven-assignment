@@ -10,7 +10,7 @@ Rules: tests first; test names start with the requirement ID; one commit per tas
 
 ## 2. Install and build (D1–D3)
 
-- [ ] 2.1 Install `uv`, then `code-review-graph` and `graphifyy` at the approved versions; record in `docs/versions.md`. Verify: `uv tool list`. **[NFR-OPS-001]**
+- [x] 2.1 Install `uv`, then `code-review-graph` and `graphifyy` at the approved versions; record in `docs/versions.md`. Verify: `uv tool list`. **[NFR-OPS-001]**
 - [ ] 2.2 Build both graphs; add cache paths to `.gitignore`. Verify: `git status` shows no cache files. **[NFR-OPS-001]**
 
 ## 3. Queries and docs
