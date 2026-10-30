@@ -66,6 +66,7 @@ Branch `feature/DEV-5-claude-setup`.
 | 2026-10-30 15:01 | Approve | Approved in chat, including archive-before-merge so the agent never pushes to main. |
 | 2026-10-30 | Apply 1–8 | sdd fixes; guard + formatter hooks (test-first); settings checker; live hook check (hooks active without restart); 3 skills, each demoed on a scratch branch; nested CLAUDE.md; docs/claude-setup.md. |
 | 2026-10-30 | Verify | Reviewer subagent, 3 rounds, each CHANGES REQUIRED (18 + 10 + 8 findings). All fixed or accepted; round-3 fixes not re-reviewed (3-round cap). Gates: lint 0 errors, 260 root + 55 package tests. |
+| 2026-10-30 15:46 | Ship | User replied `commit` (accepting the un-re-reviewed round-3 fixes). Archived on the branch (68ab6d7, +9 requirements), pushed through the pre-push gates, PR #2 merged (fbb193d), branch deleted, nothing pushed to `main` directly; Jira DEV-5 commented and moved to Done. `/permissions` check still open for the human. |
 
 ### Problems and fixes
 
