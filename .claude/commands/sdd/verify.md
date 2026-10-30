@@ -3,7 +3,7 @@ description: Verify a change against its spec (native OpenSpec verify), run an i
 argument-hint: <TICKET-KEY> <change-name>   e.g. DEV-1006 auth
 ---
 
-Ticket: **$1**. Change name: ticket key in lowercase plus "-$2" (e.g. `dev-1006-auth`).
+Ticket: **$0**. Change name: ticket key in lowercase plus "-$1" (e.g. `dev-1006-auth`).
 Arguments: $ARGUMENTS
 
 Run this in a fresh session. Do not rely on any summary from the implementing session (Rule 7, Rule 23).
@@ -29,5 +29,5 @@ Write `verification.md` inside the change folder, containing:
 
 ## 5. Result
 - If any gate fails, any FRS ID has no test, or any critical/high finding is unresolved: report **NOT READY** and list what blocks it (Rule 24).
-- Otherwise report **READY FOR PR** and tell the user to run `/sdd:ship $1 $2`.
-- Commit the report: `docs($1): verification report for <change-name>`.
+- Otherwise report **READY FOR PR** and tell the user to run `/sdd:ship $0 $1`.
+- Commit the report: `docs($0): verification report for <change-name>`.

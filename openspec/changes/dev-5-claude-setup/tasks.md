@@ -8,7 +8,7 @@ Rules for every task:
 
 ## 1. Workflow fixes (D9)
 
-- [ ] 1.1 Change `.claude/commands/sdd/{propose,apply,verify,ship,run}.md` to use `$0` for the Jira key and `$1` for the change name, and reorder `run.md` stage d to archive on the feature branch before the PR. Remove the "archive commit on main" exception from `CLAUDE.md`. Verify: `grep -n '\$2' .claude/commands/sdd/*.md` prints nothing, and `run.md` stage d contains no `git push origin main`. **[NFR-MNT-001]**
+- [x] 1.1 Change `.claude/commands/sdd/{propose,apply,verify,ship,run}.md` to use `$0` for the Jira key and `$1` for the change name, and reorder `run.md` stage d to archive on the feature branch before the PR. Remove the "archive commit on main" exception from `CLAUDE.md`. Verify: `grep -n '\$2' .claude/commands/sdd/*.md` prints nothing, and `run.md` stage d contains no `git push origin main`. **[NFR-MNT-001]**
 
 ## 2. Lint and test scope for hooks (D1)
 
