@@ -132,3 +132,9 @@ review and E2E happen **after** merge. Models: Sonnet 5.5 for all tickets (DEV-9
 - `pnpm` added `express-rate-limit@8.7.2` to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml` (release too new for the policy).
 - `.env.example` files were not edited (guard hook blocks env access); variable names are in `docs/environment.md`.
 - Tests cover routes with a fake service plus an in-memory service test (rotation, reuse detection); migrations were applied, undone and re-applied on local Postgres.
+
+### Resume point (updated during the batch)
+
+- DEV-9: done and pushed (`feature/DEV-9-auth`, 27062b8).
+- DEV-10 and DEV-11: being built in worktrees `../spec-driven-assignment-wt/DEV-10` and `.../DEV-11` (each branch already merged with DEV-9; approvals recorded). Next: verify gates in each, push both branches.
+- Then: DEV-12 and DEV-13 (worktrees from the DEV-11 branch merged with DEV-10 where needed), DEV-14 and DEV-15, DEV-16, then merge PRs in order 9, 10, 11, 12, 13, 14, 15, 16 and log conflicts in `docs/worktrees.md`.
