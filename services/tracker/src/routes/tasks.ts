@@ -12,9 +12,10 @@ export function tasksRouter(controller: TaskController): Router {
   return router;
 }
 
-// Mounted at /projects/:projectId/tasks; the list route is added by DEV-12.
+// Mounted at /projects/:projectId/tasks.
 export function projectTasksRouter(controller: TaskController): Router {
   const router = Router({ mergeParams: true });
+  router.get('/', controller.list);
   router.post('/', controller.create);
   return router;
 }

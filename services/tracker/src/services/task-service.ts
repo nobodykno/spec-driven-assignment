@@ -1,8 +1,11 @@
-import { Task, getSequelize, type Transaction } from '@app/database';
+import { Task, User, getSequelize, type Transaction } from '@app/database';
 import {
   AppError,
+  buildPaginated,
   type CreateTaskInput,
+  type Paginated,
   type Task as TaskDto,
+  type TaskListQuery,
   type TaskStatus,
   type UpdateTaskInput,
 } from '@app/shared';
@@ -15,6 +18,7 @@ import {
   type TaskRecord,
 } from './task-access.js';
 import { toTaskDto } from './task-dto.js';
+import { buildTaskOrder, buildTaskWhere } from './task-query.js';
 import { assertDueDateNotPast, assertTransition } from './task-rules.js';
 
 type Change = { from: unknown; to: unknown };
@@ -66,6 +70,23 @@ export class TaskService {
       });
       return toTaskDto(await findTaskForMember(task.id, userId, tx));
     });
+  }
+
+  // FR-FILT-001..003: member-only, filtered, sorted and paginated task list.
+  async list(userId: string, projectId: string, query: TaskListQuery): Promise<Paginated<TaskDto>> {
+    await findMembership(projectId, userId);
+    const { rows, count } = await Task.findAndCountAll({
+      where: buildTaskWhere(projectId, userId, query),
+      include: [
+        { model: User, as: 'assignee', required: false },
+        { model: User, as: 'createdBy', required: true },
+      ],
+      order: buildTaskOrder(query.sort, query.order),
+      limit: query.pageSize,
+      offset: (query.page - 1) * query.pageSize,
+    });
+    const items = rows.map((row) => toTaskDto(row as TaskRecord));
+    return buildPaginated(items, count, query.page, query.pageSize);
   }
 
   // FR-TASK-002
