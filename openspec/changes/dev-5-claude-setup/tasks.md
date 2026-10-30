@@ -16,7 +16,7 @@ Rules for every task:
 
 ## 3. PreToolUse guard (D2, D3)
 
-- [ ] 3.1 Write `.claude/hooks/pre-tool-guard.test.mjs` first. One test per spec scenario:
+- [x] 3.1 Write `.claude/hooks/pre-tool-guard.test.mjs` first. One test per spec scenario:
   - `NFR-SEC-005: blocks recursive forced delete`
   - `NFR-SEC-005: blocks force push`
   - `NFR-SEC-005: blocks push to main`
