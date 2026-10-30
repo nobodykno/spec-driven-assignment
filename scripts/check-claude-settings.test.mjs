@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkSettings } from './check-claude-settings.mjs';
+import { checkSettings, REQUIRED_HOOKS, REQUIRED_POLICY } from './check-claude-settings.mjs';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const allExist = () => true;
@@ -15,7 +15,56 @@ const withPermissions = (permissions, extra = {}) => ({
 describe('check-claude-settings', () => {
   it('NFR-MNT-001: current settings pass', () => {
     const settings = JSON.parse(readFileSync(join(ROOT, '.claude', 'settings.json'), 'utf8'));
-    expect(checkSettings(settings, { root: ROOT })).toEqual([]);
+    expect(
+      checkSettings(settings, {
+        root: ROOT,
+        requiredHooks: REQUIRED_HOOKS,
+        requiredPolicy: REQUIRED_POLICY,
+      }),
+    ).toEqual([]);
+  });
+
+  it('NFR-SEC-005: requires the ask rules, default mode and no broad docker allow', () => {
+    const settings = withPermissions({
+      defaultMode: 'acceptEdits',
+      allow: ['Bash(docker:*)'],
+      ask: ['Bash(git push:*)'],
+    });
+    const findings = checkSettings(settings, {
+      fileExists: allExist,
+      requiredPolicy: REQUIRED_POLICY,
+    });
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('defaultMode must be "default"'),
+        expect.stringContaining('"Bash(docker:*)" must not be allowed'),
+        expect.stringContaining('"Bash(gh pr create:*)" must be in ask'),
+        expect.stringContaining('"Bash(pnpm add:*)" must be in ask'),
+      ]),
+    );
+  });
+
+  it.each(['Bash(foo(bar)', 'Bash(a)(b)'])(
+    'NFR-MNT-001: rejects unbalanced parentheses (%s)',
+    (rule) => {
+      const findings = checkSettings(withPermissions({ allow: [rule] }), { fileExists: allExist });
+      expect(findings).toEqual([expect.stringContaining(JSON.stringify(rule))]);
+    },
+  );
+
+  it('NFR-MNT-001: rejects any missing hook script, not only .claude/hooks/*.mjs', () => {
+    const settings = withPermissions(
+      {},
+      {
+        hooks: {
+          PostToolUse: [
+            { hooks: [{ type: 'command', command: 'node "$CLAUDE_PROJECT_DIR/scripts/gone.js"' }] },
+          ],
+        },
+      },
+    );
+    const findings = checkSettings(settings, { root: '/repo', fileExists: () => false });
+    expect(findings).toEqual([expect.stringContaining('scripts/gone.js')]);
   });
 
   it('NFR-MNT-001: accepts well-formed rules', () => {
