@@ -22,6 +22,7 @@ Branch `feature/DEV-1-project-setup`.
 | 2026-10-30 | Apply 10 | `docs/versions.md`, old `project-setup` change removed, Git hooks section in CLAUDE.md, FRS row. |
 | 2026-10-30 | Apply 12 | All gates from a frozen install; manual scenario checks (restart, port, typecheck, lockfile). |
 | 2026-10-30 | Verify | Reviewer subagent, 3 rounds: CHANGES REQUIRED → CHANGES REQUIRED → APPROVE. 14 + 5 + 4 findings; code findings fixed in 14 commits; 3 governance findings escalated to the human. Gates: lint 0 errors, 98 script tests + 55 package tests. |
+| 2026-10-30 14:55 | Ship | User replied `commit`. Pushed (pre-push gates passed), PR #1 opened and merged (023d256), change archived and specs synced (5a8daca, +21 requirements), `main` pushed, feature branch deleted, Jira DEV-1 commented and moved to Done. |
 
 ### Checks run
 
