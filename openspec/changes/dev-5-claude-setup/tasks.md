@@ -73,7 +73,7 @@ Rules for every task:
 
 ## 7. Docs (D1–D9)
 
-- [ ] 7.1 Write `docs/claude-setup.md` with these sections:
+- [x] 7.1 Write `docs/claude-setup.md` with these sections:
   - instructions (root and nested)
   - permissions table (allow/ask/deny and why)
   - hooks (rules, protocol, limits)

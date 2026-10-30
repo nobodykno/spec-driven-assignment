@@ -3,6 +3,104 @@
 How the coding agent is configured in this repository (DEV-5 / DEV-1002), and how each part was
 tested. Design: `openspec/changes/dev-5-claude-setup/design.md`.
 
+## Acceptance criteria → evidence
+
+| DEV-5 acceptance criterion | Evidence (section below) |
+| --- | --- |
+| `rm -rf`, `git push --force`, `git push origin main`, `printenv`, reading `.env` → blocked with a message, exit 2 | [Hooks](#hooks) unit tests (62) + [Live hook check](#live-hook-check-task-53) |
+| Editing a `.ts` file → auto-formatted | [Hooks](#hooks) formatter tests (5) + live check (`live-format.ts`) |
+| `git push`, `pnpm add`, `docker`, `gh pr create` → ask first | [Permissions](#permissions) (ask rules, `defaultMode: default`) |
+| `/permissions` lists the rules with no syntax warnings | [Settings checker](#settings-checker) (`pnpm lint`); a human looks at `/permissions` once at checkpoint B |
+| A skill is invoked → Claude follows its pattern | [Skill demos](#skill-demos-tasks-6163) |
+| Hook tests and results recorded here | this document |
+
+## Instructions
+
+| File | Loaded when | Content |
+| --- | --- | --- |
+| `CLAUDE.md` | always | workflow (`/sdd:run`, chat approval), structure, commands, code rules, Git hooks, Claude Code setup, never-list |
+| `services/CLAUDE.md` | working under `services/` | layering, `createApp(deps)`, Zod input, AppError + SDS §6.4, 404/403, transactions, tests, logging |
+| `apps/web/CLAUDE.md` | working under `apps/web/` | feature folders, kebab-case + named exports, gateway-only API, Query hooks, token in memory, states, RTL tests |
+| `docs/CODING_GUIDELINES.md` | referenced by all three | naming, style, structure, TypeScript, errors, commits |
+
+## Permissions
+
+`.claude/settings.json` (committed). `defaultMode: default` means any command that no rule allows
+prompts the human.
+
+| List | Rules | Why |
+| --- | --- | --- |
+| allow | `curl -s` to localhost; `docker compose stop/start/up/exec/logs/ps`; `pnpm dev`, `pnpm db:*`, Playwright, `pnpm test:e2e`; `git merge main`, `git worktree` | autonomous local checks the user approved |
+| ask | `git push`, `gh repo create`, `gh pr create`, `gh pr merge`, `pnpm add/remove/install`, `pnpm --filter * add`, all Jira write tools | outward-facing or dependency changes need a human |
+| deny | `.env` / `.env.local/.development/.production/.test` reads, `printenv`, `env`, `git push --force`/`-f`, `rm -rf`, `npm`, `yarn`, `docker compose down -v`, `wget` | backstop for the hook (prefix match only) |
+
+Other Docker commands (`docker run`, `docker build`, `docker volume rm`, …) match no rule, so they
+prompt. There is deliberately no broad `Bash(docker:*)` ask rule. An ask rule would override the
+approved `docker compose` allows, because ask wins over allow.
+
+## Hooks
+
+Registered in `.claude/settings.json`; code and tests in `.claude/hooks/` (linted, formatted and
+run by `pnpm test` like `scripts/`).
+
+**PreToolUse `pre-tool-guard.mjs`** (matcher `Bash|Read|Edit|MultiEdit|Write|Grep|Glob`). It reads
+the payload from stdin and, to block, prints `Blocked by .claude/hooks/pre-tool-guard.mjs (<rule>): …`
+and exits 2.
+
+| Rule | Blocks |
+| --- | --- |
+| `rm-recursive-force` | `rm` with a recursive and a force flag (`-rf`, `-fr`, `-Rf`, `-r -f`, long forms) |
+| `force-push` | `git push --force`, `-f`, `--force-with-lease`, `+refspec` |
+| `push-main` | `git push` to `main` / `HEAD:main` / `refs/heads/main`, or a plain push while on `main` |
+| `no-verify` | `git commit --no-verify` / `-n`, `git push --no-verify` |
+| `env-dump` | `printenv`, bare `env` |
+| `docker-volumes` | `docker compose down -v` / `--volumes`, `docker-compose down -v` |
+| `env-file-shell` | any shell word naming `.env` / `.env.*` (not `.env.example`) |
+| `env-file-tool` | Read/Edit/MultiEdit/Write `file_path`, Grep `path`/`glob`, Glob `pattern`/`path` naming such a file |
+| `malformed-input` | unreadable payload (fails closed) |
+
+Chained commands (`&&`, `||`, `;`, `|`, newlines) are checked part by part. Quoted text is data:
+`echo "rm -rf /"` and `git commit -m "explain --no-verify"` are allowed.
+
+**PostToolUse `post-edit-format.mjs`** (matcher `Edit|MultiEdit|Write`). For a
+`ts/tsx/js/mjs/cjs/json/yaml/yml` file inside the project, it runs `prettier --write` and (for code)
+`eslint --fix`. Remaining ESLint errors go back to the agent with exit 2. It never fails the edit
+itself (it fails open).
+
+**Limits.** The guard matches command patterns. It is not a shell interpreter, so deliberately
+obfuscated commands (`eval`, base64, aliases) are out of scope; the deny list, the default-mode
+prompt and CLAUDE.md remain. The hooks apply to the agent's tool calls only, not to commands a
+human runs.
+
+**Disable the hooks:** remove the `hooks` key from `.claude/settings.json` (or revert DEV-5).
+Claude Code picks up the change without a restart.
+
+## Settings checker
+
+`scripts/check-claude-settings.mjs` (`pnpm check:claude-settings`, part of `pnpm lint`) fails on:
+- a malformed rule (`Tool` or `Tool(spec)`, balanced)
+- `:*` that is not at the end (e.g. `Bash(curl -s:* http://localhost*)`)
+- one rule in two lists
+- an unknown `defaultMode`
+- a hook script that is missing
+- the guard or formatter hook not being registered
+
+## Automated test results
+
+| Suite | Tests | Result |
+| --- | --- | --- |
+| `.claude/hooks/pre-tool-guard.test.mjs` | 62 | pass |
+| `.claude/hooks/post-edit-format.test.mjs` | 5 | pass |
+| `scripts/check-claude-settings.test.mjs` | 11 | pass |
+
+## Recommended local settings
+
+`.claude/settings.local.json` is per machine and not committed; its rules merge on top. Keep
+it to personal additions, and remove rules that contradict the committed policy:
+- remove `Bash(cat *.env*)` (blocks reading `.env.example`; the hook already blocks real `.env` files)
+- the `pnpm add/remove/install` ask rules now live in the committed file and can be dropped locally
+- never add `allow` rules for `git push`, `gh pr merge` or Jira writes, because those stay ask
+
 ## Live hook check (task 5.3)
 
 Run on 2026-10-30 15:08 IST, in the agent session working on `feature/DEV-5-claude-setup`, after
