@@ -48,4 +48,16 @@ describe('auth errors', () => {
     expect(response.text).not.toContain('secret');
     expect(response.text).not.toContain('at ');
   });
+
+  it('NFR-MNT-001: unexpected error is logged server-side', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const failure = new Error('database driver crashed');
+    await request(
+      appWithDatabase(async () => {
+        throw failure;
+      }),
+    ).get('/health');
+    expect(log).toHaveBeenCalledWith('Unhandled error', failure);
+    log.mockRestore();
+  });
 });
