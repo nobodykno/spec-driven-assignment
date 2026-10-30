@@ -55,3 +55,31 @@ Branch `feature/DEV-1-project-setup`.
 - Permission/settings decisions: settings file location, narrowing curl deny / ask overrides, Playwright as a DEV-1 dependency.
 - Manual checks by the user: 7.4 stack curl checks and 7.5 database-down check (before curl was allowed).
 - Commits on `main` approved by the user: `2922b90` (Jira key mapping docs).
+
+## DEV-5 (DEV-1002) Claude Code setup — change `dev-5-claude-setup`
+
+Branch `feature/DEV-5-claude-setup`.
+
+| Date (IST) | Stage | What happened |
+| --- | --- | --- |
+| 2026-10-30 | Propose | Ticket fetched via MCP; `/sdd:run` rendered the change name as the ticket (`$1`/`$2` vs `$0`/`$1`), fixed in task 1.1. |
+| 2026-10-30 15:01 | Approve | Approved in chat, including archive-before-merge so the agent never pushes to main. |
+| 2026-10-30 | Apply 1–8 | sdd fixes; guard + formatter hooks (test-first); settings checker; live hook check (hooks active without restart); 3 skills, each demoed on a scratch branch; nested CLAUDE.md; docs/claude-setup.md. |
+| 2026-10-30 | Verify | Reviewer subagent, 3 rounds, each CHANGES REQUIRED (18 + 10 + 8 findings). All fixed or accepted; round-3 fixes not re-reviewed (3-round cap). Gates: lint 0 errors, 260 root + 55 package tests. |
+
+### Problems and fixes
+
+| Problem | Fix |
+| --- | --- |
+| Command arguments are `$0`-based in this Claude Code version | All `sdd` commands use `$0`/`$1` (1.1). |
+| Ticket requires blocking pushes to main; `/sdd:run` pushed the archive commit to main | Archive moved into the PR before merge; CLAUDE.md exception removed (1.1). |
+| Format hook flagged the `Sequelize` parameter in the migration demo | `naming-convention` off for migrations/seeders (6.3). |
+| Pattern guard had many ordinary-shell bypasses (review rounds 1–3) | Raw-text scan, recursive substitution/shell checks, wrapper handling; 132 guard tests. |
+| The guard blocked its own author: heredocs and commit messages that mention env-file names or HUSKY | Edit/Write tool for such text, reworded messages; quoted message text ignored for HUSKY; remaining false positives documented. |
+| Local `settings.local.json` and machine settings block reading `.env.example` | Documented as recommended local settings; committed config allows it. |
+
+### Human interventions
+
+- Approval in chat (plan, decision 1: archive before merge; decision 2: no broad docker ask rule).
+- Pending: one look at `/permissions` (acceptance criterion) and the decision on the un-re-reviewed round-3 fixes.
+

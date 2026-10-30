@@ -66,17 +66,19 @@ How a command is checked:
    - So does `HUSKY=0`, even when quoted or exported. A standalone quoted message, such as a
      commit message that mentions it, is ignored.
 2. **Substitutions:** every `$( … )` and backtick body is checked as a command of its own,
-   including inside double quotes. So are `bash -c` / `sh -c` strings (recursion depth 3).
+   including inside double quotes. So are `bash` / `sh` / `zsh` / `dash` `-c` strings, also with
+   combined flags (`-lc`, `-ec`) and `-c --`. Both kinds of recursion stop at depth 3.
 3. **Simple commands:** chained commands (`&&`, `||`, `;`, `|`, newlines), groups (`( )`, `{ }`)
    and redirections (`<`, `>`) are split into simple commands. In each one the guard skips:
    - leading assignments (`A=1 B=2`)
    - paths (`/bin/rm`)
-   - wrappers (`sudo`, `command`, `exec`, `nohup`, `time`, `timeout`, `nice`, `xargs`,
-     `env …`, `if/elif/then/else/while/until/do`). After a wrapper, checking continues at the
+   - wrappers (`sudo`, `command`, `exec`, `nohup`, `time`, `timeout`, `nice`, `ionice`, `stdbuf`,
+     `xargs`, `find … -exec`, `env …`, `!`, `if/elif/then/else/while/until/do`). After a wrapper, checking continues at the
      next guarded command, so wrapper options with values (`sudo -u root`, `xargs -n 1`)
      don't hide it.
-   - git global options (`-C`, `-c`, `--no-pager`, …). `git -c core.hooksPath=…` and
-     `git config core.hooksPath …` count as hook bypasses.
+   - git global options (`-C`, `-c`, `--no-pager`, …). `git -c core.hooksPath=…`,
+     `git config core.hooksPath …`, `GIT_CONFIG_KEY_<n>=core.hooksPath` and `--no-veri…`
+     abbreviations count as hook bypasses.
    - push option values (`-o`, `--repo`).
    - Docker options before `compose` (`--context x`).
    
@@ -124,9 +126,9 @@ Claude Code picks up the change without a restart.
 
 | Suite | Tests | Result |
 | --- | --- | --- |
-| `.claude/hooks/pre-tool-guard.test.mjs` | 121 | pass |
+| `.claude/hooks/pre-tool-guard.test.mjs` | 132 | pass |
 | `.claude/hooks/post-edit-format.test.mjs` | 6 | pass |
-| `scripts/check-claude-settings.test.mjs` | 20 | pass |
+| `scripts/check-claude-settings.test.mjs` | 24 | pass |
 
 The counts include the review round-1 and round-2 additions:
 - guard bypass cases: wrappers, substitutions, embedded env-file names, `git config`, quoted `HUSKY`
