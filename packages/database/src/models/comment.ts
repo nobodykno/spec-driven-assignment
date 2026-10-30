@@ -4,8 +4,11 @@ import {
   type CreationOptional,
   type InferAttributes,
   type InferCreationAttributes,
+  type NonAttribute,
   type Sequelize,
 } from 'sequelize';
+import type { Task } from './task.js';
+import type { User } from './user.js';
 
 export class Comment extends Model<InferAttributes<Comment>, InferCreationAttributes<Comment>> {
   declare id: CreationOptional<string>;
@@ -14,6 +17,8 @@ export class Comment extends Model<InferAttributes<Comment>, InferCreationAttrib
   declare body: string;
   declare editedAt: CreationOptional<Date | null>;
   declare deletedAt: CreationOptional<Date | null>;
+  declare task?: NonAttribute<Task>;
+  declare author?: NonAttribute<User>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
