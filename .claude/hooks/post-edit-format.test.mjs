@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -73,6 +73,20 @@ describe('post-edit-format', { timeout: 60_000 }, () => {
     try {
       expect(runHook(file).status).toBe(0);
       expect(readFileSync(file, 'utf8')).toBe('export const name = "x"\n');
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it('NFR-MNT-001: does not follow a symlink out of the project', () => {
+    const outside = mkdtempSync(join(tmpdir(), 'hook-outside-'));
+    const target = join(outside, 'target.ts');
+    writeFileSync(target, 'export const name = "x"\n');
+    const link = join(dir, 'link.ts');
+    symlinkSync(target, link);
+    try {
+      expect(runHook(link).status).toBe(0);
+      expect(readFileSync(target, 'utf8')).toBe('export const name = "x"\n');
     } finally {
       rmSync(outside, { recursive: true, force: true });
     }
