@@ -23,6 +23,10 @@ Arguments: $ARGUMENTS
 
 ## 2. Implement with native OpenSpec
 - Follow the native OpenSpec apply workflow (`/opsx:apply`, see `.claude/commands/opsx/apply.md`) for this change.
+- Subagents (`docs/agents.md`): delegate the failing tests of a task group to `test-writer` and the
+  implementation to `implementer`, giving each only the task numbers, the change folder and the
+  FRS IDs. Check their output (tests named with the FRS ID, commits per task) before moving on.
+  You may also do a task yourself; the subagents' limits are enforced by their scope guard.
 - Project rules for every task in `tasks.md`:
   1. Write the failing test first. Test names start with the FRS ID, e.g. `it('FR-AUTH-002: rejects wrong password', ...)`.
   2. Implement the minimum code needed to pass, following `CLAUDE.md` and the referenced SDS sections.

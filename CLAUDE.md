@@ -57,6 +57,8 @@
 
 ## Claude Code setup (details: docs/claude-setup.md)
 - Layer rules: services/CLAUDE.md, apps/web/CLAUDE.md
+- Subagents: implementer, test-writer, reviewer, coordinator (.claude/agents/, details: docs/agents.md);
+  each has an agent-scoped guard hook
 - Skills: zod-contract, express-endpoint, sequelize-migration (.claude/skills/)
 - Hooks: PreToolUse guard blocks rm -rf, force push, push to main, --no-verify, printenv/env,
   docker compose down -v and any .env access; PostToolUse formats and lints every edited file.

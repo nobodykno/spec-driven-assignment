@@ -42,8 +42,10 @@ to create or change, tasks, risks and open questions. Wait for the reply.
   in IST) and commit `docs(workflow): approve <change-name>` with `Refs: $0`.
 
 ## b. Apply
+- For a change with several task groups or a `[PARALLEL]` pair, ask the `coordinator` subagent
+  for the task order and worktree plan first; run the commands it plans yourself.
 - Follow `.claude/commands/sdd/apply.md` (tests first, one task at a time, one local commit per
-  task, quality gates). Local commits need no approval.
+  task, quality gates). Local commits need no approval. Subagents: `docs/agents.md`.
 
 ## c. Verify
 - Follow `.claude/commands/sdd/verify.md`. Use the `reviewer` subagent as the isolated reviewer;

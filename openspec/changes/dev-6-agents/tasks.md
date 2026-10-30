@@ -43,7 +43,7 @@ Rules for every task:
 
 ## 4. Docs and token policy (D6)
 
-- [ ] 4.1 Write `docs/agents.md` (five headings per agent, tools matching frontmatter); link it from `CLAUDE.md` and `docs/claude-setup.md`; say in `.claude/commands/sdd/{apply,run}.md` when each agent is used. Verify: `pnpm lint` exits 0. **[NFR-MNT-001]**
+- [x] 4.1 Write `docs/agents.md` (five headings per agent, tools matching frontmatter); link it from `CLAUDE.md` and `docs/claude-setup.md`; say in `.claude/commands/sdd/{apply,run}.md` when each agent is used. Verify: `pnpm lint` exits 0. **[NFR-MNT-001]**
 - [ ] 4.2 Write `docs/token-policy.md` (D6: reading, commands, sessions and agents, models, MCP). Replace the "Token efficiency" section in `CLAUDE.md` with a short "Token efficiency (mandatory)" section linking to it. Add "Follow docs/token-policy.md" as the first line after the frontmatter of `.claude/commands/sdd/{propose,apply,verify,ship,run}.md`, and the `/cost` step before checkpoint B in `sdd/verify.md` and `sdd/run.md`. Verify: `node scripts/check-agents.mjs` and `node scripts/check-claude-settings.mjs` exit 0. **[NFR-MNT-001]**
 - [ ] 4.3 Create `docs/token-efficiency.md` (purpose, columns: ticket, model, tokens/cost, files read, fix rounds, policy violations; DEV-18 adds the baseline vs graph-assisted comparison). Verify: the file exists with the table header. **[NFR-MNT-001]**
 
