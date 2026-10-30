@@ -5,9 +5,13 @@ import { basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const PRIVATE_KEY = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
-// `KEY=value`, `export`/`ENV KEY=value`, `- KEY=value`, YAML `KEY: value` and JSON `"KEY": "value"`.
-const JWT_SECRET =
-  /^[\t ]*(?:-[\t ]*)?(?:(?:export|ENV)[\t ]+)?["']?JWT_SECRET["']?[\t ]*[=:][\t ]*["']?([^"'\s#,]*)/gm;
+const JWT_SECRET_PATTERNS = [
+  // `KEY=value`, `export`/`ENV`/`- ` prefixes, YAML `KEY: value`, JSON `"KEY": "value"`, also
+  // after `{` or `,` for single-line JSON and inline YAML maps.
+  /(?:^[\t ]*(?:-[\t ]*)?(?:(?:export|ENV)[\t ]+)?|[{,][\t ]*)["']?JWT_SECRET["']?[\t ]*[=:][\t ]*["']?([^"'\s#,]*)/gm,
+  // Legacy Dockerfile form: `ENV KEY value`.
+  /^[\t ]*ENV[\t ]+JWT_SECRET[\t ]+([^\s=#]+)/gm,
+];
 const JWT_PLACEHOLDER = /^(?:change-?me|<.*>|\$\{.*\}|your[-_].*|x+)$/i;
 const AWS_ACCESS_KEY = /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/;
 const AWS_SECRET_KEY =
@@ -19,14 +23,12 @@ export function isEnvFile(path) {
   return name === '.env' || (name.startsWith('.env.') && name !== '.env.example');
 }
 
+const isRealValue = (value) => value !== '' && !JWT_PLACEHOLDER.test(value);
+
 function hasRealJwtSecret(content) {
-  for (const match of content.matchAll(JWT_SECRET)) {
-    const value = match[1];
-    if (value !== '' && !JWT_PLACEHOLDER.test(value)) {
-      return true;
-    }
-  }
-  return false;
+  return JWT_SECRET_PATTERNS.some((pattern) =>
+    [...content.matchAll(pattern)].some((match) => isRealValue(match[1])),
+  );
 }
 
 /**
