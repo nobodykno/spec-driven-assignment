@@ -86,3 +86,17 @@ exits 0. Data-driven titles of the form `${id}: ...` (the authorization matrix) 
 | NFR-PERF-001, NFR-PERF-002 | Covered by the 10,000-task performance check (DEV-12), recorded separately |
 | NFR-SEC-001..004, NFR-SEC-006 | Behaviour is exercised by FR-AUTH tests, but no test carries the NFR ID; flagged for the independent review (DEV-20) |
 | NFR-MNT-002, NFR-OBS-001, NFR-USA-001 | No automated test named after them; flagged for the independent review (DEV-20) |
+
+## Performance
+
+Command: `pnpm --filter tracker perf` (not part of `pnpm test`; database `tracker_perf_test`). Real
+`createApp` through Supertest, a project with 10,000 tasks, 20 warm-up and 200 measured requests
+cycling through five query shapes (default, status filter, assignee filter, sort by due date,
+page 100). Numbers are copied from the run output on 2026-10-30.
+
+| Requirement | Metric | Measured | Limit |
+| --- | --- | --- | --- |
+| NFR-PERF-001 | p50 | 16.4 ms | none |
+| NFR-PERF-001 | p95 | 69.4 ms | below 300 ms: passed |
+| NFR-PERF-001 | max | 230.1 ms | none |
+| NFR-PERF-002 | four task indexes in the migrated database | present | passed |
