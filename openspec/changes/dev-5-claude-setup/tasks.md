@@ -12,7 +12,7 @@ Rules for every task:
 
 ## 2. Lint and test scope for hooks (D1)
 
-- [ ] 2.1 Lint and format `.claude/hooks/`. In `eslint.config.js` and `.prettierignore`, replace `.claude/` with `.claude/*` plus an exception for `.claude/hooks/`, and add `vitest run --dir .claude/hooks` to the root `test` script. Verify: `pnpm lint` and `pnpm test` exit 0. **[NFR-MNT-001]**
+- [x] 2.1 Lint and format `.claude/hooks/`. In `eslint.config.js` and `.prettierignore`, replace `.claude/` with `.claude/*` plus an exception for `.claude/hooks/`, and add `vitest run --dir .claude/hooks` to the root `test` script. Verify: `pnpm lint` and `pnpm test` exit 0. **[NFR-MNT-001]**
 
 ## 3. PreToolUse guard (D2, D3)
 

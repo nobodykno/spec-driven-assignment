@@ -13,7 +13,9 @@ export default defineConfig(
   globalIgnores([
     '**/dist/',
     '**/coverage/',
-    '.claude/',
+    // Generated Claude/OpenSpec files are ignored; the project's own hooks are linted.
+    '.claude/*',
+    '!.claude/hooks/',
     'openspec/',
     'test-results/',
     'playwright-report/',

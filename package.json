@@ -13,7 +13,7 @@
     "lint": "pnpm check:versions && pnpm check:file-names && eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r typecheck && tsc -p tsconfig.e2e.json",
-    "test": "pnpm -r test && vitest run --dir scripts",
+    "test": "pnpm -r test && vitest run scripts/ .claude/hooks/",
     "check:versions": "node scripts/check-versions.mjs",
     "db:up": "docker compose up -d --wait postgres",
     "db:down": "docker compose down",
