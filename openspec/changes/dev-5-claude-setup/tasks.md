@@ -35,7 +35,7 @@ Rules for every task:
 
 ## 4. PostToolUse formatter (D4)
 
-- [ ] 4.1 Write `.claude/hooks/post-edit-format.test.mjs` first:
+- [x] 4.1 Write `.claude/hooks/post-edit-format.test.mjs` first:
   - `NFR-MNT-001: formats an edited ts file`: temp file under the repo, run the CLI with a hook payload, then check for single quotes and semicolons
   - `NFR-MNT-001: reports unfixable lint errors`: `any` → exit 2 naming `no-explicit-any`
   - `NFR-MNT-001: leaves other files untouched`: `.md` file and an `openspec/` path → exit 0, content unchanged
