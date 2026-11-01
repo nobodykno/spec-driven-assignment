@@ -144,6 +144,7 @@ export class ProjectService {
       // Lock the owner rows so two concurrent removals cannot both pass the last-owner check.
       const owners = await ProjectMember.findAll({
         where: { projectId, role: 'OWNER' },
+        order: [['userId', 'ASC']],
         transaction: tx,
         lock: tx.LOCK.UPDATE,
       });
