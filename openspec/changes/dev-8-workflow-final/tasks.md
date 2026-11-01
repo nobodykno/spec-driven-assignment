@@ -12,7 +12,7 @@
 
 ## 2. Guard approval from the handoff only [docs]
 
-- [ ] 2.1 [docs] Test task (`test-writer`): `.claude/hooks/agent-scope-guard.test.mjs`, requirement "Implementer works on approved changes only". Scenarios: Edits allowed on an approved change; Edits blocked on an unapproved change; Reopened gate blocks edits; Legacy proposal status does not approve; Push and Jira writes blocked. Drop the test of `isApprovedProposal`.
+- [x] 2.1 [docs] Test task (`test-writer`): `.claude/hooks/agent-scope-guard.test.mjs`, requirement "Implementer works on approved changes only". Scenarios: Edits allowed on an approved change; Edits blocked on an unapproved change; Reopened gate blocks edits; Legacy proposal status does not approve; Push and Jira writes blocked. Drop the test of `isApprovedProposal`.
 - [ ] 2.2 [docs] Implement D1 in `.claude/hooks/agent-scope-guard.mjs` (turns "Legacy proposal status does not approve" green): remove `approvedByProposal`, `isApprovedProposal`, update the block message. Verify: `pnpm exec vitest run .claude/hooks/agent-scope-guard.test.mjs`.
 - [ ] 2.3 [docs] Checkpoint 2.
 

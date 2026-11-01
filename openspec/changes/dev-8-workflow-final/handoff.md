@@ -22,3 +22,10 @@ produced: group 1 done (tasks 1.1, 1.2), tasks 2/9
 checks: PASS, see review.md "2026-11-01 | apply | group 1: sdd-workflow scenario tests"; reviewer: PASS
 open: lows only (archive tests are exact prose matches)
 next: group 2 task 2.1 (guard tests), then 2.2 implement D1
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 8584191
+produced: task 2.1 done (5 scenario tests in .claude/hooks/agent-scope-guard.test.mjs; isApprovedProposal test removed with design D1); tasks 3/9
+checks: guard test file 76 passed, 1 red as intended ("Legacy proposal status does not approve": the guard still honours Status: Approved)
+open: none
+next: task 2.2 implement D1 in agent-scope-guard.mjs
