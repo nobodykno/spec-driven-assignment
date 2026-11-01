@@ -106,3 +106,10 @@ produced: task 3.6 done (RULE pattern in scripts/check-claude-settings.mjs accep
 checks: settings tests 26/26; pnpm test 440 passed, 0 failed; pnpm lint exit 0 (24 existing warnings)
 open: coverage provider missing (user decision pending); reviewer lows
 next: waiting for `commit` of task 3.6, then task 3.7 (checkpoint 3, round 2)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: c8d6c33
+produced: group 3 done (tasks 3.1 to 3.7), tasks 13/14; hyphenated mcp__ rules accepted (D6)
+checks: PASS, see review.md "2026-11-01 | apply | group 3: Evidence log" (round 2); reviewer: PASS; coverage step waived by the user (no provider installed)
+open: medium: agent-scope-guard change (group 1) is not in the proposal, record it via /opsx:update or the PR description and confirm at Gate 2; lows: readIfExists and run untested, Sequelize version wording, 24 existing lint warnings
+next: waiting for `commit` of task 3.7, then group 4 task 4.1 (full-diff run, then /opsx:verify dev-7-mcp in a fresh session)

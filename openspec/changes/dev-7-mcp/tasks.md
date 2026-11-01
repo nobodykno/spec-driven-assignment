@@ -25,7 +25,7 @@
 - [x] 3.4 [docs] Record the missing-ticket drill (`DEV-999`, 2026-11-01 10:12 IST, already run live: HTTP 404) and run the live drills with the user for "MCP disabled", "auth cleared" and "unsupported operation" (for example a Confluence write the policy forbids); record each with date/time in the "Failure test log". **User stop:** the user runs `/mcp` to disconnect and clear auth, then reconnects.
 - [x] 3.5 [docs] Test task (`test-writer`): `scripts/check-claude-settings.test.mjs`, requirement "Context7 server pinned" (added by `/opsx:update` after checkpoint 3, round 1). Scenarios: Hyphenated MCP tool name accepted as permission rule; Hyphen outside an MCP tool name rejected. Titles `DEV-1004-AC-1: <scenario name>`; both must fail first.
 - [x] 3.6 [docs] Implement the design D6 change in `scripts/check-claude-settings.mjs`: the rule name pattern accepts hyphens only for names that start with `mcp__` (turns 3.5 green; `NFR-MNT-001: current settings pass` and `pnpm lint` go green). Verify: `pnpm exec vitest run scripts/check-claude-settings.test.mjs`.
-- [ ] 3.7 [docs] Checkpoint 3 (round 2 of group 3; turns every real-repo scenario green; replaces the former 3.5).
+- [x] 3.7 [docs] Checkpoint 3 (round 2 of group 3; turns every real-repo scenario green; replaces the former 3.5). reviewer: PASS (see review.md "2026-11-01 | apply | group 3: Evidence log", round 2; step 5 waived by the user).
 
 ## 4. Verification [docs]
 

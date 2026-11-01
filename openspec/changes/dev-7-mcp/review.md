@@ -90,3 +90,33 @@ Findings:
 | low | diff stat | hooks/agent-scope-guard, frs-ticket, archive and openspec/config.yaml changes sit outside group 3; confirm a task covers each |
 
 Next: /opsx:update added tasks 3.5 and 3.6 (design D6, spec commit 241241b); fix the high finding test-first, then run checkpoint 3 again as round 2 (task 3.7). The medium finding waits for the user's decision (waive or add the dependency).
+
+## 2026-11-01 | apply | group 3: Evidence log | PASS
+head: c8d6c33
+round: 2
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint --max-warnings 0 | exit 0, 24 existing warnings (the lint script does not pass the flag to ESLint); check:claude-settings and check:mcp-docs pass |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 440 passed, 0 failed, 0 skipped |
+| coverage | pnpm test --coverage | waived by the user (no coverage provider installed; not in the approved proposal), same as groups 1 and 2 |
+| spec | openspec validate dev-7-mcp --strict | valid |
+| scenarios | group test tasks | 46/46 green in scripts/check-mcp-docs.test.mjs and scripts/check-claude-settings.test.mjs (incl. the 2 new DEV-1004-AC-1 scenarios) |
+| database | reviewer (database checklist) | n/a (no database changes) |
+| reviewer | reviewer | APPROVE (0 critical, 0 high, 1 medium, 5 low) |
+| graph | code-review-graph | used: risk 0.60, 0 affected flows, untested readIfExists and run |
+
+Findings:
+
+| Severity | File | Issue |
+|---|---|---|
+| medium | .claude/hooks/agent-scope-guard.mjs and its test | guard change (isApprovedHandoff, branch format, refusal text) from group 1 commits 3f55330 and 65d0dac is not in proposal, design or tasks; record it at the next /opsx:update or in the PR description and confirm at Gate 2 |
+| low | .claude/commands/frs-ticket.md, archive.md | required phrases from the "Jira commands state every failure case" scenario; in scope |
+| low | openspec/config.yaml:29 | wording-only YAML fix (81968c3), recorded in the propose handoff |
+| low | scripts/check-claude-settings.mjs:9 | `mcp__` plus a lone hyphen would also pass; harmless |
+| low | docs/mcp-setup.md | Sequelize row cites 6.37.8 while the unmatched id was v6.37.7; optional wording clarification |
+| low | scripts/check-mcp-docs.mjs | readIfExists and run untested; coverage unmeasured (step 5 waived) |
+
+Next: commit task 3.7, then group 4 (task 4.1, full-diff run and /opsx:verify in a fresh session). The medium finding is left open for the user's decision.
