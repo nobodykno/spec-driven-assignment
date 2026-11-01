@@ -2,7 +2,7 @@
 
 ### Requirement: Context7 server pinned
 
-The repository SHALL configure the Context7 MCP server in `.mcp.json` with an exact pinned version and no secret values, and `.claude/settings.json` SHALL allow only its read-only tools.
+The repository SHALL configure the Context7 MCP server in `.mcp.json` with an exact pinned version and no secret values, and `.claude/settings.json` SHALL allow only its read-only tools, and the settings check SHALL accept MCP tool names that contain hyphens as valid permission rules.
 
 Traces: DEV-1004-AC-1, DEV-1004-AC-6
 
@@ -15,6 +15,16 @@ Traces: DEV-1004-AC-1, DEV-1004-AC-6
 
 - **WHEN** the config check reads a `context7` server whose package argument is `@upstash/context7-mcp`, `@latest` or a range
 - **THEN** it reports a finding that names the unpinned version and exits 1
+
+#### Scenario: Hyphenated MCP tool name accepted as permission rule [DEV-1004-AC-1]
+
+- **WHEN** the settings check reads allow rules `mcp__context7__resolve-library-id` and `mcp__context7__query-docs`
+- **THEN** it reports no finding for them
+
+#### Scenario: Hyphen outside an MCP tool name rejected [DEV-1004-AC-1]
+
+- **WHEN** the settings check reads a rule whose name is not an MCP tool name but contains a hyphen
+- **THEN** it reports a malformed permission rule finding
 
 ### Requirement: Context7 lookup recorded
 

@@ -1,6 +1,6 @@
 ## Conventions
 
-- Shell: Node 22, `pnpm` only. Scenarios: 17 in one capability (`mcp-integration`).
+- Shell: Node 22, `pnpm` only. Scenarios: 19 in one capability (`mcp-integration`).
 - Branch: `feature/docs/DEV-7-mcp`. Commits: `type(area): <n.m> subject` with footer `Refs: DEV-7`, area `workflow`; test-first commits use type `test`. Claude commits after the blanket approval of this run, per `apply-delegation.md`; specs and production code never share a commit (here everything is docs and scripts, no spec file changes after Gate 1).
 - Library APIs to check with Context7 before use: `@upstash/context7-mcp` (tool names, version) in task 3.3. No other library is added.
 - Test titles: `DEV-1004-AC-n: <scenario name>` (workflow ticket, design D4). Test file for all scenarios: `scripts/check-mcp-docs.test.mjs`.
@@ -23,7 +23,9 @@
 - [x] 3.2 [docs] Implement `checkContext7Log` and `checkFailureLog`; add the empty tables and the Context7 section, operations and approval policy to `docs/mcp-setup.md`. The real-repo scenarios stay red until 3.3 to 3.5.
 - [x] 3.3 [docs] **User stop:** restart Claude Code so the Context7 server loads (OD-4). Then run two lookups (Express 5 error handling, Sequelize transactions), record library, version, topic and date/time in the "Context7 lookups" table, confirm the tool names for the allow list, and update `docs/versions.md`.
 - [x] 3.4 [docs] Record the missing-ticket drill (`DEV-999`, 2026-11-01 10:12 IST, already run live: HTTP 404) and run the live drills with the user for "MCP disabled", "auth cleared" and "unsupported operation" (for example a Confluence write the policy forbids); record each with date/time in the "Failure test log". **User stop:** the user runs `/mcp` to disconnect and clear auth, then reconnects.
-- [ ] 3.5 [docs] Checkpoint 3 (turns every real-repo scenario green).
+- [ ] 3.5 [docs] Test task (`test-writer`): `scripts/check-claude-settings.test.mjs`, requirement "Context7 server pinned" (added by `/opsx:update` after checkpoint 3, round 1). Scenarios: Hyphenated MCP tool name accepted as permission rule; Hyphen outside an MCP tool name rejected. Titles `DEV-1004-AC-1: <scenario name>`; both must fail first.
+- [ ] 3.6 [docs] Implement the design D6 change in `scripts/check-claude-settings.mjs`: the rule name pattern accepts hyphens only for names that start with `mcp__` (turns 3.5 green; `NFR-MNT-001: current settings pass` and `pnpm lint` go green). Verify: `pnpm exec vitest run scripts/check-claude-settings.test.mjs`.
+- [ ] 3.7 [docs] Checkpoint 3 (round 2 of group 3; turns every real-repo scenario green; replaces the former 3.5).
 
 ## 4. Verification [docs]
 
@@ -50,3 +52,5 @@
 | mcp-integration | Failure log missing a case rejected | DEV-1004-AC-2 | scripts/check-mcp-docs.test.mjs | 3.1 |
 | mcp-integration | Failure log entries carry date and time | DEV-1004-AC-5 | scripts/check-mcp-docs.test.mjs | 3.1 |
 | mcp-integration | Log entry without date rejected | DEV-1004-AC-5 | scripts/check-mcp-docs.test.mjs | 3.1 |
+| mcp-integration | Hyphenated MCP tool name accepted as permission rule | DEV-1004-AC-1 | scripts/check-claude-settings.test.mjs | 3.5 |
+| mcp-integration | Hyphen outside an MCP tool name rejected | DEV-1004-AC-1 | scripts/check-claude-settings.test.mjs | 3.5 |

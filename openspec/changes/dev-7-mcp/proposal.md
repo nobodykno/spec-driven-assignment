@@ -26,6 +26,7 @@ Observed (cite files): `.mcp.json` has only `atlassian`; `docs/mcp-setup.md` has
 - `[docs]` Record a Context7 lookup (library, version, topic, date/time) for two APIs the project uses.
 - `[docs]` Extend `docs/mcp-setup.md`: Context7 section, supported operations, write-approval policy, a dated failure-test log (missing ticket, MCP disabled, auth cleared, unsupported operation).
 - `[docs]` Add an automated check (script test) that every command that reads or writes Jira states the four failure cases and the approval rule, so the behaviour cannot silently drift.
+- `[docs]` Accept hyphenated MCP tool names as valid permission rules in the settings check, so the Context7 read-only allow rules pass `pnpm lint` (found by checkpoint 3, round 1; design D6).
 
 ## Traceability
 
@@ -35,6 +36,7 @@ Observed (cite files): `.mcp.json` has only `atlassian`; `docs/mcp-setup.md` has
 | none | AC-2, AC-3 failure handling | mcp-integration | Jira failure handling |
 | none | AC-4 write approval | mcp-integration | Write operations need approval |
 | none | AC-5, AC-6 records, no secrets | mcp-integration | MCP evidence and secrets |
+| none | AC-1 Context7 read-only allow rules are valid permission rules | mcp-integration | Context7 server pinned |
 
 ## Open decisions
 
@@ -63,7 +65,7 @@ None.
 
 - `.mcp.json`, `.claude/settings.json` (Context7 read-only tools only).
 - `docs/mcp-setup.md`, `docs/versions.md` (replace the "Context7 not configured" note when proven).
-- New script `scripts/check-mcp-docs.mjs` plus test (wired into `pnpm lint` like the other `check:*` scripts) and `package.json` script entry. No database change: **No schema change**.
+- New script `scripts/check-mcp-docs.mjs` plus test (wired into `pnpm lint` like the other `check:*` scripts) and `package.json` script entry. `scripts/check-claude-settings.mjs` (rule name pattern only) and `scripts/check-claude-settings.test.mjs` (two tests). No database change: **No schema change**.
 - New dependencies: **None** (Context7 runs through `npx`, pinned; nothing is added to `package.json` dependencies).
 - Existing scenarios that must stay green: `check-claude-settings`, `check-agents`, `check-workflow` tests.
 

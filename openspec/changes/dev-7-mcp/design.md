@@ -26,11 +26,13 @@ No schema change (SDS 5 untouched).
 - **D3: one script, `scripts/check-mcp-docs.mjs`, pure functions plus a CLI**, wired as `pnpm check:mcp-docs` into `pnpm lint`, the same pattern as `check-workflow.mjs` and `check-agents.mjs`. Rejected: extending `check-claude-settings.mjs` (it checks hooks and permissions only; mixing doc-log checks makes both harder to test).
 - **D4: test titles use the ticket acceptance-criterion ID.** This workflow ticket has no FR IDs, so tests are titled `DEV-1004-AC-n: <scenario name>`; scenario names end with `[DEV-1004-AC-n]`.
 - **D5 (OD-3, OD-4 assumptions): the version is checked against the registry at apply, and the lookup waits for one Claude Code restart.** Registry commands are denied to the agent by permission; the user may need to run `! npm view @upstash/context7-mcp version`.
+- **D6: widen the permission-rule name pattern in `scripts/check-claude-settings.mjs` only for names that start with `mcp__` (letters, digits, `_` and `-`).** Reason: the real Context7 tool names contain hyphens (`resolve-library-id`, `query-docs`) and checkpoint 3, round 1 failed on them (`pnpm lint` and the NFR-MNT-001 test "current settings pass"). Rejected: allowing hyphens in every rule name (accepts malformed built-in tool names), dropping the allow rules (every read-only lookup would prompt), a wildcard `mcp__context7__*` allow (allows tools nobody reviewed). D3 rejected extending this script for doc-log checks; D6 touches only its rule pattern.
 
 ## Layer plan
 
 - `[docs]` `.mcp.json` (add `context7`), `.claude/settings.json` (allow only the read-only Context7 tools; leave Jira write tools in `ask`), `docs/mcp-setup.md` (Context7 section, operations, approval policy, the two tables), `docs/versions.md`.
 - `[docs]` `scripts/check-mcp-docs.mjs`, `scripts/check-mcp-docs.test.mjs`, `package.json` script and `lint` chain.
+- `[docs]` `scripts/check-claude-settings.mjs` (rule name pattern, D6) and `scripts/check-claude-settings.test.mjs` (two tests).
 - No service, web, database or e2e changes.
 
 ## Security and privacy
@@ -46,6 +48,7 @@ Context7 package and tool names are verified at apply time through the lookup it
 - The new server needs a restart and a one-time approval prompt: apply pauses there (OD-4).
 - The live drill disconnects Jira, so it runs last in the group and the session reconnects afterwards (needs the user).
 - A pinned `npx` package still downloads at first run; accepted, the version is exact.
+- D6 edits a DEV-5 script; the existing `check-claude-settings` tests must stay green.
 
 ## Migration and rollback
 

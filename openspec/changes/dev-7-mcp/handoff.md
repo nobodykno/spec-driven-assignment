@@ -78,3 +78,10 @@ produced: task 3.4 done (MCP disabled, auth cleared and unsupported operation re
 checks: scripts tests 20/20; check:mcp-docs pass
 open: none
 next: waiting for `commit` of task 3.4, then task 3.5 (checkpoint 3)
+
+### update | 2026-11-01 | AWAITING_GATE_1
+head: 9557ba8
+produced: spec.md (requirement "Context7 server pinned" edited, 2 scenarios added, 19 total), design.md (D6, layer plan, risk), proposal.md (What Changes, Traceability, Impact), tasks.md (new 3.5 test task and 3.6 implementation, checkpoint renumbered 3.7, map 19 rows); delta-openapi.yaml unchanged
+checks: openspec validate dev-7-mcp --strict valid
+open: group 3 checkpoint round 1 is FAIL (lint and NFR-MNT-001 red on hyphenated Context7 allow rules, reviewer CHANGES REQUIRED) and its review.md section is still to be appended by apply; coverage provider @vitest/coverage-v8 missing (reviewer medium, user decision pending); reviewer asks to confirm that hooks/agent-scope-guard, frs-ticket, archive and openspec/config.yaml changes are covered by tasks
+next: /opsx:apply dev-7-mcp after approval (Gate 1 again, then commit the spec fix on its own before task 3.5)
