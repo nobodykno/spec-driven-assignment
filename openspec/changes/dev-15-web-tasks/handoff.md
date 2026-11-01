@@ -43,3 +43,10 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: lows: two older FR-UI-010 tests overlap the States test, Invalid URL value assertion is loose
 next: /create-pr dev-15-web-tasks
+
+### pr | 2026-11-01 | OPENED
+head: d30042b
+produced: PR https://github.com/nobodykno/spec-driven-assignment/pull/41; Jira DEV-15 moved to In Review with the PR link as a comment
+checks: build 0 errors, lint 0 errors (24 existing warnings), typecheck 0 errors, test 842 passed, coverage runs (task-filters.ts 96.87%, project-page.tsx 94.11%), validate --strict valid
+open: lows only, see review.md
+next: Gate 2: human review and merge, then on a follow-up branch from main: /opsx:sync dev-15-web-tasks then /opsx:archive dev-15-web-tasks
