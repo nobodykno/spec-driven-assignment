@@ -113,7 +113,7 @@ describe('tasks routes', () => {
 describe('task list route', () => {
   const url = `/projects/${PROJECT}/tasks`;
 
-  it('FR-FILT-003: GET returns items and meta and passes parsed defaults', async () => {
+  it('FR-FILT-003: status mapping of Paged response', async () => {
     const list = vi.fn().mockResolvedValue({
       items: [],
       meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
@@ -128,18 +128,18 @@ describe('task list route', () => {
     );
   });
 
-  it('FR-FILT-003: pageSize above 100 returns 400 VALIDATION_ERROR', async () => {
+  it('FR-FILT-003: status mapping of Page size too large', async () => {
     const response = await request(build()).get(`${url}?pageSize=101`).set(IDENTITY);
     expect(response.status).toBe(400);
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('FR-FILT-001: an invalid filter value or unknown parameter returns 400', async () => {
+  it('FR-FILT-001: status mapping of Invalid filter', async () => {
     expect((await request(build()).get(`${url}?status=NOPE`).set(IDENTITY)).status).toBe(400);
     expect((await request(build()).get(`${url}?bogus=1`).set(IDENTITY)).status).toBe(400);
   });
 
-  it('FR-FILT-001: a non-member gets 404 NOT_FOUND', async () => {
+  it('FR-FILT-001: status mapping of Non-member lists', async () => {
     const list = vi.fn().mockRejectedValue(new AppError('NOT_FOUND', 404, 'Project not found'));
     const response = await request(build({ list })).get(url).set(IDENTITY);
     expect(response.status).toBe(404);
