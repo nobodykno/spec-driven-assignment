@@ -24,7 +24,7 @@ Retroactive: tests were titled to the scenario names after merge (PR #7). The ta
 
 | Capability | Scenario | FRS ID | Test file | Task |
 |------------|----------|--------|-----------|------|
-| projects | Valid project | FR-PROJ-001 | services/tracker/test/projects-routes.test.ts | 2.2 |
+| projects | Valid project | FR-PROJ-001 | services/tracker/test/projects-scenarios.test.ts | 2.2 |
 | projects | Invalid name | FR-PROJ-001 | services/tracker/test/projects-routes.test.ts | 2.2 |
 | projects | List own projects | FR-PROJ-002 | services/tracker/test/projects-scenarios.test.ts | 2.2 |
 | projects | Member views project | FR-PROJ-002 | services/tracker/test/projects-scenarios.test.ts | 2.2 |
@@ -35,11 +35,11 @@ Retroactive: tests were titled to the scenario names after merge (PR #7). The ta
 | projects | Archived project | FR-PROJ-003 | services/tracker/test/projects-scenarios.test.ts | 2.3 |
 | projects | Owner archives | FR-PROJ-004 | services/tracker/test/projects-scenarios.test.ts | 2.3 |
 | projects | Member archives | FR-PROJ-004 | services/tracker/test/projects-scenarios.test.ts | 2.3 |
-| projects | Add user | FR-PROJ-005 | services/tracker/test/projects-routes.test.ts | 2.4 |
+| projects | Add user | FR-PROJ-005 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
 | projects | Unknown email | FR-PROJ-005 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
 | projects | Already member | FR-PROJ-005 | services/tracker/test/projects-routes.test.ts | 2.4 |
 | projects | Member adds member | FR-AUTH-006 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
-| projects | Remove member | FR-PROJ-006 | services/tracker/test/projects-routes.test.ts | 2.4 |
-| projects | Last owner | FR-PROJ-006 | services/tracker/test/projects-routes.test.ts | 2.4 |
+| projects | Remove member | FR-PROJ-006 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
+| projects | Last owner | FR-PROJ-006 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
 | projects | Assigned tasks unassigned | FR-PROJ-006 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
 | projects | Member removes member | FR-AUTH-006 | services/tracker/test/projects-scenarios.test.ts | 2.4 |
