@@ -213,3 +213,4 @@ Deferred findings (medium or low, no ticket yet):
 
 - DEV-9 auth: malformed JSON body gives 500 instead of 400 in all three services; no minimum length for `JWT_SECRET` and `INTERNAL_TOKEN`; refresh cookie `Secure` is false outside `NODE_ENV=production`; gateway and tracker loggers still redact one nesting level only (auth fixed in 7.7); bcrypt 72-byte cap on passwords; `X-User-Id` not checked as UUID; demo seeder has no production guard; duplicate email in any letter case has no database-backed test.
 - Guard: an approved implementer can still edit `handoff.md` and `.claude/**` (DEV-8 security audit).
+- DEV-10 projects: addMember concurrent duplicate returns 500 instead of 409 ALREADY_MEMBER; `X-User-Id` not UUID-checked in tracker identity middleware; no per-user rate limit on add-member; `projects.ownerId` not updated when the creator is removed; no 401 scenario for the members endpoints.
