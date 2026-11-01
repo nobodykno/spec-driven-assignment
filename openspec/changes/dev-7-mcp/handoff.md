@@ -50,3 +50,10 @@ produced: task 3.1 done (8 failing tests; exports checkContext7Log and checkFail
 checks: tests red as intended (test-first)
 open: none
 next: task 3.2 implement checkContext7Log, checkFailureLog and the docs/mcp-setup.md tables
+
+### apply | 2026-11-01 | PAUSED
+head: ed2afac
+produced: task 3.2 done (checkContext7Log, checkFailureLog, docs/mcp-setup.md tables with the missing-ticket row); tasks 8/14; 17/20 tests green, 3 red by design until 3.3 and 3.4
+checks: scripts tests 17/20; lint clean for the new script
+open: user stop 1 (task 3.3): restart Claude Code so Context7 loads, then lookups; user stop 2 (task 3.4): live drill with /mcp disconnect and clear auth, then reconnect; Context7 read-only tools still to be allowed in settings after the tool names are confirmed
+next: waiting for the user to restart Claude Code, then /opsx:apply dev-7-mcp resumes at task 3.3

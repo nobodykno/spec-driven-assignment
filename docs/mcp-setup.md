@@ -155,3 +155,40 @@ Stop and report the problem to the user. Do not guess or carry on if:
 No offline fixture is kept. Jira is the only source of ticket data. If
 Jira or the MCP is unavailable, stop, document the failure in this file,
 and wait for the user.
+
+## Context7
+
+Context7 serves current library documentation to Claude Code. It is configured in `.mcp.json` as a
+local stdio server with an exact pinned version and no key or other secret:
+
+```json
+"context7": { "type": "stdio", "command": "npx", "args": ["-y", "@upstash/context7-mcp@4.4.4"] }
+```
+
+- Version check on 2026-11-01 10:35 IST: `pnpm view @upstash/context7-mcp` returned latest `4.4.4`,
+  published 2026-10-19 (more than two weeks old), binary `context7-mcp`.
+- Claude Code must be restarted after `.mcp.json` changes, and the server approved once.
+- Only read-only Context7 tools are allowed in `.claude/settings.json`; there is no write tool.
+- `scripts/check-mcp-docs.mjs` (part of `pnpm lint`) rejects an unpinned or floating version and any
+  credential in `.mcp.json`.
+
+### Context7 lookups
+
+| Date (IST) | Library | Version | Topic | Result |
+| ---------- | ------- | ------- | ----- | ------ |
+
+## Operations and approval policy
+
+- Read-only Jira tools (`getJiraIssue`, `searchJiraIssuesUsingJql`, `getTransitionsForJiraIssue`, ...) are
+  used freely to fetch tickets. The Jira workflow has the statuses To Do, In Review and Done.
+- Every write tool (create, edit, transition, comment, worklog, link) is in the `ask` list of
+  `.claude/settings.json`, so each call needs the user's explicit approval, and the commands that write
+  (`/opsx:propose`, `/opsx:archive`, `/create-pr`, `/frs-ticket`) say so. `scripts/check-mcp-docs.mjs` checks both.
+- Failures stop the work: MCP disabled or unauthenticated, ticket missing, unsupported operation or a
+  malformed response. The agent reports it and never invents ticket data. No offline fixture exists.
+
+## Failure test log
+
+| Date (IST)       | Case                  | Call                                       | Result                                                                      |
+| ---------------- | --------------------- | ------------------------------------------ | --------------------------------------------------------------------------- |
+| 2026-11-01 10:12 | missing ticket        | `getJiraIssue` `DEV-999`, read-only        | not found (HTTP 404, "Issue does not exist or you do not have permission"); no data invented |

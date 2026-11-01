@@ -139,6 +139,87 @@ export function checkCommands(commands) {
   );
 }
 
+const TIMESTAMP = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
+const DOC_FILE = 'docs/mcp-setup.md';
+const FAILURE_CASES = [
+  { name: 'missing ticket', call: 'DEV-999', result: ['not found', 'no data invented'] },
+  { name: 'MCP disabled', result: ['stopped and reported'] },
+  { name: 'auth cleared', result: ['stopped and reported'] },
+  { name: 'unsupported operation', result: ['reported, not attempted by another route'] },
+];
+
+/** @returns {string[][]} the data rows (cells) of the table under the `## <heading>` section */
+function tableRows(doc, heading) {
+  const start = doc.split('\n').findIndex((line) => line.trim() === `## ${heading}`);
+  if (start === -1) {
+    return [];
+  }
+  const rows = [];
+  for (const line of doc.split('\n').slice(start + 1)) {
+    if (line.startsWith('#')) {
+      break;
+    }
+    if (line.trim().startsWith('|')) {
+      rows.push(
+        line
+          .trim()
+          .replace(/^\||\|$/g, '')
+          .split('|')
+          .map((cell) => cell.trim()),
+      );
+    }
+  }
+  return rows.slice(2).filter((cells) => cells.some((cell) => cell !== ''));
+}
+
+/** @returns {string[]} findings for the "Context7 lookups" table of the setup doc */
+export function checkContext7Log(docText) {
+  const rows = tableRows(docText, 'Context7 lookups');
+  if (rows.length === 0) {
+    return [`${DOC_FILE}: "Context7 lookups" has no recorded lookup`];
+  }
+  return rows.flatMap(([date = '', library = '', version = '', topic = ''], i) => {
+    const label = `lookup row ${i + 1} (${library || 'no library'})`;
+    return [
+      ...(TIMESTAMP.test(date) ? [] : [`${DOC_FILE}: ${label} has no valid timestamp`]),
+      ...(library === '' ? [`${DOC_FILE}: ${label} has no library`] : []),
+      ...(version === '' ? [`${DOC_FILE}: ${label} has no version`] : []),
+      ...(topic === '' ? [`${DOC_FILE}: ${label} has no topic`] : []),
+    ];
+  });
+}
+
+/** @returns {string[]} findings for one required failure case */
+function checkFailureCase(rows, spec) {
+  const row = rows.find((cells) =>
+    (cells[1] ?? '').toLowerCase().includes(spec.name.toLowerCase()),
+  );
+  if (row === undefined) {
+    return [`${DOC_FILE}: failure log has no "${spec.name}" row`];
+  }
+  const findings = [];
+  if (spec.call !== undefined && !(row[2] ?? '').includes(spec.call)) {
+    findings.push(`${DOC_FILE}: "${spec.name}" row must name ${spec.call} in Call`);
+  }
+  for (const phrase of spec.result) {
+    if (!(row[3] ?? '').toLowerCase().includes(phrase)) {
+      findings.push(`${DOC_FILE}: "${spec.name}" row Result must say "${phrase}"`);
+    }
+  }
+  return findings;
+}
+
+/** @returns {string[]} findings for the "Failure test log" table of the setup doc */
+export function checkFailureLog(docText) {
+  const rows = tableRows(docText, 'Failure test log');
+  const dated = rows
+    .filter((cells) => !TIMESTAMP.test(cells[0] ?? ''))
+    .map(
+      (cells) => `${DOC_FILE}: failure log row "${cells[1] ?? cells.join(' ')}" has no timestamp`,
+    );
+  return [...FAILURE_CASES.flatMap((spec) => checkFailureCase(rows, spec)), ...dated];
+}
+
 /** @returns {string | undefined} the file text, or undefined when the file is missing */
 const readIfExists = (root, file) =>
   existsSync(join(root, file)) ? readFileSync(join(root, file), 'utf8') : undefined;
@@ -152,7 +233,11 @@ function run(root) {
       .map((key) => [key, readIfExists(root, `.claude/commands/${key}.md`)])
       .filter(([, text]) => text !== undefined),
   );
+  const doc = readIfExists(root, DOC_FILE);
   return [
+    ...(doc === undefined
+      ? [`${DOC_FILE} is missing`]
+      : [...checkContext7Log(doc), ...checkFailureLog(doc)]),
     ...(config === undefined ? [`${MCP_FILE} is missing`] : checkMcpConfig(config)),
     ...(settings === undefined ? [`${SETTINGS_FILE} is missing`] : checkSettingsWrites(settings)),
     ...checkCommands(commands),
