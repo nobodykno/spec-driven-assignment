@@ -61,3 +61,32 @@ round: 1
 
 Findings: low failure-rule check is word-level (never invent, stop), not per case; low approval check is loose; low ask/allow not guarded as arrays (fixed after review); low task 2.2 allow-list step for Context7 tools carried to 3.3; low missing JSDoc on readIfExists and run (fixed after review). Reviewer could not run git; it read the working tree.
 Next: commit task 2.2, then group 3.
+
+## 2026-11-01 | apply | group 3: Evidence log | FAIL
+head: 9557ba8
+round: 1
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint --max-warnings 0 | FAIL: check-claude-settings, 2 malformed permission rules (mcp__context7__resolve-library-id, mcp__context7__query-docs) |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 437 passed, 1 failed (NFR-MNT-001: current settings pass), 0 skipped |
+| coverage | pnpm test --coverage | unavailable (@vitest/coverage-v8 not installed; not in the approved proposal) |
+| spec | openspec validate dev-7-mcp --strict | valid |
+| scenarios | group test tasks | 20/20 green in scripts/check-mcp-docs.test.mjs |
+| database | reviewer (database checklist) | n/a (no database changes) |
+| reviewer | reviewer | CHANGES REQUIRED (0 critical, 1 high, 1 medium, 3 low) |
+| graph | code-review-graph | used: low risk, untested readIfExists and run |
+
+Findings:
+
+| Severity | File:line | Issue |
+|---|---|---|
+| high | .claude/settings.json:21-22, scripts/check-claude-settings.mjs:8 | RULE name class has no hyphen, so the hyphenated Context7 allow rules are rejected; lint and NFR-MNT-001 red |
+| medium | package.json, scripts/check-mcp-docs.mjs | coverage provider not installed, step 5 cannot run |
+| low | scripts/check-mcp-docs.mjs:224,228 | readIfExists and run have no direct tests |
+| low | docs/mcp-setup.md (Context7 lookups) | Sequelize row says "6.x docs"; recorded version not clearly the one the lookup answered for |
+| low | diff stat | hooks/agent-scope-guard, frs-ticket, archive and openspec/config.yaml changes sit outside group 3; confirm a task covers each |
+
+Next: /opsx:update added tasks 3.5 and 3.6 (design D6, spec commit 241241b); fix the high finding test-first, then run checkpoint 3 again as round 2 (task 3.7). The medium finding waits for the user's decision (waive or add the dependency).

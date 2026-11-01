@@ -85,3 +85,17 @@ produced: spec.md (requirement "Context7 server pinned" edited, 2 scenarios adde
 checks: openspec validate dev-7-mcp --strict valid
 open: group 3 checkpoint round 1 is FAIL (lint and NFR-MNT-001 red on hyphenated Context7 allow rules, reviewer CHANGES REQUIRED) and its review.md section is still to be appended by apply; coverage provider @vitest/coverage-v8 missing (reviewer medium, user decision pending); reviewer asks to confirm that hooks/agent-scope-guard, frs-ticket, archive and openspec/config.yaml changes are covered by tasks
 next: /opsx:apply dev-7-mcp after approval (Gate 1 again, then commit the spec fix on its own before task 3.5)
+
+### gate-1 | 2026-11-01 | APPROVED
+head: 241241b
+produced: approved by user in session (answer "Approve" to Gate 1 for dev-7-mcp after the update)
+checks: none
+open: OD-3, OD-4 stay Assumed
+next: /opsx:apply dev-7-mcp (append the group 3 round 1 review.md section, then task 3.5)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 241241b
+produced: task 3.5 done (2 failing tests in scripts/check-claude-settings.test.mjs, hyphenated mcp__ rule reported malformed); group 3 round 1 FAIL recorded in review.md; tasks 11/14
+checks: tests red as intended (test-first), 3 red in the file: the 2 new tests and NFR-MNT-001 current settings pass
+open: coverage provider missing (user decision pending); reviewer lows (readIfExists and run untested, Sequelize version wording, scope of hooks/commands/config.yaml changes)
+next: waiting for `commit` of task 3.5, then task 3.6 implement D6
