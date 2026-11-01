@@ -29,3 +29,24 @@ produced: gates green (421 tests, validate --strict, lint 0 errors); isolated su
 checks: PASS, coverage waived by the user
 open: known gap CITEXT duplicate not DB-tested; deferred hardening follow-ups listed in review.md and docs/progress.md
 next: /create-pr dev-9-auth
+
+### pr | 2026-11-01 | MERGED
+head: 705a6d3
+produced: PR #26 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-9-auth
+
+### sync | 2026-11-01 | DONE
+head: 705a6d3
+produced: new capabilities auth created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-9-auth
+
+### archive | 2026-11-01 | DONE
+head: 705a6d3
+produced: archive/2026-11-01-dev-9-auth, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
