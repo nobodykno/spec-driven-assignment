@@ -7,7 +7,7 @@
 
 ## 1. Config and secrets [docs]
 
-- [ ] 1.1 [docs] Test task (`test-writer`): `scripts/check-mcp-docs.test.mjs`, requirements "Context7 server pinned" and "MCP evidence and secrets". Scenarios: Context7 server pinned with exact version; Floating Context7 version rejected; MCP config holds no credentials; Credential in MCP config rejected.
+- [x] 1.1 [docs] Test task (`test-writer`): `scripts/check-mcp-docs.test.mjs`, requirements "Context7 server pinned" and "MCP evidence and secrets". Scenarios: Context7 server pinned with exact version; Floating Context7 version rejected; MCP config holds no credentials; Credential in MCP config rejected.
 - [ ] 1.2 [docs] Implement `checkMcpConfig` in `scripts/check-mcp-docs.mjs` (turns 1.1 green). Pin check: user runs `! npm view @upstash/context7-mcp version`; then add `context7` to `.mcp.json` with that exact version. Verify: `pnpm exec vitest run scripts/check-mcp-docs.test.mjs`.
 - [ ] 1.3 [docs] Checkpoint 1 (full, `checkpoint.md`; coverage on `scripts/check-mcp-docs.mjs`; database check n/a).
 

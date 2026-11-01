@@ -15,3 +15,10 @@ produced: approved by user in session (answer "approved" to Gate 1 for dev-7-mcp
 checks: none
 open: OD-3, OD-4 stay Assumed
 next: /opsx:apply dev-7-mcp (tasks 1.1 onward)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 65d0dac
+produced: task 1.1 done (4 failing tests, scripts/check-mcp-docs.test.mjs, module missing); tasks 1/14
+checks: tests red as intended (test-first)
+open: version pin for Context7 needs a registry check
+next: task 1.2 implement checkMcpConfig, pin and add context7
