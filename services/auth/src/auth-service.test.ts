@@ -80,13 +80,17 @@ describe('AuthService', () => {
     store.tokens.length = 0;
   });
 
-  it('FR-AUTH-002: wrong password gives INVALID_CREDENTIALS', async () => {
-    await expect(new AuthService(config).login(credentials)).rejects.toMatchObject({
-      code: 'INVALID_CREDENTIALS',
-    });
+  it('FR-AUTH-002: Wrong email or password', async () => {
+    const wrongPassword = await new AuthService(config).login(credentials).catch((e: unknown) => e);
+    expect(wrongPassword).toMatchObject({ code: 'INVALID_CREDENTIALS', status: 401 });
+    const { User } = await import('@app/database');
+    vi.mocked(User.findOne).mockResolvedValueOnce(null);
+    const unknownEmail = await new AuthService(config).login(credentials).catch((e: unknown) => e);
+    expect(unknownEmail).toMatchObject({ code: 'INVALID_CREDENTIALS', status: 401 });
+    expect((unknownEmail as Error).message).toBe((wrongPassword as Error).message);
   });
 
-  it('FR-AUTH-003: refresh rotates the token and revokes the old one', async () => {
+  it('FR-AUTH-003: Rotation', async () => {
     const { refreshToken } = await loginWithKnownPassword();
     const service = new AuthService(config);
     const next = await service.refresh(refreshToken);
@@ -94,7 +98,7 @@ describe('AuthService', () => {
     expect((store.tokens as TokenRow[])[0]?.revokedAt).not.toBeNull();
   });
 
-  it('FR-AUTH-003: reusing a rotated token revokes the whole family', async () => {
+  it('FR-AUTH-003: Reuse detection', async () => {
     const { refreshToken } = await loginWithKnownPassword();
     const service = new AuthService(config);
     await service.refresh(refreshToken);
@@ -104,7 +108,7 @@ describe('AuthService', () => {
     expect((store.tokens as TokenRow[]).every((row) => row.revokedAt !== null)).toBe(true);
   });
 
-  it('FR-AUTH-003: an unknown or missing token is rejected', async () => {
+  it('FR-AUTH-003: Invalid token', async () => {
     const service = new AuthService(config);
     await expect(service.refresh('nope')).rejects.toMatchObject({ code: 'INVALID_REFRESH_TOKEN' });
     await expect(service.refresh(undefined)).rejects.toMatchObject({
@@ -112,7 +116,7 @@ describe('AuthService', () => {
     });
   });
 
-  it('FR-AUTH-004: a logged-out token cannot be refreshed', async () => {
+  it('FR-AUTH-004: Revoked token reused', async () => {
     const { refreshToken } = await loginWithKnownPassword();
     const service = new AuthService(config);
     await service.logout('u1', refreshToken);

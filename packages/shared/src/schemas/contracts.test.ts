@@ -34,6 +34,27 @@ describe('auth contracts', () => {
   });
 });
 
+describe('contract parsing', () => {
+  it('NFR-SEC-003: Contracts parse valid and reject invalid data', () => {
+    const valid = [
+      RegisterSchema.safeParse({ name: 'Ada', email: 'ada@example.com', password: 'abcdefg1' }),
+      LoginSchema.safeParse({ email: 'ada@example.com', password: 'x' }),
+      CreateProjectSchema.safeParse({ name: 'Plan' }),
+      CreateTaskSchema.safeParse({ title: 'Write docs' }),
+      CreateCommentSchema.safeParse({ body: 'ok' }),
+    ];
+    const invalid = [
+      RegisterSchema.safeParse({ name: '', email: 'nope', password: 'short' }),
+      LoginSchema.safeParse({}),
+      CreateProjectSchema.safeParse({}),
+      CreateTaskSchema.safeParse({}),
+      CreateCommentSchema.safeParse({}),
+    ];
+    expect(valid.every((result) => result.success)).toBe(true);
+    expect(invalid.some((result) => result.success)).toBe(false);
+  });
+});
+
 describe('domain contracts', () => {
   it('FR-PROJ-001: rejects a project name longer than 100 characters', () => {
     expect(CreateProjectSchema.safeParse({ name: 'x'.repeat(101) }).success).toBe(false);
