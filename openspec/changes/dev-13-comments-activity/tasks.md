@@ -20,3 +20,24 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 ## 4. Quality gates
 
 - [x] 4.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass. [PARALLEL] worktree with DEV-12.
+
+## Scenario to test map
+
+Retroactive: tests were titled to the scenario names after merge (PR #10). The task is the original task that built the behaviour. Mocked route tests of the same behaviour are titled `<FRS ID>: status mapping of <scenario name>`.
+
+| Capability | Scenario | FRS ID | Test file | Task |
+|------------|----------|--------|-----------|------|
+| comments-activity | Valid comment | FR-CMT-001 | services/tracker/test/comments-scenarios.test.ts | 3.1 |
+| comments-activity | Invalid body | FR-CMT-001 | services/tracker/test/comments-scenarios.test.ts | 3.1 |
+| comments-activity | Non-member or archived | FR-CMT-001 | services/tracker/test/comments-scenarios.test.ts | 3.1 |
+| comments-activity | Author edits | FR-CMT-002 | services/tracker/test/comments-scenarios.test.ts | 3.2 |
+| comments-activity | Other user edits | FR-CMT-002 | services/tracker/test/comments-scenarios.test.ts | 3.2 |
+| comments-activity | Author or Owner deletes | FR-CMT-003 | services/tracker/test/comments-scenarios.test.ts | 3.2 |
+| comments-activity | Other member deletes | FR-CMT-003 | services/tracker/test/comments-scenarios.test.ts | 3.2 |
+| comments-activity | Chronological page | FR-CMT-004 | services/tracker/test/comments-scenarios.test.ts | 3.1 |
+| comments-activity | Non-member lists | FR-CMT-004 | services/tracker/test/comments-scenarios.test.ts | 3.1 |
+| comments-activity | Entry stored | FR-ACT-001 | services/tracker/test/comments-scenarios.test.ts | 2.1 |
+| comments-activity | Rollback leaves no entry | FR-ACT-001 | services/tracker/test/comments-scenarios.test.ts | 2.1 |
+| comments-activity | Append-only | FR-ACT-001 | services/tracker/test/comments-scenarios.test.ts | 2.2 |
+| comments-activity | History | FR-ACT-002 | services/tracker/test/comments-scenarios.test.ts | 2.2 |
+| comments-activity | Non-member views | FR-ACT-002 | services/tracker/test/comments-scenarios.test.ts | 2.2 |

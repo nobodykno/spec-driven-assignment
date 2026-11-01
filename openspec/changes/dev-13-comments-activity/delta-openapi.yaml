@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-13 delta)
+  version: 0.0.0-dev-13
+  description: >-
+    DEV-13 (assignment DEV-1010). Retroactive record of the endpoints as built (merged in PR #10):
+    this change ADDED GET/POST /tasks/{taskId}/comments, PATCH/DELETE /comments/{commentId} and
+    GET /tasks/{taskId}/activity. Activity has no write routes; PATCH, PUT and DELETE on it answer 404.
+    Every route needs a Bearer access token verified by the gateway. Non-members get 404 NOT_FOUND,
+    never 403. Paths are relative to /api/v1.
+paths:
+  /tasks/{taskId}/comments:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      operationId: listComments
+      x-unspecified-statuses: ['400', '401']  # 400 = bad page or pageSize; no spec scenario
+      summary: List a task's comments oldest first, paginated (FR-CMT-004)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Comments with pagination meta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommentList' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      operationId: addComment
+      x-unspecified-statuses: ['401']  # no spec scenario; a 409 PROJECT_ARCHIVED also exists (shares the 409 entry)
+      summary: Add a comment of 1 to 2000 characters to a non-archived task (FR-CMT-001)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CommentInput' }
+      responses:
+        '201':
+          description: The saved comment with author and timestamp
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        '400':
+          description: Empty (after trim), missing or over-long body, code VALIDATION_ERROR
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Task is archived, code TASK_ARCHIVED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /comments/{commentId}:
+    parameters:
+      - $ref: '#/components/parameters/CommentId'
+    patch:
+      operationId: editComment
+      x-unspecified-statuses: ['400', '401', '404', '409']  # no spec scenario; 404 = non-member or unknown comment; 409 TASK_ARCHIVED or PROJECT_ARCHIVED
+      summary: Edit own comment, sets editedAt (FR-CMT-002)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CommentInput' }
+      responses:
+        '200':
+          description: The updated comment with editedAt set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      operationId: deleteComment
+      x-unspecified-statuses: ['401', '409']  # no spec scenario; 409 TASK_ARCHIVED or PROJECT_ARCHIVED
+      summary: Delete a comment as its author or a project Owner (soft delete) (FR-CMT-003)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Deleted; it no longer appears in the list }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /tasks/{taskId}/activity:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      operationId: listActivity
+      x-unspecified-statuses: ['400', '401']  # 400 = bad page or pageSize; no spec scenario
+      summary: View a task's activity newest first, paginated (FR-ACT-002)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Activity entries with actor name, action, timestamp and metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActivityList' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: patchActivityNotAllowed
+      summary: No such route; activity is append-only (FR-ACT-001)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      operationId: putActivityNotAllowed
+      summary: No such route; activity is append-only (FR-ACT-001)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteActivityNotAllowed
+      summary: No such route; activity is append-only (FR-ACT-001)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  responses:
+    Forbidden:
+      description: Member without the right to do this, code FORBIDDEN
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Non-member caller, unknown id or no such route, code NOT_FOUND
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+    PaginationMeta:
+      type: object
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    UserRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+    CommentInput:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string, minLength: 1, maxLength: 2000, description: Trimmed }
+    Comment:
+      type: object
+      required: [id, taskId, author, body, editedAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        taskId: { type: string, format: uuid }
+        author: { $ref: '#/components/schemas/UserRef' }
+        body: { type: string }
+        editedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+    CommentList:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Comment' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+    Activity:
+      type: object
+      required: [id, taskId, actor, action, metadata, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        taskId: { type: string, format: uuid }
+        actor: { $ref: '#/components/schemas/UserRef' }
+        action:
+          type: string
+          enum: [TASK_CREATED, TASK_UPDATED, TASK_ASSIGNED, TASK_STATUS_CHANGED, TASK_ARCHIVED]
+        metadata: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+    ActivityList:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Activity' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
