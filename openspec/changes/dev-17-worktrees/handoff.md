@@ -22,3 +22,10 @@ produced: task 1.1 done (3 tests in scripts/check-worktree-docs.test.mjs, red: m
 checks: red as intended (test-first)
 open: none
 next: task 1.2 implement checkCommands
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: c96fef0
+produced: task 1.2 done (checkCommands in scripts/check-worktree-docs.mjs); tasks 2/14
+checks: scripts/check-worktree-docs.test.mjs 3 passed; lint 0 errors
+open: none
+next: checkpoint 1 (task 1.3)
