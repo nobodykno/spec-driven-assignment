@@ -3,6 +3,37 @@
 Running log per ticket: stage, commits, checks, problems and human interventions. Feeds
 `docs/retrospective.md` (DEV-1018).
 
+## Status board (2026-11-01, from Jira + repo evidence)
+
+Jira read live (JQL `project = DEV ORDER BY key`, 22 issues). "Real state" comes from `openspec/changes/`,
+the archive, `gh pr list --state all` (PRs #1 to #20, all merged) and the docs. No change folder has a
+`handoff.md` or `review.md` yet (they pre-date the opsx workflow).
+
+| ID | Jira key | Jira status | Real state | Remaining work | Order | Batch |
+| --- | --- | --- | --- | --- | --- | --- |
+| DEV-1001 | DEV-1 | Done | Archived `dev-1-project-setup`, PR #1 | None. SDS 13 DV-01 (Sequelize instead of Prisma) approver still "Pending" | - | - |
+| DEV-1002 | DEV-5 | Done | Archived, PR #2; bug fixes DEV-22 (#14), DEV-23 (#17) merged | None | - | - |
+| DEV-1003 | DEV-6 | Done | Archived, PR #3; bug fix DEV-24 (#16) merged | None | - | - |
+| DEV-1004 | DEV-7 | To Do | No change, no PR. `docs/mcp-setup.md` exists with a live lookup | Change `dev-7-mcp`: Context7 usage proof, MCP failure-handling tests and docs | 1 | A |
+| DEV-1005 | DEV-8 | Done | Archived `dev-8-openspec-workflow` (#4); opsx rework merged (#20) | `docs/workflow.md` final pass; sync and archive of changes dev-9 to dev-16; update specs `sdd-workflow` and `agent-roles` (still describe `/sdd:*`) | 1 | A |
+| DEV-1006 | DEV-9 | To Do | Code merged (#6); change `dev-9-auth` active, 14/14 tasks, not verified, synced or archived | Re-check FR-AUTH-001 to 007 criteria, OpenAPI 3.1 from Zod (NFR-MNT-002), test gaps, verify, sync, archive, Jira Done. Security-sensitive | 4 | B1 |
+| DEV-1007 | DEV-10 | To Do | Merged (#7); `dev-10-projects` active 7/7 | Same re-check (FR-PROJ-001 to 006), verify, sync, archive | 4 | B1 |
+| DEV-1008 | DEV-11 | To Do | Merged (#8); `dev-11-tasks` active 8/8 | Same re-check (FR-TASK-001 to 006), verify, sync, archive | 4 | B1 |
+| DEV-1009 | DEV-12 | To Do | Merged (#9); `dev-12-task-filtering` active 5/5; perf check archived (#19) | Re-check FR-FILT, verify, sync, archive | 4 | B2 |
+| DEV-1010 | DEV-13 | To Do | Merged (#10); `dev-13-comments-activity` active 7/7 | Re-check FR-CMT/FR-ACT, verify, sync, archive | 4 | B2 |
+| DEV-1011 | DEV-14 | To Do | Merged (#11); `dev-14-web-auth-projects` active 9/9 | Re-check FR-UI-001 to 004, 010, verify, sync, archive | 4 | B3 |
+| DEV-1012 | DEV-15 | To Do | Merged (#12); `dev-15-web-tasks` active 6/6 | Re-check FR-UI-005, 006, verify, sync, archive | 4 | B3 |
+| DEV-1013 | DEV-16 | To Do | Merged (#13); `dev-16-web-comments-activity` active 7/7 | Re-check FR-UI-007 to 009, verify, sync, archive | 4 | B3 |
+| DEV-1014 | DEV-17 | To Do | `docs/worktrees.md` logs worktree use, but the `implementer` agents were blocked by the guard (fixed in #14); no real parallel subagent run yet | One real parallel run with two worktrees and two subagents at the same time; timestamps in `docs/worktrees.md` | 5 | C |
+| DEV-1015 | DEV-18 | Done | Archived `dev-18-graph-tools`, PR #5 | None (token comparison is in `docs/token-efficiency.md`) | - | - |
+| DEV-1016 | DEV-19 | Done | Archived `dev-19-testing-e2e`, PR #18 (authz matrix, regression, Playwright journey) | Confirm against FRS NFR-TST-001/002; fill unit-test gaps found in B | 6 | D |
+| DEV-1017 | DEV-20 | To Do | Nothing started | Independent review of the whole app with `/opsx:verify` (fresh session, Opus) | 7 | D |
+| DEV-1018 | DEV-21 | To Do | Nothing started | Docker compose stack plus Playwright against it, `docs/traceability.md`, `docs/retrospective.md` | 8 | E |
+
+Order items 2 and 3 of the run brief: **Prisma migration**: not applicable, the app uses Sequelize and
+`packages/database/migrations` (SDS 13 DV-01 needs an approver recorded). **Folder restructure**: the tree
+already matches SDS section 3 (`apps/web`, `services/*`, `packages/*`, `e2e/`); `packages/database` has no `seeders/` yet.
+
 ## DEV-1 (DEV-1001) Project setup — change `dev-1-project-setup`
 
 Branch `feature/DEV-1-project-setup`.
