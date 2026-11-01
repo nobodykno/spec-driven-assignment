@@ -155,3 +155,52 @@ Stop and report the problem to the user. Do not guess or carry on if:
 No offline fixture is kept. Jira is the only source of ticket data. If
 Jira or the MCP is unavailable, stop, document the failure in this file,
 and wait for the user.
+
+## Context7
+
+Context7 serves current library documentation to Claude Code. It is configured in `.mcp.json` as a
+local stdio server with an exact pinned version and no key or other secret:
+
+```json
+"context7": { "type": "stdio", "command": "npx", "args": ["-y", "@upstash/context7-mcp@4.4.4"] }
+```
+
+- Version check on 2026-11-01 10:35 IST: `pnpm view @upstash/context7-mcp` returned latest `4.4.4`,
+  published 2026-10-19 (more than two weeks old), binary `context7-mcp`.
+- Residual risk: `npx -y` fetches the pinned package without a prompt, and its transitive dependencies are not
+  pinned. Context7 sees the query text, so a query names a library and a topic only, never a secret or ticket text.
+- Claude Code must be restarted after `.mcp.json` changes, and the server approved once.
+- Only read-only Context7 tools are allowed in `.claude/settings.json`; there is no write tool.
+- `scripts/check-mcp-docs.mjs` (part of `pnpm lint`) rejects an unpinned or floating version and any
+  credential in `.mcp.json`.
+
+## Context7 lookups
+
+| Date (IST) | Library | Version | Topic | Result |
+| ---------- | ------- | ------- | ----- | ------ |
+| 2026-11-01 10:46 | Express (`/expressjs/express`) | 5.3.0 | error handling middleware and rejected promises in async handlers | Express 5 routes returned or rejected promises; the default error handler logs the full error object |
+| 2026-11-01 10:47 | Sequelize (`/sequelize/website`, 6.x docs) | 6.37.8 | managed transactions with `sequelize.transaction` | callback resolves: commit; callback throws: rollback and the call rejects. The version-pinned id `/sequelize/sequelize/v6.37.7` matched nothing, so the website id was used |
+
+Tools confirmed on 2026-11-01: `mcp__context7__resolve-library-id` and `mcp__context7__query-docs`
+(both read-only, both allowed in `.claude/settings.json`).
+
+## Operations and approval policy
+
+- Read-only Jira tools (`getJiraIssue`, `searchJiraIssuesUsingJql`, `getTransitionsForJiraIssue`, ...) are
+  used freely to fetch tickets. The Jira workflow has the statuses To Do, In Review and Done.
+- Every write tool (create, edit, transition, comment, worklog, link) is in the `ask` list of
+  `.claude/settings.json`, so each call needs the user's explicit approval, and the commands that write
+  (`/opsx:propose`, `/opsx:archive`, `/create-pr`, `/frs-ticket`) say so. `scripts/check-mcp-docs.mjs` checks both.
+- Failures stop the work: MCP disabled or unauthenticated, ticket missing, unsupported operation or a
+  malformed response. The agent reports it and never invents ticket data. No offline fixture exists.
+
+## Failure test log
+
+The "MCP disabled" and "auth cleared" rows prove tool absence, not a refused Jira call: with the tools missing no request could be sent, and the agent stopped and reported. The "missing ticket" row is a real Jira response.
+
+| Date (IST)       | Case                  | Call                                       | Result                                                                      |
+| ---------------- | --------------------- | ------------------------------------------ | --------------------------------------------------------------------------- |
+| 2026-11-01 10:12 | missing ticket        | `getJiraIssue` `DEV-999`, read-only        | not found (HTTP 404, "Issue does not exist or you do not have permission"); no data invented |
+| 2026-11-01 11:00 | MCP disabled          | `getJiraIssue` read-only (attempted)       | not callable: the atlassian tools are absent from the session, so no request was sent; stopped and reported, no ticket data invented |
+| 2026-11-01 11:03 | auth cleared          | `getJiraIssue` read-only (attempted)       | not callable: `/mcp` reports "atlassian requires authentication"; `getJiraIssue` is not available in the session, so no request was sent; stopped and reported (user re-ran `/mcp` and authenticated; read-only `getJiraIssue` `DEV-7` then returned status To Do), no ticket data invented |
+| 2026-11-01 11:04 | unsupported operation | Confluence page write (not attempted)      | reported, not attempted by another route: policy allows no Confluence writes; no other tool used as a workaround |

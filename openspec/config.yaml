@@ -26,7 +26,7 @@ context: |
 rules:
   proposal:
     - "Start with the Ticket section: Jira key, summary, status, acceptance criteria and blockers (all Done), fetched live via MCP (.claude/rules/propose-artifacts.md)"
-    - List the FRS requirement IDs covered and the SDS sections followed or changed (workflow tickets: trace to the ticket's acceptance criteria)
+    - List the FRS requirement IDs covered and the SDS sections followed or changed (workflow tickets have no FRS IDs, so trace to the ticket's acceptance criteria)
     - Include an Open decisions table; none may stay Open before specs are written (.claude/rules/open-decisions.md)
     - List the affected packages/services using the layer tags in .claude/rules/layout.md
     - List every new dependency with exact version and reason, or state "None"

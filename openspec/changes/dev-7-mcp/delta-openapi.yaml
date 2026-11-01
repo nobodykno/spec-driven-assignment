@@ -1,0 +1,8 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API
+  version: 0.0.0-dev-7
+  description: Delta for DEV-7 (DEV-1004), MCP integration. No endpoint is added, changed or removed; this change touches MCP configuration, documentation and a lint script only.
+paths: {}
+x-service-exercises: {}
+x-web-consumes: {}

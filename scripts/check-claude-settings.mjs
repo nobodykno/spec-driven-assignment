@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const FILE = '.claude/settings.json';
-const RULE = /^([A-Za-z][A-Za-z0-9_]*)(?:\((.+)\))?$/;
+// MCP tool names (`mcp__<server>__<tool>`) may contain hyphens; other tool names may not (design D6).
+const RULE = /^(mcp__[A-Za-z0-9_-]+|[A-Za-z][A-Za-z0-9_]*)(?:\((.+)\))?$/;
 // `node "$CLAUDE_PROJECT_DIR/<path>"` (or a plain relative path) in a hook command.
 const HOOK_SCRIPT = /node\s+"?(?:\$CLAUDE_PROJECT_DIR\/)?([^"\s]+\.(?:mjs|cjs|js))"?/g;
 const LISTS = ['allow', 'ask', 'deny'];

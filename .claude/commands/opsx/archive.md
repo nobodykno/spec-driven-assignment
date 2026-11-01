@@ -54,4 +54,5 @@ On an existing target: `## Archive Failed` with change, target and the options a
 - With delta specs, always show the combined sync assessment before prompting.
 - `.openspec.yaml` moves with the directory.
 - Commit only after the user's reply `commit`; never push to `main`; never `--no-verify`.
+- Jira failures (MCP disabled or unauthenticated, ticket missing, unsupported operation, malformed response): stop and report, never invent ticket data; write to Jira only with the user's approval.
 - Artifact rules constrain only the specs being written, not archive behaviour.

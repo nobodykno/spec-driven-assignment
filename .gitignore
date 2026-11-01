@@ -39,3 +39,6 @@ playwright-report/
 # Graph tool caches and databases (DEV-1015, docs/graph-tools.md)
 .code-review-graph/
 graphify-out/
+
+# Session notes (local only, /save-context)
+session-context.md

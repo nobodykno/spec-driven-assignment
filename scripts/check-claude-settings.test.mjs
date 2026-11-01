@@ -134,6 +134,34 @@ describe('check-claude-settings', () => {
     },
   );
 
+  it('DEV-1004-AC-1: Hyphenated MCP tool name accepted as permission rule', () => {
+    const rules = ['mcp__context7__resolve-library-id', 'mcp__context7__query-docs'];
+    const findings = checkSettings(withPermissions({ allow: rules }), { fileExists: allExist });
+    expect(findings).toEqual([]);
+    for (const rule of rules) {
+      expect(findings.some((finding) => finding.includes(rule))).toBe(false);
+    }
+  });
+
+  it('DEV-1004-AC-1: Hyphen outside an MCP tool name rejected', () => {
+    const rejected = ['Bash-x', 'Read-file(./notes.md)'];
+    const findings = checkSettings(withPermissions({ allow: rejected }), { fileExists: allExist });
+    expect(findings).toHaveLength(rejected.length);
+    for (const rule of rejected) {
+      expect(findings).toContain(
+        `.claude/settings.json: malformed permission rule ${JSON.stringify(rule)}`,
+      );
+    }
+    // An mcp__ name with a hyphen is not reported, so the widening stays limited to MCP tools.
+    const mcpRule = 'mcp__context7__query-docs';
+    const mcpFindings = checkSettings(withPermissions({ allow: [mcpRule, 'Bash-x'] }), {
+      fileExists: allExist,
+    });
+    expect(mcpFindings).toEqual([
+      `.claude/settings.json: malformed permission rule ${JSON.stringify('Bash-x')}`,
+    ]);
+  });
+
   it('NFR-MNT-001: rejects a rule in two lists', () => {
     const settings = withPermissions({ allow: ['Bash(git push:*)'], ask: ['Bash(git push:*)'] });
     const findings = checkSettings(settings, { fileExists: allExist });

@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
   changeNameForBranch,
   evaluateAgentCall,
+  isApprovedHandoff,
   isApprovedProposal,
   readApproval,
   resolveWorkRoot,
@@ -283,5 +284,42 @@ describe('agent-scope-guard: git worktrees (DEV-22)', () => {
     const outside = realpathSync(mkdtempSync(join(tmpdir(), 'guard-out-')));
     const payload = { tool_name: 'Write', tool_input: { file_path: join(outside, 'a.ts') } };
     expect(resolveWorkRoot(main, payload)).toBe(main);
+  });
+});
+
+describe('opsx gate (DEV-8): domain branches and the gate-1 handoff block', () => {
+  const git = (cwd, ...args) => execFileSync('git', args, { cwd, stdio: 'ignore' });
+  const block = (stage, status) => `### ${stage} | 2026-11-01 | ${status}\nhead: abc1234\n`;
+
+  it('NFR-MNT-001: a feature/{domain}/DEV-n branch maps to its change name', () => {
+    expect(changeNameForBranch('feature/docs/DEV-7-mcp')).toBe('dev-7-mcp');
+    expect(changeNameForBranch('feature/auth/DEV-9-auth')).toBe('dev-9-auth');
+    expect(changeNameForBranch('feature/docs/not-a-ticket')).toBeNull();
+  });
+
+  it('NFR-MNT-001: gate-1 APPROVED after propose approves; a later update cancels it', () => {
+    const base = block('propose', 'AWAITING_GATE_1') + block('gate-1', 'APPROVED');
+    expect(isApprovedHandoff(base)).toBe(true);
+    expect(isApprovedHandoff(base + block('update', 'AWAITING_GATE_1'))).toBe(false);
+    expect(isApprovedHandoff(block('propose', 'AWAITING_GATE_1'))).toBe(false);
+    expect(isApprovedHandoff(block('gate-1', 'REJECTED'))).toBe(false);
+  });
+
+  it('NFR-MNT-001: readApproval accepts the handoff gate on a domain branch', () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'guard-gate-')));
+    git(root, 'init', '-q', '-b', 'feature/docs/DEV-7-mcp');
+    git(root, 'config', 'user.email', 't@example.com');
+    git(root, 'config', 'user.name', 't');
+    writeFileSync(join(root, 'f.txt'), 'x');
+    git(root, 'add', '.');
+    git(root, 'commit', '-q', '-m', 'init');
+    const dir = join(root, 'openspec/changes/dev-7-mcp');
+    mkdirSync(dir, { recursive: true });
+    expect(readApproval(root)).toBe(false);
+    writeFileSync(
+      join(dir, 'handoff.md'),
+      block('propose', 'AWAITING_GATE_1') + block('gate-1', 'APPROVED'),
+    );
+    expect(readApproval(root)).toBe(true);
   });
 });
