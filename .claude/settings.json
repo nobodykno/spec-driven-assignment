@@ -17,7 +17,9 @@
       "Bash(pnpm exec playwright:*)",
       "Bash(pnpm test:e2e:*)",
       "Bash(git merge main:*)",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
     ],
     "ask": [
       "Bash(git push:*)",

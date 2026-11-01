@@ -103,6 +103,12 @@ Installed outside the repo with `uv tool install <package>==<version>` (no manua
 - pnpm 11 build scripts: `pnpm-workspace.yaml` uses `allowBuilds: { esbuild: true }`; pnpm 11
   ignores the older `onlyBuiltDependencies` key.
 
+## MCP servers (DEV-7)
+
+| Item | Version | Where |
+| --- | --- | --- |
+| @upstash/context7-mcp | 4.4.4 (published 2026-10-19, checked 2026-11-01) | `.mcp.json`, run with `npx`, not a repo dependency |
+
 ## Skipped: @mindfiredigital/eslint-plugin-hub 2.2.0
 
 It supports ESLint flat config (`configs['flat/general']`), but it could not be installed safely:

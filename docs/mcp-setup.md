@@ -172,10 +172,15 @@ local stdio server with an exact pinned version and no key or other secret:
 - `scripts/check-mcp-docs.mjs` (part of `pnpm lint`) rejects an unpinned or floating version and any
   credential in `.mcp.json`.
 
-### Context7 lookups
+## Context7 lookups
 
 | Date (IST) | Library | Version | Topic | Result |
 | ---------- | ------- | ------- | ----- | ------ |
+| 2026-11-01 10:46 | Express (`/expressjs/express`) | 5.3.0 | error handling middleware and rejected promises in async handlers | Express 5 routes returned or rejected promises; the default error handler logs the full error object |
+| 2026-11-01 10:47 | Sequelize (`/sequelize/website`, 6.x docs) | 6.37.8 | managed transactions with `sequelize.transaction` | callback resolves: commit; callback throws: rollback and the call rejects. The version-pinned id `/sequelize/sequelize/v6.37.7` matched nothing, so the website id was used |
+
+Tools confirmed on 2026-11-01: `mcp__context7__resolve-library-id` and `mcp__context7__query-docs`
+(both read-only, both allowed in `.claude/settings.json`).
 
 ## Operations and approval policy
 
