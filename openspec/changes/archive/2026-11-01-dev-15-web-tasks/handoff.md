@@ -50,3 +50,24 @@ produced: PR https://github.com/nobodykno/spec-driven-assignment/pull/41; Jira D
 checks: build 0 errors, lint 0 errors (24 existing warnings), typecheck 0 errors, test 842 passed, coverage runs (task-filters.ts 96.87%, project-page.tsx 94.11%), validate --strict valid
 open: lows only, see review.md
 next: Gate 2: human review and merge, then on a follow-up branch from main: /opsx:sync dev-15-web-tasks then /opsx:archive dev-15-web-tasks
+
+### pr | 2026-11-01 | MERGED
+head: 0d07ee4
+produced: PR #41 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-15-web-tasks
+
+### sync | 2026-11-01 | DONE
+head: 0d07ee4
+produced: new capabilities web-tasks created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-15-web-tasks
+
+### archive | 2026-11-01 | DONE
+head: 0d07ee4
+produced: archive/2026-11-01-dev-15-web-tasks, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
