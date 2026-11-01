@@ -1,3 +1,4 @@
+import { CreateCommentSchema } from '@app/shared';
 import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -69,12 +70,16 @@ describe('CommentsSection', () => {
     await userEvent.type(input, '   ');
     await userEvent.click(post);
     expect(screen.getByText('Comment is required')).toBeTruthy();
-    // A comment over 2000 characters is rejected, nothing sent.
+    // A comment over 2000 characters is rejected with the shared schema message, nothing sent.
+    const tooLong = CreateCommentSchema.safeParse({ body: 'x'.repeat(2001) });
+    const tooLongMessage = tooLong.success ? '' : (tooLong.error.issues[0]?.message ?? '');
+    expect(tooLongMessage).not.toBe('');
     await userEvent.clear(input);
     await userEvent.click(input);
     await userEvent.paste('x'.repeat(2001));
     await userEvent.click(post);
-    await waitFor(() => expect(screen.queryByText('Comment is required')).toBeNull());
+    expect(await screen.findByText(tooLongMessage)).toBeTruthy();
+    expect(screen.queryByText('Comment is required')).toBeNull();
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
 
     // A valid comment is sent and appears in the list.
@@ -116,15 +121,39 @@ describe('CommentsSection', () => {
   });
 
   it('FR-UI-008: Edited indicator and API error', async () => {
-    const edited = makeComment('00000000-0000-4000-8000-0000000000c4', 'Edited one', USER.id, NOW);
-    const plain = makeComment('00000000-0000-4000-8000-0000000000c5', 'Plain one', USER.id, null);
-    stubFetch({
-      [LIST]: () => page([edited, plain]),
-      ['DELETE /comments/00000000-0000-4000-8000-0000000000c4']: () =>
+    const C4 = '00000000-0000-4000-8000-0000000000c4';
+    const C5 = '00000000-0000-4000-8000-0000000000c5';
+    const C6 = '00000000-0000-4000-8000-0000000000c6';
+    const C7 = '00000000-0000-4000-8000-0000000000c7';
+    const C8 = '00000000-0000-4000-8000-0000000000c8';
+    const stored: object[] = [
+      makeComment(C4, 'Edited one', USER.id, NOW),
+      makeComment(C5, 'Plain one', USER.id, null),
+      makeComment(C6, 'Fix me', USER.id, null),
+      makeComment(C7, 'Remove me', USER.id, null),
+      makeComment(C8, 'Draft check', USER.id, null),
+    ];
+    let patchedBody: unknown = null;
+    const fetchMock = stubFetch({
+      [LIST]: () => page(stored),
+      [`DELETE /comments/${C4}`]: () =>
         errorResponse('FORBIDDEN', 'You cannot delete this comment', 403),
-      ['PATCH /comments/00000000-0000-4000-8000-0000000000c5']: () =>
-        errorResponse('NOT_FOUND', 'Comment not found', 404),
+      [`PATCH /comments/${C5}`]: () => errorResponse('NOT_FOUND', 'Comment not found', 404),
+      [`PATCH /comments/${C6}`]: (_url, init) => {
+        patchedBody = JSON.parse(String(init?.body));
+        const updated = makeComment(C6, 'Fixed text', USER.id, NOW);
+        stored[2] = updated;
+        return jsonResponse(updated, 200);
+      },
+      [`DELETE /comments/${C7}`]: () => {
+        stored.splice(3, 1);
+        return new Response(null, { status: 204 });
+      },
     });
+    const sentTo = (method: string, id: string): boolean =>
+      fetchMock.mock.calls.some(
+        ([url, init]) => init?.method === method && String(url).endsWith(`/comments/${id}`),
+      );
     renderWithProviders(
       <CommentsSection taskId={TASK} userId={USER.id} role="MEMBER" readOnly={false} />,
     );
@@ -143,5 +172,51 @@ describe('CommentsSection', () => {
     await userEvent.click(within(plainItem).getByRole('button', { name: 'Edit' }));
     await userEvent.click(within(plainItem).getByRole('button', { name: 'Save' }));
     expect((await within(plainItem).findByRole('alert')).textContent).toBe('Comment not found');
+
+    // Edit success: PATCH carries the new body, the new text and "(edited)" appear.
+    const fixItem = screen.getByText('Fix me').closest('li') as HTMLElement;
+    expect(within(fixItem).queryByText('(edited)')).toBeNull();
+    await userEvent.click(within(fixItem).getByRole('button', { name: 'Edit' }));
+    const fixInput = within(fixItem).getByLabelText('Edit comment');
+    await userEvent.clear(fixInput);
+    await userEvent.type(fixInput, 'Fixed text');
+    await userEvent.click(within(fixItem).getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Fixed text')).toBeTruthy();
+    expect(patchedBody).toEqual({ body: 'Fixed text' });
+    expect(screen.queryByText('Fix me')).toBeNull();
+    const fixedItem = screen.getByText('Fixed text').closest('li') as HTMLElement;
+    expect(within(fixedItem).getByText('(edited)')).toBeTruthy();
+
+    // Delete success: DELETE is sent and the comment leaves the list.
+    const removeItem = screen.getByText('Remove me').closest('li') as HTMLElement;
+    await userEvent.click(within(removeItem).getByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(screen.queryByText('Remove me')).toBeNull());
+    expect(sentTo('DELETE', C7)).toBe(true);
+
+    // Edit draft validation: the shared schema message shows and no PATCH is sent.
+    const tooLong = CreateCommentSchema.safeParse({ body: 'x'.repeat(2001) });
+    const tooLongMessage = tooLong.success ? '' : (tooLong.error.issues[0]?.message ?? '');
+    expect(tooLongMessage).not.toBe('');
+    const draftItem = screen.getByText('Draft check').closest('li') as HTMLElement;
+    await userEvent.click(within(draftItem).getByRole('button', { name: 'Edit' }));
+    const draftInput = within(draftItem).getByLabelText('Edit comment');
+    const save = within(draftItem).getByRole('button', { name: 'Save' });
+
+    await userEvent.clear(draftInput);
+    await userEvent.click(save);
+    expect(await within(draftItem).findByText('Comment is required')).toBeTruthy();
+    expect(sentTo('PATCH', C8)).toBe(false);
+
+    await userEvent.type(draftInput, '   ');
+    await userEvent.click(save);
+    expect(await within(draftItem).findByText('Comment is required')).toBeTruthy();
+    expect(sentTo('PATCH', C8)).toBe(false);
+
+    await userEvent.clear(draftInput);
+    await userEvent.click(draftInput);
+    await userEvent.paste('x'.repeat(2001));
+    await userEvent.click(save);
+    expect(await within(draftItem).findByText(tooLongMessage)).toBeTruthy();
+    expect(sentTo('PATCH', C8)).toBe(false);
   });
 });

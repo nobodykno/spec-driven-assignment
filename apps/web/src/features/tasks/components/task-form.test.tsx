@@ -1,3 +1,4 @@
+import { CreateTaskSchema } from '@app/shared';
 import { cleanup, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRoutes } from 'react-router';
@@ -86,7 +87,7 @@ describe('task create and edit forms', () => {
     expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('');
     cleanup();
 
-    stubFetch({
+    const editFetch = stubFetch({
       [`GET /tasks/${TASK}`]: () => jsonResponse(task),
       [`GET /projects/${PROJECT}`]: () => jsonResponse(project),
       [`GET /tasks/${TASK}/comments?page=1&pageSize=20`]: () => jsonResponse(EMPTY_PAGE),
@@ -96,6 +97,10 @@ describe('task create and edit forms', () => {
         return jsonResponse({ ...task, title: 'Write the final report' });
       },
     });
+    const getCount = (path: string): number =>
+      editFetch.mock.calls.filter(
+        ([url, init]) => (init?.method ?? 'GET') === 'GET' && String(url).endsWith(path),
+      ).length;
     renderWithProviders(<Routes />, `/tasks/${TASK}`);
     await userEvent.click(await screen.findByRole('button', { name: 'Edit task' }));
     const title = await screen.findByLabelText('Title');
@@ -103,6 +108,9 @@ describe('task create and edit forms', () => {
     await userEvent.type(title, 'Write the final report');
     await userEvent.click(screen.getByRole('button', { name: 'Save task' }));
     await waitFor(() => expect(patched).toMatchObject({ title: 'Write the final report' }));
+    // The task and activity views refresh after the save.
+    await waitFor(() => expect(getCount(`/tasks/${TASK}`)).toBe(2));
+    await waitFor(() => expect(getCount(`/tasks/${TASK}/activity?page=1&pageSize=20`)).toBe(2));
   });
 
   it('FR-UI-007: Validation and server errors', async () => {
@@ -127,7 +135,11 @@ describe('task create and edit forms', () => {
     await userEvent.click(screen.getByLabelText('Title'));
     await userEvent.paste('x'.repeat(201));
     await userEvent.click(create);
-    await waitFor(() => expect(screen.queryByText('Title is required')).toBeNull());
+    const tooLong = CreateTaskSchema.safeParse({ title: 'x'.repeat(201) });
+    const tooLongMessage = tooLong.success ? '' : (tooLong.error.issues[0]?.message ?? '');
+    expect(tooLongMessage).not.toBe('');
+    expect(await screen.findByText(tooLongMessage)).toBeTruthy();
+    expect(screen.queryByText('Title is required')).toBeNull();
     expect(posts).toBe(0);
     cleanup();
 
@@ -148,6 +160,32 @@ describe('task create and edit forms', () => {
       const alert = await screen.findByRole('alert');
       expect(alert.textContent).toBe(message);
       expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('A task');
+      cleanup();
+    }
+
+    // Edit form: server errors from PATCH show on the form and the entered title is kept.
+    const editCases: Array<[string, string, number]> = [
+      ['VALIDATION_ERROR', 'Invalid request', 400],
+      ['TASK_ARCHIVED', 'Task is archived', 409],
+      ['PROJECT_ARCHIVED', 'Project is archived', 409],
+    ];
+    for (const [code, message, status] of editCases) {
+      stubFetch({
+        [`GET /tasks/${TASK}`]: () => jsonResponse(task),
+        [`GET /projects/${PROJECT}`]: () => jsonResponse(project),
+        [`GET /tasks/${TASK}/comments?page=1&pageSize=20`]: () => jsonResponse(EMPTY_PAGE),
+        [`GET /tasks/${TASK}/activity?page=1&pageSize=20`]: () => jsonResponse(EMPTY_PAGE),
+        [`PATCH /tasks/${TASK}`]: () => errorResponse(code, message, status),
+      });
+      renderWithProviders(<Routes />, `/tasks/${TASK}`);
+      await userEvent.click(await screen.findByRole('button', { name: 'Edit task' }));
+      const title = await screen.findByLabelText('Title');
+      await userEvent.clear(title);
+      await userEvent.type(title, 'Renamed');
+      await userEvent.click(screen.getByRole('button', { name: 'Save task' }));
+      const editAlert = await screen.findByRole('alert');
+      expect(editAlert.textContent).toBe(message);
+      expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Renamed');
       cleanup();
     }
   });
