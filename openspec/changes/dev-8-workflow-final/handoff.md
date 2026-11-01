@@ -36,3 +36,10 @@ produced: task 2.2 done (legacy approval fallback and isApprovedProposal removed
 checks: guard tests 77 passed; pnpm test 421 passed, 0 failed (it.each cases merged into loops by test-writer, same cases kept); lint 0 errors; build, typecheck 0 errors
 open: none
 next: checkpoint 2 (task 2.3)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 30c064b
+produced: group 2 done (tasks 2.1 to 2.3), tasks 6/9 including 3.1 pending commit
+checks: PASS, see review.md "2026-11-01 | apply | group 2: guard approves from the handoff only"; reviewer: PASS
+open: dev-9 to dev-16 carry only proposal.md approval; they need a handoff.md gate-1 block before the guard lets an implementer edit them
+next: commit 3.1 docs/workflow.md, then checkpoint 3 and the final full-diff review
