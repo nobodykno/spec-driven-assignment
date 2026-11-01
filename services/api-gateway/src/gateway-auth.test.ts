@@ -52,7 +52,7 @@ describe('gateway authentication', () => {
     expect(response.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('FR-AUTH-005: an invalid or expired token returns 401 UNAUTHORIZED', async () => {
+  it('FR-AUTH-005: Missing, invalid or expired token', async () => {
     const app = appUnderTest();
     const bad = await request(app)
       .get('/api/v1/projects')
@@ -60,14 +60,18 @@ describe('gateway authentication', () => {
     const expired = await request(app)
       .get('/api/v1/projects')
       .set('Authorization', `Bearer ${token({ expiresIn: -10 })}`);
+    const missing = await request(app).get('/api/v1/projects');
     expect(bad.status).toBe(401);
     expect(expired.status).toBe(401);
+    expect(missing.status).toBe(401);
+    expect(missing.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('FR-AUTH-005: a valid token is forwarded with identity headers to the tracker path', async () => {
+  it('FR-AUTH-005: Valid token forwards identity', async () => {
     const response = await request(appUnderTest())
       .get('/api/v1/projects?includeArchived=true')
-      .set('Authorization', `Bearer ${token()}`);
+      .set('Authorization', `Bearer ${token()}`)
+      .set({ 'X-User-Id': 'attacker', 'X-User-Role': 'ADMIN', 'X-Internal-Token': 'guess' });
     expect(response.status).toBe(200);
     expect(lastSeen?.url).toBe('/projects?includeArchived=true');
     expect(lastSeen?.headers['x-user-id']).toBe(USER_ID);
@@ -93,7 +97,7 @@ describe('gateway authentication', () => {
 });
 
 describe('gateway rate limits', () => {
-  it('FR-AUTH-002: the 11th failed login from one IP returns 429 RATE_LIMITED', async () => {
+  it('FR-AUTH-002: Rate limited', async () => {
     const app = appUnderTest();
     for (let attempt = 0; attempt < 10; attempt += 1) {
       expect((await request(app).post('/api/v1/auth/login')).status).toBe(401);

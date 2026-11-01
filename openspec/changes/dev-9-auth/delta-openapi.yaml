@@ -1,0 +1,181 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-9 delta)
+  version: 0.0.0-dev-9
+  description: >-
+    DEV-9 (assignment DEV-1006). Retroactive record of the endpoints as built (merged in PR #6):
+    this change ADDED POST /auth/register, /auth/login, /auth/refresh, /auth/logout and GET /auth/me.
+    Every route other than register, login, refresh and health requires a Bearer access token verified
+    by the gateway. Health endpoints are not part of this change (FR-SYS-001). Paths are relative to /api/v1.
+paths:
+  /auth/register:
+    post:
+      operationId: registerUser
+      x-unspecified-statuses: ['429', '503']  # observed in code, no spec scenario (see review.md)
+      summary: Register a user (FR-AUTH-001)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInput' }
+      responses:
+        '201':
+          description: Valid registration; the user without password or hash
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409':
+          description: Duplicate email (any letter case), code EMAIL_TAKEN
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /auth/login:
+    post:
+      operationId: loginUser
+      x-unspecified-statuses: ['503']  # observed in code, no spec scenario (see review.md)
+      summary: Log in (FR-AUTH-002)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        '200':
+          description: Access token; sets httpOnly SameSite=Strict refresh_token cookie (Path /api/v1/auth)
+          headers:
+            Set-Cookie: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401':
+          description: Unknown email or wrong password, code INVALID_CREDENTIALS, same message for both
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /auth/refresh:
+    post:
+      operationId: refreshToken
+      x-unspecified-statuses: ['503']  # observed in code, no spec scenario (see review.md)
+      summary: Rotate the refresh token (FR-AUTH-003)
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: New access token; the refresh cookie is rotated and the old token revoked
+          headers:
+            Set-Cookie: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenResponse' }
+        '401':
+          description: Expired, revoked, unknown or reused refresh token (reuse revokes the family), code INVALID_REFRESH_TOKEN
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      x-unspecified-statuses: ['401', '503']  # observed in code, no spec scenario (see review.md)
+      summary: Revoke the current refresh token (FR-AUTH-004)
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Refresh token revoked and cookie cleared
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      x-unspecified-statuses: ['503']  # observed in code, no spec scenario (see review.md)
+      summary: Current user profile (FR-AUTH-007)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    refreshCookie: { type: apiKey, in: cookie, name: refresh_token }
+  responses:
+    ValidationError:
+      description: Invalid input, code VALIDATION_ERROR with field details
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Unauthorized:
+      description: Missing, invalid or expired access token or no identity, code UNAUTHORIZED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    RateLimited:
+      description: More than 10 failed logins per IP in 15 minutes (login) or the registration limit, code RATE_LIMITED
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ServiceUnavailable:
+      description: Downstream service unreachable, code SERVICE_UNAVAILABLE
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    RegisterInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        email: { type: string, format: email, maxLength: 255 }
+        password: { type: string, minLength: 8, maxLength: 128, description: Must contain a letter and a number }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+        password: { type: string, minLength: 1, maxLength: 128 }
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [USER, ADMIN] }
+    TokenResponse:
+      type: object
+      required: [accessToken, expiresIn]
+      properties:
+        accessToken: { type: string }
+        expiresIn: { type: integer, description: Seconds (900) }
+    LoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/TokenResponse'
+        - type: object
+          required: [user]
+          properties:
+            user: { $ref: '#/components/schemas/User' }
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details:
+              type: array
+              items:
+                type: object
+                required: [path, message]
+                properties:
+                  path: { type: string }
+                  message: { type: string }

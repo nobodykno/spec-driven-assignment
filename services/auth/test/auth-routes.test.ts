@@ -36,7 +36,7 @@ function build(overrides: Partial<Record<keyof AuthService, unknown>> = {}): {
 }
 
 describe('POST /register', () => {
-  it('FR-AUTH-001: returns 201 with the user and no password', async () => {
+  it('FR-AUTH-001: Valid registration', async () => {
     const { app } = build();
     const response = await request(app)
       .post('/register')
@@ -46,14 +46,14 @@ describe('POST /register', () => {
     expect(response.text).not.toContain('abcdefg1');
   });
 
-  it('FR-AUTH-001: returns 400 VALIDATION_ERROR with field details', async () => {
+  it('FR-AUTH-001: Invalid input', async () => {
     const response = await request(build().app).post('/register').send({ email: 'nope' });
     expect(response.status).toBe(400);
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
     expect(response.body.error.details.length).toBeGreaterThan(0);
   });
 
-  it('FR-AUTH-001: returns 409 EMAIL_TAKEN when the service reports a duplicate', async () => {
+  it('FR-AUTH-001: Duplicate email', async () => {
     const register = vi.fn().mockRejectedValue(new AppError('EMAIL_TAKEN', 409, 'taken'));
     const response = await request(build({ register }).app)
       .post('/register')
@@ -64,7 +64,7 @@ describe('POST /register', () => {
 });
 
 describe('POST /login', () => {
-  it('FR-AUTH-002: returns the access token and sets an httpOnly refresh cookie', async () => {
+  it('FR-AUTH-002: Valid login', async () => {
     const response = await request(build().app)
       .post('/login')
       .send({ email: 'ada@example.com', password: 'abcdefg1' });
@@ -111,7 +111,7 @@ describe('POST /logout and GET /me', () => {
     expect(response.status).toBe(401);
   });
 
-  it('FR-AUTH-004: logout revokes the cookie token, clears the cookie and returns 204', async () => {
+  it('FR-AUTH-004: Logout', async () => {
     const { app, service } = build();
     const response = await request(app)
       .post('/logout')
@@ -122,7 +122,7 @@ describe('POST /logout and GET /me', () => {
     expect(String(response.headers['set-cookie'])).toContain('refresh_token=;');
   });
 
-  it('FR-AUTH-007: me returns 401 without a valid internal token', async () => {
+  it('FR-AUTH-007: No identity', async () => {
     const response = await request(build().app)
       .get('/me')
       .set({ ...IDENTITY, 'x-internal-token': 'wrong' });
@@ -130,7 +130,7 @@ describe('POST /logout and GET /me', () => {
     expect(response.body.error.code).toBe('UNAUTHORIZED');
   });
 
-  it('FR-AUTH-007: me returns the profile', async () => {
+  it('FR-AUTH-007: Profile', async () => {
     const response = await request(build().app).get('/me').set(IDENTITY);
     expect(response.status).toBe(200);
     expect(response.body).toEqual(USER);

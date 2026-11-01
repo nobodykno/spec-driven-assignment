@@ -206,3 +206,10 @@ Tasks labelled `bug`.
   `.claude/hooks/agent-scope-guard.mjs` plus two worktree tests. Next: run `pnpm exec vitest run .claude/hooks`,
   fix, push, PR, merge, comment/close DEV-22.
 - Not started: A2 (DEV-23), A3 (DEV-24), A4 (DEV-25), B5, B6, C7, D8, D9, D10.
+
+## Follow-ups from the retro-verify run (2026-11-01)
+
+Deferred findings (medium or low, no ticket yet):
+
+- DEV-9 auth: malformed JSON body gives 500 instead of 400 in all three services; no minimum length for `JWT_SECRET` and `INTERNAL_TOKEN`; refresh cookie `Secure` is false outside `NODE_ENV=production`; gateway and tracker loggers still redact one nesting level only (auth fixed in 7.7); bcrypt 72-byte cap on passwords; `X-User-Id` not checked as UUID; demo seeder has no production guard; duplicate email in any letter case has no database-backed test.
+- Guard: an approved implementer can still edit `handoff.md` and `.claude/**` (DEV-8 security audit).

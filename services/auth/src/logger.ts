@@ -14,6 +14,19 @@ export const REDACT_PATHS = [
   '*.token',
   '*.refreshToken',
   '*.accessToken',
+  'passwordHash',
+  '*.passwordHash',
+  '*.*.authorization',
+  '*.*.cookie',
+  '*.*.password',
+  '*.*.passwordHash',
+  '*.*.token',
+  '*.*.refreshToken',
+  '*.*.accessToken',
+  '*.headers["x-internal-token"]',
+  '*.headers["set-cookie"]',
+  '*.*.headers["x-internal-token"]',
+  '*.*.headers["set-cookie"]',
 ];
 
 export function createLogger(name: string, level = process.env.LOG_LEVEL ?? 'info'): Logger {
