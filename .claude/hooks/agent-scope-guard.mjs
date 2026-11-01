@@ -23,7 +23,7 @@ const OPENSPEC_READS = new Set(['list', 'status', 'show', 'validate', 'instructi
 
 const REASONS = {
   'not-approved':
-    'the current branch has no approved OpenSpec change (gate-1 APPROVED in handoff.md, or Status: Approved in proposal.md)',
+    'the current branch has no approved OpenSpec change (latest gate-1 APPROVED in handoff.md, not reopened by a later propose or update)',
   'push-or-pr': 'the implementer never pushes or opens/merges PRs; the main session ships',
   'jira-write': 'the implementer never writes to Jira; the main session updates tickets',
   'production-code': 'the test-writer may change only test files (*.test.*, *.spec.*, e2e/)',
@@ -196,17 +196,6 @@ export function changeNameForBranch(branch) {
 }
 
 /**
- * @param {string} proposal proposal.md text
- * @returns {boolean} true when Status is Approved and Approved-by and Approved-on are filled in
- */
-export function isApprovedProposal(proposal) {
-  const field = (name) => new RegExp(`^${name}:[ \\t]*(\\S.*)$`, 'm').exec(proposal)?.[1].trim();
-  return (
-    field('Status') === 'Approved' && Boolean(field('Approved-by')) && Boolean(field('Approved-on'))
-  );
-}
-
-/**
  * Gate 1 of the opsx workflow: the latest `gate-1` block of handoff.md is APPROVED and no
  * `propose` or `update` block follows it.
  * @param {string} handoff handoff.md text
@@ -267,10 +256,6 @@ const approvedByHandoff = (dir) =>
   existsSync(join(dir, 'handoff.md')) &&
   isApprovedHandoff(readFileSync(join(dir, 'handoff.md'), 'utf8'));
 
-const approvedByProposal = (dir) =>
-  existsSync(join(dir, 'proposal.md')) &&
-  isApprovedProposal(readFileSync(join(dir, 'proposal.md'), 'utf8'));
-
 export function readApproval(root) {
   try {
     const branch = git(root, ['branch', '--show-current']);
@@ -279,7 +264,7 @@ export function readApproval(root) {
       return false;
     }
     const dir = join(root, 'openspec/changes', change);
-    return approvedByHandoff(dir) || approvedByProposal(dir);
+    return approvedByHandoff(dir);
   } catch {
     // No branch or no proposal: the change is not approved (fail closed).
     return false;

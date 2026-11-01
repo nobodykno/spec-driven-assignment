@@ -46,8 +46,8 @@ Tasks done with commit hashes, verification command → result per task, problem
 
 ### Restrictions
 - Guard: every Edit/Write is blocked unless the current branch's change
-  (`feature/<KEY>-<name>` → `openspec/changes/<key>-<name>/proposal.md`) has `Status: Approved`,
-  `Approved-by` and `Approved-on`.
+  (`feature/{domain}/<KEY>-<name>` → `openspec/changes/<key>-<name>/handoff.md`) has `gate-1 APPROVED` as its
+  latest gate block and no later `propose` or `update` block.
 - Guard: `git push` (also inside `bash -c` and `$(...)`), any `gh` call and Atlassian MCP write
   tools are blocked. A commit message that contains the words "git push" is a known false positive.
 - No dependency outside the approved proposal, no edits to applied migrations, no `.env` access

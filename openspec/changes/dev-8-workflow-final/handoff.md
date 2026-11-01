@@ -29,3 +29,10 @@ produced: task 2.1 done (5 scenario tests in .claude/hooks/agent-scope-guard.tes
 checks: guard test file 76 passed, 1 red as intended ("Legacy proposal status does not approve": the guard still honours Status: Approved)
 open: none
 next: task 2.2 implement D1 in agent-scope-guard.mjs
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: da0b40b
+produced: task 2.2 done (legacy approval fallback and isApprovedProposal removed from agent-scope-guard.mjs; worktree test fixture moved to a handoff gate; docs/agents.md and implementer.md wording); tasks 4/9
+checks: guard tests 77 passed; pnpm test 421 passed, 0 failed (it.each cases merged into loops by test-writer, same cases kept); lint 0 errors; build, typecheck 0 errors
+open: none
+next: checkpoint 2 (task 2.3)

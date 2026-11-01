@@ -327,8 +327,8 @@ describe('agent-scope-guard: git worktrees (DEV-22)', () => {
     const dir = join(wt, 'openspec/changes/dev-1-demo');
     mkdirSync(dir, { recursive: true });
     writeFileSync(
-      join(dir, 'proposal.md'),
-      'Status: Approved\nApproved-by: Me\nApproved-on: 2026-01-01 10:00 IST\n',
+      join(dir, 'handoff.md'),
+      '### propose | 2026-01-01 | AWAITING_GATE_1\nhead: abc1234\n\n### gate-1 | 2026-01-01 | APPROVED\nhead: abc1234\n',
     );
     return { main, wt };
   }
