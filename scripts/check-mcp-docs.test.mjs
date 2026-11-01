@@ -26,6 +26,9 @@ describe('Context7 server pinned', () => {
     );
 
     expect(findings).toEqual([]);
+
+    const real = readFileSync(join(ROOT, '.mcp.json'), 'utf8');
+    expect(checkMcpConfig(real)).toEqual([]);
   });
 
   it('DEV-1004-AC-1: Floating Context7 version rejected', () => {
@@ -43,6 +46,46 @@ describe('Context7 server pinned', () => {
       const text = findings.join('\n');
       expect(text, pkg).toContain('context7');
       expect(text, pkg).toMatch(/unpinned|not pinned|floating|exact/i);
+    }
+  });
+});
+
+describe('MCP config robustness [design]', () => {
+  const PINNED = '@upstash/context7-mcp@1.2.3';
+
+  it('[design] a non-object server entry yields a finding and does not throw', () => {
+    const text = config({ context7: context7(PINNED), x: null, y: 'text' });
+    let findings = [];
+
+    expect(() => {
+      findings = checkMcpConfig(text);
+    }).not.toThrow();
+
+    const joined = findings.join('\n');
+    expect(findings.some((finding) => /\bx\b/.test(finding))).toBe(true);
+    expect(findings.some((finding) => /\by\b/.test(finding))).toBe(true);
+    expect(joined).toMatch(/object|invalid|malformed/i);
+  });
+
+  it('[design] a look-alike package is not accepted as the pinned context7 package', () => {
+    const findings = checkMcpConfig(
+      config({ context7: context7('@upstash/context7-mcp-evil@1.0.0') }),
+    );
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(text).toContain('context7');
+    expect(text).toMatch(/unpinned|not pinned|exact/i);
+  });
+
+  it('[design] a value after --api-key, --token or --secret yields a finding', () => {
+    for (const flag of ['--api-key', '--token', '--secret']) {
+      const findings = checkMcpConfig(
+        config({ context7: context7(PINNED, { args: ['-y', PINNED, flag, 'plainvalue123'] }) }),
+      );
+
+      expect(findings.length, flag).toBeGreaterThan(0);
+      expect(findings.join('\n'), flag).toContain('context7');
     }
   });
 });
