@@ -127,3 +127,24 @@ produced: gates build, typecheck, test 440/0, validate --strict green, lint 0 er
 checks: PASS, coverage waived by the user
 open: medium (process) agent-scope-guard change outside the proposal, trusts gate-1 in handoff.md, human decides at Gate 2; lows listed in review.md
 next: /create-pr dev-7-mcp
+
+### pr | 2026-11-01 | MERGED
+head: db316ea
+produced: PR #22 merged into main (189fbbd); Jira DEV-7 In Review with the PR link comment
+checks: PASS, see review.md "2026-11-01 | review | fresh-session review"
+open: guard change accepted by the user at Gate 2 (2026-11-01)
+next: /opsx:sync dev-7-mcp
+
+### sync | 2026-11-01 | DONE
+head: 189fbbd
+produced: capability mcp-integration created in openspec/specs (new spec, 19 scenarios as ADDED requirements)
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-7-mcp
+
+### archive | 2026-11-01 | DONE
+head: 189fbbd
+produced: archive/2026-11-01-dev-7-mcp, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira DEV-7 Done
