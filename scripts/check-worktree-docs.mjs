@@ -22,7 +22,11 @@ export function getSection(doc, heading) {
   return (end === -1 ? rest : rest.slice(0, end)).join('\n');
 }
 
-const normalisePair = (text) => text.replace('‖', '||').replace(/\s+/g, ' ').trim();
+/**
+ * @param {string} text subsection heading text
+ * @returns {string} the pair label with `‖` written as `||` and spaces collapsed
+ */
+const normalisePair = (text) => text.replaceAll('‖', '||').replace(/\s+/g, ' ').trim();
 
 /**
  * @param {string} section body of the Commands section
@@ -50,7 +54,7 @@ function pairBody(section, label) {
 export function checkCommands(doc) {
   const section = getSection(doc, 'Commands');
   if (section === null) {
-    return ['docs/worktrees.md has no "## Commands" section'];
+    return ['docs/worktrees.md: no "## Commands" section'];
   }
   const findings = [];
   for (const pair of PAIRS) {
@@ -60,14 +64,14 @@ export function checkCommands(doc) {
     const named = pair.branches.every((branch) => adds.some((line) => line.includes(branch)));
     if (adds.length < 2 || !named) {
       findings.push(
-        `${pair.label}: needs two "git worktree add" lines naming ${pair.branches.join(' and ')}`,
+        `docs/worktrees.md: ${pair.label} needs two "git worktree add" lines naming ${pair.branches.join(' and ')}`,
       );
     }
   }
   for (const command of ['git worktree list', 'git worktree remove']) {
     const present = section.split('\n').some((line) => line.trim().startsWith(command));
     if (!present) {
-      findings.push(`the Commands section has no "${command}" command`);
+      findings.push(`docs/worktrees.md: the Commands section has no "${command}" command`);
     }
   }
   return findings;
