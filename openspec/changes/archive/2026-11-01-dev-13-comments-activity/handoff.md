@@ -29,3 +29,24 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: medium: edit and delete of a comment on an archived task or project return 409, no scenario or test (listed under x-unspecified-statuses); status race in task-service fixed by the DEV-11 change (row lock); migrate and undo not run
 next: /create-pr dev-13-comments-activity
+
+### pr | 2026-11-01 | MERGED
+head: e78ec36
+produced: PR #35 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-13-comments-activity
+
+### sync | 2026-11-01 | DONE
+head: e78ec36
+produced: new capabilities comments-activity created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-13-comments-activity
+
+### archive | 2026-11-01 | DONE
+head: e78ec36
+produced: archive/2026-11-01-dev-13-comments-activity, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
