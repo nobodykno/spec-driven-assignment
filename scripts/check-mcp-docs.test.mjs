@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkMcpConfig } from './check-mcp-docs.mjs';
+import { checkCommands, checkMcpConfig, checkSettingsWrites } from './check-mcp-docs.mjs';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 
@@ -135,5 +135,96 @@ describe('MCP evidence and secrets', () => {
       expect(text, label).toContain(entry);
       expect(text, label).toMatch(problem);
     }
+  });
+});
+
+const WRITE_TOOLS = [
+  'createJiraIssue',
+  'editJiraIssue',
+  'transitionJiraIssue',
+  'addCommentToJiraIssue',
+  'addWorklogToJiraIssue',
+  'createIssueLink',
+].map((name) => `mcp__atlassian__${name}`);
+
+const settings = (permissions) => JSON.stringify({ permissions }, null, 2);
+
+const COMMAND_FILES = {
+  'opsx/explore': 'opsx/explore.md',
+  'opsx/propose': 'opsx/propose.md',
+  'opsx/archive': 'opsx/archive.md',
+  'create-pr': 'create-pr.md',
+  'frs-ticket': 'frs-ticket.md',
+};
+
+const readRealCommands = () =>
+  Object.fromEntries(
+    Object.entries(COMMAND_FILES).map(([key, file]) => [
+      key,
+      readFileSync(join(ROOT, '.claude', 'commands', file), 'utf8'),
+    ]),
+  );
+
+const FAILURE_RULE = 'On any Jira failure stop and report; never invent ticket data.';
+const APPROVAL_RULE = 'The Jira write happens only with the approval of the user.';
+
+const goodCommands = () => ({
+  'opsx/explore': FAILURE_RULE,
+  'opsx/propose': `${FAILURE_RULE} ${APPROVAL_RULE}`,
+  'opsx/archive': `${FAILURE_RULE} ${APPROVAL_RULE}`,
+  'create-pr': `${FAILURE_RULE} ${APPROVAL_RULE}`,
+  'frs-ticket': `${FAILURE_RULE} ${APPROVAL_RULE}`,
+});
+
+describe('Write operations need approval', () => {
+  it('DEV-1004-AC-4: Jira write tools require approval', () => {
+    const fixture = checkSettingsWrites(settings({ ask: WRITE_TOOLS, allow: ['Read'] }));
+    expect(fixture).toEqual([]);
+
+    const real = readFileSync(join(ROOT, '.claude', 'settings.json'), 'utf8');
+    expect(checkSettingsWrites(real)).toEqual([]);
+  });
+
+  it('DEV-1004-AC-4: Write tool outside the ask list rejected', () => {
+    const tool = 'mcp__atlassian__transitionJiraIssue';
+    const rest = WRITE_TOOLS.filter((name) => name !== tool);
+
+    const inAllow = checkSettingsWrites(settings({ ask: rest, allow: [tool] }));
+    expect(inAllow.length).toBeGreaterThan(0);
+    expect(inAllow.join('\n')).toContain(tool);
+
+    const missing = checkSettingsWrites(settings({ ask: rest, allow: [] }));
+    expect(missing.length).toBeGreaterThan(0);
+    expect(missing.join('\n')).toContain(tool);
+  });
+
+  it('DEV-1004-AC-4: Commands ask before a Jira write', () => {
+    const noApproval = checkCommands({ ...goodCommands(), 'create-pr': FAILURE_RULE });
+    expect(noApproval.length).toBeGreaterThan(0);
+    expect(noApproval.join('\n')).toContain('create-pr');
+
+    const approvalFindings = checkCommands(readRealCommands()).filter((finding) =>
+      /approval/i.test(finding),
+    );
+    expect(approvalFindings).toEqual([]);
+  });
+});
+
+describe('Jira failure handling (commands)', () => {
+  it('DEV-1004-AC-3: Jira commands state every failure case', () => {
+    expect(checkCommands(goodCommands())).toEqual([]);
+    expect(checkCommands(readRealCommands())).toEqual([]);
+  });
+
+  it('DEV-1004-AC-3: Command without the failure rule rejected', () => {
+    const findings = checkCommands({
+      ...goodCommands(),
+      'opsx/archive': `On failure stop. ${APPROVAL_RULE}`,
+    });
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(text).toContain('opsx/archive');
+    expect(text).not.toContain('opsx/explore');
   });
 });

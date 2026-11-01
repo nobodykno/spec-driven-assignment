@@ -13,7 +13,7 @@
 
 ## 2. Approval and command checks [docs]
 
-- [ ] 2.1 [docs] Test task (`test-writer`): same file, requirements "Write operations need approval" and the command part of "Jira failure handling". Scenarios: Jira write tools require approval; Write tool outside the ask list rejected; Commands ask before a Jira write; Jira commands state every failure case; Command without the failure rule rejected.
+- [x] 2.1 [docs] Test task (`test-writer`): same file, requirements "Write operations need approval" and the command part of "Jira failure handling". Scenarios: Jira write tools require approval; Write tool outside the ask list rejected; Commands ask before a Jira write; Jira commands state every failure case; Command without the failure rule rejected.
 - [ ] 2.2 [docs] Implement `checkSettingsWrites` and `checkCommands`, the CLI, `check:mcp-docs` script and the `lint` chain in `package.json` (turns 2.1 green; the real commands already contain the rules). Allow only the read-only Context7 tools in `.claude/settings.json` (names confirmed in 3.3).
 - [ ] 2.3 [docs] Checkpoint 2.
 

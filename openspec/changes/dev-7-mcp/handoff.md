@@ -29,3 +29,10 @@ produced: group 1 done (tasks 1.1 to 1.3), tasks 3/14; .mcp.json pins context7 a
 checks: PASS, see review.md "2026-11-01 | apply | group 1: Config and secrets" (round 2); reviewer: PASS
 open: low findings (secret flag --flag=value form, CLI exit-path test); coverage provider missing; lint has 24 existing warnings
 next: group 2, task 2.1 (test-writer)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 64303c8
+produced: task 2.1 done (5 failing tests, exports checkSettingsWrites and checkCommands missing); tasks 4/14
+checks: tests red as intended (test-first)
+open: real archive and frs-ticket command texts lack the "never invent" phrase (fixed in 2.2)
+next: task 2.2 implement checkSettingsWrites, checkCommands, check:mcp-docs script, lint chain
