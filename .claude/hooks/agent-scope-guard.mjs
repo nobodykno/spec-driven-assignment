@@ -23,7 +23,7 @@ const OPENSPEC_READS = new Set(['list', 'status', 'show', 'validate', 'instructi
 
 const REASONS = {
   'not-approved':
-    'the current branch has no approved OpenSpec change (Status: Approved, Approved-by, Approved-on)',
+    'the current branch has no approved OpenSpec change (gate-1 APPROVED in handoff.md, or Status: Approved in proposal.md)',
   'push-or-pr': 'the implementer never pushes or opens/merges PRs; the main session ships',
   'jira-write': 'the implementer never writes to Jira; the main session updates tickets',
   'production-code': 'the test-writer may change only test files (*.test.*, *.spec.*, e2e/)',
