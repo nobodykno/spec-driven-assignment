@@ -22,3 +22,21 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 ## 4. Quality gates
 
 - [x] 4.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass. [PARALLEL] worktree with DEV-15.
+
+## Scenario to test map
+
+Retroactive: tests titled in commit 12.1 (change merged in PR #11 before the opsx workflow). Test titles are `<FRS ID>: <scenario name>`.
+
+| Capability | Scenario | FRS ID | Test file | Task |
+|------------|----------|--------|-----------|------|
+| web-auth-projects | Successful login | FR-UI-001 | apps/web/src/features/auth/pages/login-page.test.tsx | 2.1 |
+| web-auth-projects | Inline validation errors | FR-UI-001 | apps/web/src/features/auth/pages/login-page.test.tsx | 2.1 |
+| web-auth-projects | Logout | FR-UI-001 | apps/web/src/features/auth/pages/login-page.test.tsx | 2.2 |
+| web-auth-projects | Automatic refresh | FR-UI-002 | apps/web/src/lib/api-client.test.tsx | 1.2 |
+| web-auth-projects | Refresh fails | FR-UI-002 | apps/web/src/routes/routes.test.tsx | 1.2 |
+| web-auth-projects | Protected page as guest | FR-AUTH-005 | apps/web/src/routes/routes.test.tsx | 1.3 |
+| web-auth-projects | List and create | FR-UI-003 | apps/web/src/features/projects/pages/projects-page.test.tsx | 3.2 |
+| web-auth-projects | Edit and archive | FR-UI-003 | apps/web/src/features/projects/pages/projects-page.test.tsx | 3.2 |
+| web-auth-projects | Owner manages members | FR-UI-004 | apps/web/src/features/projects/pages/project-settings-page.test.tsx | 3.3 |
+| web-auth-projects | Member sees no owner controls | FR-UI-004 | apps/web/src/features/projects/pages/projects-page.test.tsx | 3.3 |
+| web-auth-projects | States | FR-UI-010 | apps/web/src/features/projects/pages/projects-page.test.tsx | 3.2 |
