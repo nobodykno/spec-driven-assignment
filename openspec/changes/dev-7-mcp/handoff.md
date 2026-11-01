@@ -22,3 +22,10 @@ produced: task 1.1 done (4 failing tests, scripts/check-mcp-docs.test.mjs, modul
 checks: tests red as intended (test-first)
 open: version pin for Context7 needs a registry check
 next: task 1.2 implement checkMcpConfig, pin and add context7
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: bc6b8fa
+produced: group 1 done (tasks 1.1 to 1.3), tasks 3/14; .mcp.json pins context7 at 4.4.4
+checks: PASS, see review.md "2026-11-01 | apply | group 1: Config and secrets" (round 2); reviewer: PASS
+open: low findings (secret flag --flag=value form, CLI exit-path test); coverage provider missing; lint has 24 existing warnings
+next: group 2, task 2.1 (test-writer)
