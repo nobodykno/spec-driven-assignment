@@ -8,7 +8,7 @@ beforeEach(() => authStore.setSession('old-token', USER));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('apiFetch', () => {
-  it('FR-UI-002: a 401 refreshes once and retries the call with the new token', async () => {
+  it('FR-UI-002: Automatic refresh', async () => {
     let attempts = 0;
     const fetchMock = stubFetch({
       'GET /projects': (_url, init) => {
