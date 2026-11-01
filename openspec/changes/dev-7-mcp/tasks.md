@@ -29,7 +29,7 @@
 
 ## 4. Verification [docs]
 
-- [ ] 4.1 [docs] Full-diff run of the checkpoint (`pnpm build`, `pnpm lint --max-warnings 0`, `pnpm typecheck`, `pnpm test --coverage`, `pnpm exec openspec validate dev-7-mcp --strict`), `reviewer` on `git diff main...HEAD`, then `/opsx:verify dev-7-mcp` in a fresh session.
+- [x] 4.1 [docs] Full-diff run of the checkpoint (`pnpm build`, `pnpm lint --max-warnings 0`, `pnpm typecheck`, `pnpm test --coverage`, `pnpm exec openspec validate dev-7-mcp --strict`), `reviewer` on `git diff main...HEAD`, then `/opsx:verify dev-7-mcp` in a fresh session.
 
 ## Scenario to test map
 

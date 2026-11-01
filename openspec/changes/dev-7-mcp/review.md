@@ -120,3 +120,35 @@ Findings:
 | low | scripts/check-mcp-docs.mjs | readIfExists and run untested; coverage unmeasured (step 5 waived) |
 
 Next: commit task 3.7, then group 4 (task 4.1, full-diff run and /opsx:verify in a fresh session). The medium finding is left open for the user's decision.
+
+## 2026-11-01 | apply | final | PASS
+head: ecb41f9
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint | exit 0, 24 existing warnings; check:claude-settings and check:mcp-docs pass |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 440 passed, 0 failed, 0 skipped |
+| coverage | pnpm test --coverage | waived by the user (no coverage provider installed) |
+| spec | openspec validate dev-7-mcp --strict | valid |
+| scenarios | full diff, every scenario | 19/19 have exactly one test titled DEV-1004-AC-n (17 in scripts/check-mcp-docs.test.mjs, 2 in scripts/check-claude-settings.test.mjs) |
+| database | reviewer (database checklist) | n/a (no database changes) |
+| reviewer | reviewer (git diff main...HEAD) | APPROVE (0 critical, 0 high, 2 medium, 7 low) |
+| graph | code-review-graph | used: risk 0.60, 0 affected flows, untested readIfExists and run |
+
+Findings:
+
+| Severity | File | Issue |
+|---|---|---|
+| medium | .claude/hooks/agent-scope-guard.mjs and its test | group 1 guard change (branch format, isApprovedHandoff, refusal text) is not in proposal, design or tasks; name it in the PR description for Gate 2 or record it with /opsx:update |
+| medium | .claude/hooks/agent-scope-guard.mjs:266-285 | the guard now trusts gate-1 APPROVED in handoff.md, which agent sessions append to; handoff rule 1 forbids it but nothing enforces it; the human accepts the trade-off at Gate 2 |
+| low | scripts/check-mcp-docs.test.mjs | real-repo assertions filter findings by regex before asserting empty; assert on the unfiltered list |
+| low | scripts/check-mcp-docs.test.mjs:59-97 | three [design] tests lack an AC ID in the title and were not seen failing first (already recorded for group 1) |
+| low | scripts/check-mcp-docs.mjs | readIfExists and run untested; coverage unmeasured (waived) |
+| low | scripts/check-claude-settings.mjs:9 | pattern accepts mcp__- and similar names; harmless |
+| low | review.md, handoff.md | group 1 rounds 1 and 2 share head bc6b8fa; confirm append-only in /opsx:verify |
+| low | frs-ticket.md, archive.md, openspec/config.yaml | small wording changes; in scope or wording only |
+| low | tasks.md, review.md | 4.1 and the final section were pending at review time (done by this entry) |
+
+Next: commit task 4.1, then /opsx:verify dev-7-mcp in a FRESH session; the PR description must name the guard change for Gate 2.
