@@ -22,3 +22,10 @@ produced: retroactive (merged in PR #10 before the opsx workflow); 7/7 tasks tic
 checks: PASS, see review.md "2026-11-01 | apply | final"
 open: production defect found (see review.md Findings): concurrent status changes are not serialised
 next: /opsx:verify dev-13-comments-activity
+
+### review | 2026-11-01 | PASS
+head: 506a3f2
+produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors); isolated subagent review (Rule 23): reviewer APPROVE (0 critical, 0 high, 1 medium, 7 low); see review.md latest review section
+checks: PASS, coverage waived by the user
+open: medium: edit and delete of a comment on an archived task or project return 409, no scenario or test (listed under x-unspecified-statuses); status race in task-service fixed by the DEV-11 change (row lock); migrate and undo not run
+next: /create-pr dev-13-comments-activity
