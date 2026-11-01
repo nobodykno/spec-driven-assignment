@@ -29,21 +29,28 @@ function build(service: Record<string, unknown> = {}): ReturnType<typeof createA
 }
 
 describe('projects routes', () => {
-  it('FR-PROJ-001: POST /projects returns 201', async () => {
+  it('FR-PROJ-001: Valid project', async () => {
     const response = await request(build()).post('/projects').set(IDENTITY).send({ name: 'Alpha' });
     expect(response.status).toBe(201);
   });
 
-  it('FR-PROJ-001: POST /projects with a missing name returns 400 VALIDATION_ERROR', async () => {
+  it('FR-PROJ-001: Invalid name', async () => {
     const response = await request(build()).post('/projects').set(IDENTITY).send({});
     expect(response.status).toBe(400);
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
+    const tooLong = await request(build())
+      .post('/projects')
+      .set(IDENTITY)
+      .send({ name: 'x'.repeat(101) });
+    expect(tooLong.status).toBe(400);
+    expect(tooLong.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('FR-PROJ-002: GET /projects/:id for a non-member returns 404 NOT_FOUND', async () => {
+  it('FR-PROJ-002: Non-member views project', async () => {
     const get = vi.fn().mockRejectedValue(new AppError('NOT_FOUND', 404, 'Project not found'));
     const response = await request(build({ get })).get(`/projects/${PROJECT}`).set(IDENTITY);
     expect(response.status).toBe(404);
+    expect(response.body.error.code).toBe('NOT_FOUND');
   });
 
   it('FR-PROJ-002: GET /projects/:id with a malformed id returns 400', async () => {
@@ -51,21 +58,25 @@ describe('projects routes', () => {
     expect(response.status).toBe(400);
   });
 
-  it('FR-PROJ-003: PATCH by a member returns 403 FORBIDDEN', async () => {
+  it('FR-AUTH-006: Member updates', async () => {
     const update = vi.fn().mockRejectedValue(new AppError('FORBIDDEN', 403, 'no'));
     const response = await request(build({ update }))
       .patch(`/projects/${PROJECT}`)
       .set(IDENTITY)
       .send({ name: 'B' });
     expect(response.status).toBe(403);
+    expect(response.body.error.code).toBe('FORBIDDEN');
   });
 
-  it('FR-PROJ-005: POST members returns 201 and 409 ALREADY_MEMBER maps through', async () => {
-    const ok = await request(build())
+  it('FR-PROJ-005: Add user', async () => {
+    const response = await request(build())
       .post(`/projects/${PROJECT}/members`)
       .set(IDENTITY)
       .send({ email: 'bob@example.com' });
-    expect(ok.status).toBe(201);
+    expect(response.status).toBe(201);
+  });
+
+  it('FR-PROJ-005: Already member', async () => {
     const addMember = vi.fn().mockRejectedValue(new AppError('ALREADY_MEMBER', 409, 'dup'));
     const dup = await request(build({ addMember }))
       .post(`/projects/${PROJECT}/members`)
@@ -75,9 +86,13 @@ describe('projects routes', () => {
     expect(dup.body.error.code).toBe('ALREADY_MEMBER');
   });
 
-  it('FR-PROJ-006: DELETE member returns 204 and LAST_OWNER returns 409', async () => {
+  it('FR-PROJ-006: Remove member', async () => {
     const url = `/projects/${PROJECT}/members/${USER}`;
     expect((await request(build()).delete(url).set(IDENTITY)).status).toBe(204);
+  });
+
+  it('FR-PROJ-006: Last owner', async () => {
+    const url = `/projects/${PROJECT}/members/${USER}`;
     const removeMember = vi.fn().mockRejectedValue(new AppError('LAST_OWNER', 409, 'last'));
     const last = await request(build({ removeMember })).delete(url).set(IDENTITY);
     expect(last.status).toBe(409);
