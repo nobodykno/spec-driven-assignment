@@ -28,3 +28,10 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: deferred mediums: comment edit draft not validated with the shared CreateCommentSchema before PATCH; no tests for comment edit success (200) and delete (204); no edit-form PATCH 400/409 tests and no refetch assertion after PATCH. Lows: over-length messages not asserted, extra tests beyond one per scenario, newest-first order not proven, resolver type widening, no Cancel in comment edit mode
 next: /create-pr dev-16-web-comments-activity
+
+### review | 2026-11-01 | PASS
+head: fee4260
+produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors); isolated subagent review (Rule 23): reviewer round 1 CHANGES REQUIRED (3 medium), round 2 APPROVE after the fixes; security audit APPROVE (0 critical, 0 high, 0 medium, 3 low). Supersedes the earlier section of this file that shipped with deferred mediums: Rule 24 requires fixing them, and they are fixed; see review.md latest review section
+checks: PASS, coverage waived by the user
+open: lows: IDs interpolated into API paths without encodeURIComponent (all web api files), form-errors falls back poorly for unknown server paths, describe-activity casts change metadata unchecked, extra tests beyond one per scenario, newest-first order not proven by a test, resolver type widening, no Cancel in comment edit mode
+next: /create-pr dev-16-web-comments-activity

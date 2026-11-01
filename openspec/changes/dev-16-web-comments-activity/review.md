@@ -37,3 +37,33 @@ round: 1
 
 Findings: Shipped at the user's request (ship as soon as possible) with the three mediums deferred: comment edit draft is not validated with the shared schema (a bad draft reaches the server, which answers 400), comment edit-success and delete tests are missing, edit-form error and refetch tests are missing. All nine scenarios still have an exact-title test.
 Next: /create-pr dev-16-web-comments-activity
+
+## 2026-11-01 | review | fresh-session review | FAIL
+head: 855d8eb
+round: 2
+
+| Check | Command | Result |
+|-------|---------|--------|
+| reviewer | reviewer (isolated subagent review, Rule 23) | CHANGES REQUIRED (0 high, 3 medium, 5 low); supersedes the PASS section above, which deferred the mediums |
+
+Findings: medium: comment edit draft not validated with the shared schema; medium: no tests for comment edit success and delete; medium: no edit-form PATCH 400/409 tests and no refetch assertion.
+Next: fix and verify again
+
+## 2026-11-01 | review | fresh-session review | PASS
+head: fee4260
+round: 3
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint --max-warnings 0 | 0 errors, 24 existing warnings (the script ignores the flag) |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 421 root tests and all package tests passed |
+| coverage | pnpm --filter web test --coverage | web all files 91.6% lines, task-form.tsx 100% |
+| spec | openspec validate dev-16-web-comments-activity --strict | valid |
+| reviewer | reviewer (isolated subagent review, Rule 23), round 2 | APPROVE (0 critical, 0 high, 0 medium, 3 low) |
+| security | read-only general-purpose agent with a security brief (no security-auditor agent exists) | APPROVE (0 critical, 0 high, 0 medium, 3 low) |
+| database | database | n/a (no database changes in this change) |
+
+Findings: Fixed: commit 1f51c3c tests, 90b505e validate the edit draft with UpdateCommentSchema, fee4260 send the trimmed body. Only lows remain.
+Next: /create-pr dev-16-web-comments-activity
