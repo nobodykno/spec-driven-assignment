@@ -152,3 +152,23 @@ Findings:
 | low | tasks.md, review.md | 4.1 and the final section were pending at review time (done by this entry) |
 
 Next: commit task 4.1, then /opsx:verify dev-7-mcp in a FRESH session; the PR description must name the guard change for Gate 2.
+
+## 2026-11-01 | review | fresh-session review | PASS
+head: 6424eee
+round: 2 (round 1 at b84c885 was CHANGES REQUIRED: 2 mediums; docs fixed in 6424eee)
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint | 0 errors, 24 existing warnings (the lint script ignores --max-warnings) |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 440 passed, 0 failed |
+| coverage | pnpm test --coverage | waived by the user (no provider installed) |
+| spec | openspec validate dev-7-mcp --strict | valid |
+| reviewer | reviewer (isolated subagent review, Rule 23) | APPROVE (0 critical, 0 high, 1 medium process, 2 low) |
+| security | read-only general-purpose agent with a security brief (no security-auditor agent exists) | APPROVE (0 critical, 0 high, 1 medium, 4 low) |
+| database | n/a (no database changes) | n/a |
+| graph | code-review-graph | used, risk 0.60, 10 test gaps |
+
+Findings: open medium (process): agent-scope-guard change is outside the proposal and the guard trusts gate-1 in handoff.md; disclosed in the PR description for the human at Gate 2. Security medium: npx -y context7 residual risk, now documented in docs/mcp-setup.md. Lows: readIfExists and run untested, filtered real-repo assertions, secret scan heuristics, handoff regex ignores code fences, proposal.md approval fallback.
+Next: /create-pr dev-7-mcp
