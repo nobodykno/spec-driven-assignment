@@ -7,11 +7,13 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@app/database', () => ({
-  Task: { create: vi.fn() },
+  Task: { create: vi.fn(), findByPk: vi.fn(async () => null) },
   Project: {},
   ProjectMember: { count: vi.fn(async () => 1), findOne: vi.fn() },
   User: {},
-  getSequelize: () => ({ transaction: async (work: (tx: object) => unknown) => work({}) }),
+  getSequelize: () => ({
+    transaction: async (work: (tx: object) => unknown) => work({ LOCK: { UPDATE: 'UPDATE' } }),
+  }),
 }));
 
 vi.mock('./task-access.js', async (importOriginal) => ({
