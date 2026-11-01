@@ -1,7 +1,7 @@
 # Token policy
 
 Mandatory for every Claude Code session and every subagent in this repository (DEV-6 design D6).
-Every `sdd` command and every agent in `.claude/agents/` starts with "Follow docs/token-policy.md";
+Every `/opsx:*` command and the top-level commands (`create-pr`, `frs-ticket`, `save-context`) and every agent in `.claude/agents/` starts with "Follow docs/token-policy.md";
 `pnpm lint` (`scripts/check-agents.mjs`) fails if one does not. Results are recorded per ticket in
 `docs/token-efficiency.md`.
 

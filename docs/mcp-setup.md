@@ -126,7 +126,7 @@ Tools exposed by the `atlassian` MCP server (`mcp__atlassian__*`):
 
 ## Policy
 
-- Read-only tools may be used freely to fetch tickets during `/sdd:propose`
+- Read-only tools may be used freely to fetch tickets during `/opsx:explore` and `/opsx:propose`
   and later steps.
 - **Write tools (create, edit, transition, comment, worklog, link, and any
   Confluence or Compass write) need the user's explicit approval for each

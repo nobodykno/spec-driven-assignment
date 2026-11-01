@@ -7,9 +7,13 @@ import { pathToFileURL } from 'node:url';
 const AGENTS_DIR = '.claude/agents';
 const DOCS = 'docs/agents.md';
 const POLICY = 'docs/token-policy.md';
-const SDD_DIR = '.claude/commands/sdd';
+const COMMANDS_DIR = '.claude/commands';
 export const POLICY_LINE = `Follow ${POLICY}`;
-export const SDD_COMMANDS = ['propose', 'apply', 'verify', 'ship', 'run'];
+export const POLICY_COMMANDS = [
+  ...['opsx/explore', 'opsx/propose', 'opsx/update', 'opsx/apply'],
+  ...['opsx/verify', 'opsx/sync', 'opsx/archive'],
+  ...['create-pr', 'frs-ticket', 'save-context'],
+];
 const GUARD = 'agent-scope-guard.mjs';
 const HEADINGS = ['Scope', 'Permitted actions', 'Output', 'Restrictions', 'When used'];
 const HOOK_SCRIPT = /node\s+"?(?:\$CLAUDE_PROJECT_DIR\/)?([^"\s]+\.(?:mjs|cjs|js))"?/;
@@ -155,17 +159,17 @@ const hasPolicyLine = (text) =>
     .split('\n')
     .some((line) => line.trim() === POLICY_LINE);
 
-/** Token-policy references in the policy file, every agent and every sdd command (design D6). */
+/** Token-policy references in the policy file, every agent and every opsx or top-level command (design D6). */
 function checkPolicy({ agents, commands, scriptExists }) {
   const errors = scriptExists(POLICY) ? [] : [`${POLICY} is missing`];
   for (const name of Object.keys(agents).filter((n) => !hasPolicyLine(agents[n]))) {
     errors.push(`${name}: ${AGENTS_DIR}/${name}.md lacks "${POLICY_LINE}"`);
   }
-  for (const name of SDD_COMMANDS) {
+  for (const name of POLICY_COMMANDS) {
     const text = commands[name];
     if (text === undefined || !hasPolicyLine(text)) {
       const problem = text === undefined ? 'is missing' : `lacks "${POLICY_LINE}"`;
-      errors.push(`sdd/${name}: ${SDD_DIR}/${name}.md ${problem}`);
+      errors.push(`command ${name}: ${COMMANDS_DIR}/${name}.md ${problem}`);
     }
   }
   return errors;
@@ -175,7 +179,7 @@ function checkPolicy({ agents, commands, scriptExists }) {
  * @param {{ agents: Record<string, string>, docs: string | null,
  *   scriptExists: (path: string) => boolean, commands: Record<string, string> }} input
  *   agent file contents by name (without `.md`), docs/agents.md text, a project file-exists
- *   check, and sdd command contents by name
+ *   check, and command contents by name (`opsx/<name>` or top-level `<name>`)
  * @returns {string[]} problems; empty when everything is valid
  */
 export function checkAgents({ agents, docs, scriptExists, commands }) {
@@ -208,10 +212,9 @@ function loadInput(root) {
     docs: existsSync(docsPath) ? readFileSync(docsPath, 'utf8') : null,
     scriptExists: (path) => existsSync(join(root, path)),
     commands: Object.fromEntries(
-      SDD_COMMANDS.filter((name) => existsSync(join(root, SDD_DIR, `${name}.md`))).map((name) => [
-        name,
-        readFileSync(join(root, SDD_DIR, `${name}.md`), 'utf8'),
-      ]),
+      POLICY_COMMANDS.filter((name) => existsSync(join(root, COMMANDS_DIR, `${name}.md`))).map(
+        (name) => [name, readFileSync(join(root, COMMANDS_DIR, `${name}.md`), 'utf8')],
+      ),
     ),
   };
 }

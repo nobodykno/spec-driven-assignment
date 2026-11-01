@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Writes failing tests from OpenSpec spec scenarios before implementation; every test name starts with the FRS ID. Use from /sdd:apply for the test-first step. Never changes production code.
+description: Writes failing tests from OpenSpec spec scenarios before implementation; every test title is "<FRS-ID>: <scenario name>". Use from /opsx:apply for the test-first step. Never changes production code.
 tools: Read, Grep, Glob, Edit, Write, Skill, Bash(pnpm:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*)
 hooks:
   PreToolUse:
