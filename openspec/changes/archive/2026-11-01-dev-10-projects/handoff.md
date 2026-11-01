@@ -29,3 +29,24 @@ produced: gates green; isolated subagent review (Rule 23): reviewer rounds 1 and
 checks: PASS, coverage waived by the user
 open: deferred lows listed in review.md and docs/progress.md
 next: /create-pr dev-10-projects
+
+### pr | 2026-11-01 | MERGED
+head: 6268490
+produced: PR #28 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-10-projects
+
+### sync | 2026-11-01 | DONE
+head: 6268490
+produced: new capabilities projects created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-10-projects
+
+### archive | 2026-11-01 | DONE
+head: 6268490
+produced: archive/2026-11-01-dev-10-projects, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
