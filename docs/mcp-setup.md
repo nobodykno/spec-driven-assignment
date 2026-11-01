@@ -167,6 +167,8 @@ local stdio server with an exact pinned version and no key or other secret:
 
 - Version check on 2026-11-01 10:35 IST: `pnpm view @upstash/context7-mcp` returned latest `4.4.4`,
   published 2026-10-19 (more than two weeks old), binary `context7-mcp`.
+- Residual risk: `npx -y` fetches the pinned package without a prompt, and its transitive dependencies are not
+  pinned. Context7 sees the query text, so a query names a library and a topic only, never a secret or ticket text.
 - Claude Code must be restarted after `.mcp.json` changes, and the server approved once.
 - Only read-only Context7 tools are allowed in `.claude/settings.json`; there is no write tool.
 - `scripts/check-mcp-docs.mjs` (part of `pnpm lint`) rejects an unpinned or floating version and any
@@ -193,6 +195,8 @@ Tools confirmed on 2026-11-01: `mcp__context7__resolve-library-id` and `mcp__con
   malformed response. The agent reports it and never invents ticket data. No offline fixture exists.
 
 ## Failure test log
+
+The "MCP disabled" and "auth cleared" rows prove tool absence, not a refused Jira call: with the tools missing no request could be sent, and the agent stopped and reported. The "missing ticket" row is a real Jira response.
 
 | Date (IST)       | Case                  | Call                                       | Result                                                                      |
 | ---------------- | --------------------- | ------------------------------------------ | --------------------------------------------------------------------------- |
