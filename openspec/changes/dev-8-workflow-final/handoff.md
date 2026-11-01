@@ -15,3 +15,10 @@ produced: user answered the Gate 1 question "approve the spec for dev-8-workflow
 checks: none
 open: none
 next: /opsx:apply dev-8-workflow-final, task 1.1
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: df6713c
+produced: group 1 done (tasks 1.1, 1.2), tasks 2/9
+checks: PASS, see review.md "2026-11-01 | apply | group 1: sdd-workflow scenario tests"; reviewer: PASS
+open: lows only (archive tests are exact prose matches)
+next: group 2 task 2.1 (guard tests), then 2.2 implement D1

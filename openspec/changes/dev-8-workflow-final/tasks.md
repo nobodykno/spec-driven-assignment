@@ -7,8 +7,8 @@
 
 ## 1. sdd-workflow scenario tests [docs]
 
-- [ ] 1.1 [docs] Test task (`test-writer`): `scripts/check-workflow.test.mjs`, requirements "Handoff gate before implementation", "Archive after merge", "Command documentation", "Review gate before pull request". Scenarios: Propose then approved gate passes; No gate block refused; Rejected gate refused; Update after approval cancels it; Missing handoff refused; Archive requires a merged pull request and a follow-up branch; Archive syncs specs before moving the change; Every command documented; Undocumented command fails and is named; Committed repository passes the checker; Checker exits 1 for an undocumented command; Latest review pass allowed; Latest review fail refused; Missing review refused. Rename the existing tests to the scenario titles, add the two archive tests.
-- [ ] 1.2 [docs] Checkpoint 1 (full, `checkpoint.md`; coverage waived, no provider; database n/a).
+- [x] 1.1 [docs] Test task (`test-writer`): `scripts/check-workflow.test.mjs`, requirements "Handoff gate before implementation", "Archive after merge", "Command documentation", "Review gate before pull request". Scenarios: Propose then approved gate passes; No gate block refused; Rejected gate refused; Update after approval cancels it; Missing handoff refused; Archive requires a merged pull request and a follow-up branch; Archive syncs specs before moving the change; Every command documented; Undocumented command fails and is named; Committed repository passes the checker; Checker exits 1 for an undocumented command; Latest review pass allowed; Latest review fail refused; Missing review refused. Rename the existing tests to the scenario titles, add the two archive tests.
+- [x] 1.2 [docs] Checkpoint 1 (full, `checkpoint.md`; coverage waived, no provider; database n/a).
 
 ## 2. Guard approval from the handoff only [docs]
 
