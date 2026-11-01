@@ -1,0 +1,228 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-11 delta)
+  version: 0.0.0-dev-11
+  description: >-
+    DEV-11 (assignment DEV-1008). Retroactive record of the endpoints as built (merged in PR #8):
+    this change ADDED POST /projects/{projectId}/tasks, GET and PATCH /tasks/{taskId},
+    PATCH /tasks/{taskId}/assignee, PATCH /tasks/{taskId}/status and POST /tasks/{taskId}/archive.
+    Every route needs a Bearer access token verified by the gateway. Non-members get 404 NOT_FOUND
+    (never 403); any project member may use every task route. The task list endpoint belongs to
+    DEV-12 and is not part of this change. Paths are relative to /api/v1.
+paths:
+  /projects/{projectId}/tasks:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      operationId: createTask
+      x-unspecified-statuses: ['401']  # no spec scenario; 400 for a malformed projectId shares VALIDATION_ERROR
+      summary: Create a task in a project (FR-TASK-001)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTaskInput' }
+      responses:
+        '201':
+          description: Created task, status TODO, one TASK_CREATED activity entry
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400':
+          description: >-
+            VALIDATION_ERROR (field rules, past due date with details path dueDate) or
+            ASSIGNEE_NOT_MEMBER (assignee is not a project member)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: PROJECT_ARCHIVED, the project is archived
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    get:
+      operationId: getTask
+      x-unspecified-statuses: ['400', '401']  # no spec scenario; 400 = malformed taskId
+      summary: View a task (FR-TASK-002)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Full task with assignee, creator and timestamps (archived tasks stay viewable)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateTask
+      x-unspecified-statuses: ['400', '401', '404']  # no spec scenario; 400 = invalid body or id, 404 = missing or non-member; PROJECT_ARCHIVED 409 shares the 409 entry
+      summary: Update title, description, priority and due date (FR-TASK-003)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateTaskInput' }
+      responses:
+        '200':
+          description: Updated task, updatedAt changed, one TASK_UPDATED activity entry
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '409':
+          description: TASK_ARCHIVED (also PROJECT_ARCHIVED when the project is archived, unspecified)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /tasks/{taskId}/assignee:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    patch:
+      operationId: assignTask
+      x-unspecified-statuses: ['401', '404', '409']  # no spec scenario; 404 = missing or non-member caller, 409 = TASK_ARCHIVED or PROJECT_ARCHIVED
+      summary: Assign a task to a project member or unassign it (FR-TASK-004)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssignTaskInput' }
+      responses:
+        '200':
+          description: Task with the new assignee; TASK_ASSIGNED activity entry written in the same transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '400':
+          description: ASSIGNEE_NOT_MEMBER (also VALIDATION_ERROR for a malformed body or id, unspecified)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /tasks/{taskId}/status:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    patch:
+      operationId: changeTaskStatus
+      x-unspecified-statuses: ['400', '401', '404']  # no spec scenario; 400 = unknown status value or malformed id, 404 = missing or non-member, TASK_ARCHIVED and PROJECT_ARCHIVED share the 409 entry
+      summary: Change the task status along the transition table (FR-TASK-005)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangeStatusInput' }
+      responses:
+        '200':
+          description: Task with the new status; TASK_STATUS_CHANGED entry holds the old and new status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '409':
+          description: >-
+            INVALID_STATUS_TRANSITION, details list the allowed targets as "Allowed: A, B"
+            (TASK_ARCHIVED and PROJECT_ARCHIVED are also possible, unspecified)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /tasks/{taskId}/archive:
+    parameters:
+      - $ref: '#/components/parameters/TaskId'
+    post:
+      operationId: archiveTask
+      x-unspecified-statuses: ['400', '401', '409']  # no spec scenario; 400 = malformed taskId, 409 = already archived (TASK_ARCHIVED) or PROJECT_ARCHIVED
+      summary: Archive a task, making it read-only (FR-TASK-006)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Task with archivedAt set; TASK_ARCHIVED activity entry; hidden from default lists
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    NotFound:
+      description: Task or project does not exist or the caller is not a member, code NOT_FOUND
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+    TaskStatus: { type: string, enum: [TODO, IN_PROGRESS, IN_REVIEW, DONE] }
+    TaskPriority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT], default: MEDIUM }
+    CreateTaskInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200, description: Trimmed }
+        description: { type: [string, 'null'], maxLength: 5000 }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        dueDate: { type: [string, 'null'], format: date, description: Not before today (UTC) }
+        assigneeId: { type: [string, 'null'], format: uuid, description: Must be a project member }
+    UpdateTaskInput:
+      type: object
+      minProperties: 1
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: [string, 'null'], maxLength: 5000 }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        dueDate: { type: [string, 'null'], format: date }
+    AssignTaskInput:
+      type: object
+      required: [assigneeId]
+      properties:
+        assigneeId: { type: [string, 'null'], format: uuid, description: null unassigns }
+    ChangeStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/TaskStatus' }
+    UserRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+    Task:
+      type: object
+      required: [id, projectId, title, description, status, priority, dueDate, assignee, createdBy, archivedAt, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: [string, 'null'] }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        dueDate: { type: [string, 'null'], format: date }
+        assignee: { oneOf: [{ $ref: '#/components/schemas/UserRef' }, { type: 'null' }] }
+        createdBy: { $ref: '#/components/schemas/UserRef' }
+        archivedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }

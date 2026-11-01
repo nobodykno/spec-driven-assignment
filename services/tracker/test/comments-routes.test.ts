@@ -36,7 +36,7 @@ function build(
 }
 
 describe('comments routes', () => {
-  it('FR-CMT-001: POST returns 201 and an empty body returns 400', async () => {
+  it('FR-CMT-001: status mapping of Valid comment and Invalid body', async () => {
     const url = `/tasks/${TASK}/comments`;
     const ok = await request(build()).post(url).set(IDENTITY).send({ body: 'Looks good' });
     expect(ok.status).toBe(201);
@@ -45,7 +45,7 @@ describe('comments routes', () => {
     expect(bad.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('FR-CMT-002: editing someone else comment returns 403 FORBIDDEN', async () => {
+  it('FR-CMT-002: status mapping of Other user edits', async () => {
     const edit = vi.fn().mockRejectedValue(new AppError('FORBIDDEN', 403, 'no'));
     const response = await request(build({ edit }))
       .patch(`/comments/${COMMENT}`)
@@ -54,14 +54,14 @@ describe('comments routes', () => {
     expect(response.status).toBe(403);
   });
 
-  it('FR-CMT-003: DELETE returns 204 and a non-member gets 404', async () => {
+  it('FR-CMT-003: status mapping of Author or Owner deletes and non-member 404', async () => {
     expect((await request(build()).delete(`/comments/${COMMENT}`).set(IDENTITY)).status).toBe(204);
     const remove = vi.fn().mockRejectedValue(new AppError('NOT_FOUND', 404, 'nope'));
     const response = await request(build({ remove })).delete(`/comments/${COMMENT}`).set(IDENTITY);
     expect(response.status).toBe(404);
   });
 
-  it('FR-CMT-004: GET lists comments with pagination meta', async () => {
+  it('FR-CMT-004: status mapping of Chronological page', async () => {
     const response = await request(build()).get(`/tasks/${TASK}/comments`).set(IDENTITY);
     expect(response.status).toBe(200);
     expect(response.body.meta.totalPages).toBe(0);
@@ -69,13 +69,13 @@ describe('comments routes', () => {
 });
 
 describe('activity routes', () => {
-  it('FR-ACT-002: GET returns the history page', async () => {
+  it('FR-ACT-002: status mapping of History', async () => {
     const response = await request(build()).get(`/tasks/${TASK}/activity`).set(IDENTITY);
     expect(response.status).toBe(200);
     expect(response.body.items).toEqual([]);
   });
 
-  it('FR-ACT-001: activity has no update or delete routes', async () => {
+  it('FR-ACT-001: status mapping of Append-only', async () => {
     const app = build();
     const url = `/tasks/${TASK}/activity`;
     expect((await request(app).patch(url).set(IDENTITY).send({})).status).toBe(404);

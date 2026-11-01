@@ -147,6 +147,8 @@ export class TaskService {
   // SDS §5.5: the change and its activity entry share one transaction.
   private async mutate(userId: string, taskId: string, apply: Mutation): Promise<TaskDto> {
     return getSequelize().transaction(async (tx) => {
+      // Lock the row first so concurrent changes to one task run one after the other.
+      await Task.findByPk(taskId, { transaction: tx, lock: tx.LOCK.UPDATE });
       const task = await findTaskForMember(taskId, userId, tx);
       assertWritable(task.project, task);
       await apply(task, tx);
