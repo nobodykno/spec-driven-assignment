@@ -80,3 +80,24 @@ head: c87244c
 
 Findings: medium: proposal Impact omits docs/agents.md and .claude/agents/implementer.md (approval wording edited with D1); recorded as a correction block in handoff.md (append-only), the specs are unchanged. Lows: Impact says 440 tests (actual 421 after merging it.each cases into loops); guard tests loop several cases per test; makeRepo declares git before root.
 Next: /opsx:verify dev-8-workflow-final
+
+## 2026-11-01 | review | fresh-session review | PASS
+head: c24126b
+round: 1
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint | 0 errors, 24 existing warnings (script ignores --max-warnings) |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 421 passed, 0 failed |
+| coverage | pnpm test --coverage | waived by the user (no provider installed) |
+| spec | openspec validate dev-8-workflow-final --strict | valid |
+| append-only | git diff main...HEAD on handoff.md, review.md | 0 removed lines |
+| reviewer | reviewer (isolated subagent review, Rule 23) | APPROVE (0 critical, 0 high, 1 medium, 3 low) |
+| security | read-only general-purpose agent with a security brief (no security-auditor agent exists) | APPROVE (0 critical, 0 high, 1 medium pre-existing, 5 low) |
+| database | n/a | n/a (no database changes) |
+| graph | code-review-graph | unavailable (not run) |
+
+Findings: medium (reviewer): dev-9 to dev-16 are blocked for the implementer until each gets a handoff.md gate-1 block; recorded in handoff.md, handled when those changes are bootstrapped. Medium (security, pre-existing): after approval the implementer may edit handoff.md and .claude/**, follow-up ticket to deny-list them. Lows: handoff regex ignores code fences and ignores malformed propose/update headings, loops hide the failing case, archive tests match prose.
+Next: /create-pr dev-8-workflow-final
