@@ -15,3 +15,21 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 ## 3. Quality gates
 
 - [x] 3.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass. [PARALLEL] worktree with DEV-13.
+
+## Scenario to test map
+
+Retroactive: tests were titled to the scenario names after merge (PR #9). The task is the original task that built the behaviour. Mocked route tests in `services/tracker/test/tasks-routes.test.ts` are titled `<FRS ID>: status mapping of <scenario name>` and are companions, not the proof.
+
+| Capability | Scenario | FRS ID | Test file | Task |
+|------------|----------|--------|-----------|------|
+| task-filtering | Status and priority | FR-FILT-001 | services/tracker/test/task-filtering-scenarios.test.ts | 1.1 |
+| task-filtering | Assigned to me | FR-FILT-001 | services/tracker/test/task-filtering-scenarios.test.ts | 1.1 |
+| task-filtering | Unassigned | FR-FILT-001 | services/tracker/test/task-filtering-scenarios.test.ts | 1.1 |
+| task-filtering | Invalid filter | FR-FILT-001 | services/tracker/test/task-filtering-scenarios.test.ts | 1.3 |
+| task-filtering | Non-member lists | FR-FILT-001 | services/tracker/test/task-filtering-scenarios.test.ts | 1.3 |
+| task-filtering | Sort by due date | FR-FILT-002 | services/tracker/test/task-filtering-scenarios.test.ts | 1.1 |
+| task-filtering | Sort by priority | FR-FILT-002 | services/tracker/test/task-filtering-scenarios.test.ts | 1.1 |
+| task-filtering | Invalid sort field | FR-FILT-002 | services/tracker/test/task-filtering-scenarios.test.ts | 1.3 |
+| task-filtering | Paged response | FR-FILT-003 | services/tracker/test/task-filtering-scenarios.test.ts | 1.2 |
+| task-filtering | Page size too large | FR-FILT-003 | services/tracker/test/task-filtering-scenarios.test.ts | 1.3 |
+| task-filtering | Indexes exist | NFR-PERF-002 | services/tracker/test/task-filtering-scenarios.test.ts | 2.1 |
