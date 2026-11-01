@@ -22,3 +22,10 @@ produced: retroactive (merged in PR #11 before the opsx workflow); 9/9 tasks tic
 checks: PASS, see review.md "2026-11-01 | apply | final"
 open: none
 next: /opsx:verify dev-14-web-auth-projects
+
+### review | 2026-11-01 | PASS
+head: 855d8eb
+produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors); isolated subagent review (Rule 23): reviewer APPROVE (0 critical, 0 high, 0 medium, 5 low), security audit APPROVE (4 low); see review.md latest review section
+checks: PASS, coverage waived by the user
+open: lows: projectId from the URL interpolated into API paths without encodeURIComponent (also task and comment APIs), logout failure leaves the refresh cookie valid, bootstrap race with manual login, extra tests beyond one per scenario
+next: /create-pr dev-14-web-auth-projects
