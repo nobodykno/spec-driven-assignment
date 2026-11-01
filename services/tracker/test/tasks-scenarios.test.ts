@@ -522,6 +522,8 @@ describe('tasks scenarios against the database', () => {
       ),
     );
     expect(results.map((response) => response.status).sort()).toEqual([200, 409]);
+    const loser = results.find((response) => response.status === 409);
+    expect(loser?.body.error.code).toBe('INVALID_STATUS_TRANSITION');
     expect(await Activity.count({ where: { taskId: world.taskId } })).toBe(1);
   });
 });
