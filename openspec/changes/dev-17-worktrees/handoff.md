@@ -43,3 +43,10 @@ produced: task 2.1 done (6 tests added, red: checkConflicts and checkContractApp
 checks: 6 red as intended, 3 existing pass
 open: none
 next: task 2.2 implement checkConflicts and checkContractApproval
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 4b28848
+produced: task 2.2 done (checkConflicts, checkContractApproval); tasks 5/14
+checks: scripts/check-worktree-docs.test.mjs 9 passed; lint 0 errors
+open: none
+next: checkpoint 2 (task 2.3)

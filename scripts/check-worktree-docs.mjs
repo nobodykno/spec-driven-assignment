@@ -76,3 +76,90 @@ export function checkCommands(doc) {
   }
   return findings;
 }
+
+const PREFIX = 'docs/worktrees.md: ';
+
+/**
+ * @param {string} section body of a section that holds one markdown table
+ * @returns {string[][]} the data rows as trimmed cells (header and separator rows dropped);
+ *   a doubled `||` inside a cell (the pair label) is not a cell separator
+ */
+function tableRows(section) {
+  const rows = section
+    .split('\n')
+    .filter((line) => line.trim().startsWith('|'))
+    .map((line) =>
+      line
+        .trim()
+        .replace(/^\|(?!\|)|(?<!\|)\|$/g, '')
+        .split(/(?<!\|)\|(?!\|)/)
+        .map((cell) => cell.trim()),
+    );
+  return rows.slice(2);
+}
+
+/**
+ * @param {string[]} row cells of one Merge conflicts row: date, branch, file, cause, resolution, re-verified
+ * @returns {string[]} findings for that conflict
+ */
+function conflictFindings(row) {
+  const [, branch = '', file = '', , resolution = '', verified = ''] = row;
+  const where = `${file || '(no file)'} (${branch})`;
+  const findings = [];
+  if (resolution === '') {
+    findings.push(`${PREFIX}conflict in ${where} has no resolution`);
+  }
+  const words = verified.replace(/`/g, '').trim().split(/\s+/);
+  if (!/\bpnpm\b/.test(verified) || words.length < 3) {
+    findings.push(
+      `${PREFIX}conflict in ${where} has no re-verification (a pnpm command and its result)`,
+    );
+  }
+  return findings;
+}
+
+/**
+ * AC-2: every merge conflict names its file, a resolution and the gates run afterwards.
+ * @param {string} doc docs/worktrees.md text
+ * @returns {string[]} findings
+ */
+export function checkConflicts(doc) {
+  const section = getSection(doc, 'Merge conflicts');
+  if (section === null) {
+    return [`${PREFIX}no "## Merge conflicts" section`];
+  }
+  const rows = tableRows(section);
+  if (rows.length === 0) {
+    return [`${PREFIX}the Merge conflicts section lists no conflict`];
+  }
+  return rows.flatMap(conflictFindings);
+}
+
+/**
+ * AC-3: per pair, the commit that put the shared contracts on the branches, and it must exist.
+ * @param {string} doc docs/worktrees.md text
+ * @param {(sha: string) => boolean} commitExists predicate that tells whether a commit is in git
+ * @returns {string[]} findings
+ */
+export function checkContractApproval(doc, commitExists) {
+  const section = getSection(doc, 'Shared contracts approved before parallel work');
+  if (section === null) {
+    return [`${PREFIX}no "## Shared contracts approved before parallel work" section`];
+  }
+  const rows = tableRows(section);
+  const findings = [];
+  for (const pair of PAIRS) {
+    const row = rows.find(([cell = '']) => normalisePair(cell) === pair.label);
+    if (row === undefined) {
+      findings.push(`${PREFIX}${pair.label} has no approval row`);
+      continue;
+    }
+    const sha = /\b[0-9a-f]{7,40}\b/i.exec((row[1] ?? '').replace(/`/g, ''))?.[0];
+    if (sha === undefined) {
+      findings.push(`${PREFIX}${pair.label} has no commit SHA`);
+    } else if (!commitExists(sha)) {
+      findings.push(`${PREFIX}${pair.label} cites commit ${sha}, which git does not know`);
+    }
+  }
+  return findings;
+}

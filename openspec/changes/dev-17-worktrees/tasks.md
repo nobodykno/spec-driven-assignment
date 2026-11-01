@@ -15,7 +15,7 @@
 ## 2. Conflicts and contract approval (AC-2, AC-3) [docs]
 
 - [x] 2.1 [docs] Test task (`test-writer`): same file, requirements "Merge conflict resolved and re-verified" and "Contract approval referenced by commit". Scenarios: Conflict with resolution and gates recorded; Conflict without re-verification rejected; Conflicts section without an entry rejected; Approval commit recorded per pair; Row without commit reference rejected; Reference to unknown commit rejected.
-- [ ] 2.2 [docs] Implement `checkConflicts` and `checkContractApproval(doc, commitExists)` (turns 2.1 green; AC-2, AC-3). Verify: `pnpm exec vitest run scripts/check-worktree-docs.test.mjs`.
+- [x] 2.2 [docs] Implement `checkConflicts` and `checkContractApproval(doc, commitExists)` (turns 2.1 green; AC-2, AC-3). Verify: `pnpm exec vitest run scripts/check-worktree-docs.test.mjs`.
 - [ ] 2.3 [docs] Checkpoint 2.
 
 ## 3. Evidence and CLI (AC-4) [docs]
