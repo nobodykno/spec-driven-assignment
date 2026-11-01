@@ -140,24 +140,27 @@ export class ProjectService {
   async removeMember(userId: string, projectId: string, targetUserId: string): Promise<void> {
     const { project } = await requireProjectRole(projectId, userId, OWNER_ONLY);
     assertProjectActive(project);
-    const target = await ProjectMember.findOne({ where: { projectId, userId: targetUserId } });
-    if (!target) {
-      throw new AppError('NOT_FOUND', 404, 'Member not found');
-    }
-    if (target.role === 'OWNER') {
-      await this.assertAnotherOwner(projectId);
-    }
     await getSequelize().transaction(async (tx: Transaction) => {
+      // Lock the owner rows so two concurrent removals cannot both pass the last-owner check.
+      const owners = await ProjectMember.findAll({
+        where: { projectId, role: 'OWNER' },
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      });
+      const target = await ProjectMember.findOne({
+        where: { projectId, userId: targetUserId },
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      });
+      if (!target) {
+        throw new AppError('NOT_FOUND', 404, 'Member not found');
+      }
+      if (target.role === 'OWNER' && owners.length <= 1) {
+        throw new AppError('LAST_OWNER', 409, 'A project must keep at least one owner');
+      }
       await this.unassignTasks(projectId, targetUserId, userId, tx);
       await target.destroy({ transaction: tx });
     });
-  }
-
-  private async assertAnotherOwner(projectId: string): Promise<void> {
-    const owners = await ProjectMember.count({ where: { projectId, role: 'OWNER' } });
-    if (owners <= 1) {
-      throw new AppError('LAST_OWNER', 409, 'A project must keep at least one owner');
-    }
   }
 
   // FR-PROJ-006: the removed member's tasks become unassigned, one activity entry each.
