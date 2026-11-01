@@ -32,6 +32,7 @@ Every version is pinned exactly (NFR-OPS-001). `pnpm check:versions` fails on an
 | typescript | 5.9.3 | root | dev |
 | typescript-eslint | 8.72.1 | root | dev |
 | vitest | 5.0.5 | root | dev |
+| @vitest/coverage-v8 | 5.0.5 | root | dev |
 | react, react-dom | 19.3.1 | apps/web | prod |
 | @types/react, @types/react-dom | 19.3.0 | apps/web | dev |
 | @testing-library/dom | 10.4.2 | apps/web | dev |
