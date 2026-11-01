@@ -36,3 +36,10 @@ produced: task 2.1 done (5 failing tests, exports checkSettingsWrites and checkC
 checks: tests red as intended (test-first)
 open: real archive and frs-ticket command texts lack the "never invent" phrase (fixed in 2.2)
 next: task 2.2 implement checkSettingsWrites, checkCommands, check:mcp-docs script, lint chain
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 71b0501
+produced: group 2 done (tasks 2.1 to 2.3), tasks 6/14; check:mcp-docs in the lint chain
+checks: PASS, see review.md "2026-11-01 | apply | group 2: Approval and command checks"; reviewer: PASS
+open: Context7 read-only tools still to be added to the allow list in task 3.3; low review findings (per-case failure keywords, looser approval check)
+next: group 3, task 3.1 (test-writer)

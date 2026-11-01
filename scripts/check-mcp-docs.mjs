@@ -74,9 +74,89 @@ export function checkMcpConfig(mcpJsonText) {
   return findings;
 }
 
+const SETTINGS_FILE = '.claude/settings.json';
+const WRITE_TOOLS = [
+  ...['createJiraIssue', 'editJiraIssue', 'transitionJiraIssue'],
+  ...['addCommentToJiraIssue', 'addWorklogToJiraIssue', 'createIssueLink'],
+].map((name) => `mcp__atlassian__${name}`);
+const READ_COMMANDS = ['opsx/explore'];
+const WRITE_COMMANDS = ['opsx/propose', 'opsx/archive', 'create-pr', 'frs-ticket'];
+
+/** @returns {{ ask: string[], allow: string[] } | string} the permission lists, or a finding text */
+function permissionLists(settingsJsonText) {
+  let permissions;
+  try {
+    permissions = JSON.parse(settingsJsonText).permissions ?? {};
+  } catch {
+    return `${SETTINGS_FILE}: is not valid JSON`;
+  }
+  const { ask = [], allow = [] } = permissions;
+  return Array.isArray(ask) && Array.isArray(allow)
+    ? { ask, allow }
+    : `${SETTINGS_FILE}: permissions.ask and permissions.allow must be arrays`;
+}
+
+/**
+ * @param {string} settingsJsonText content of .claude/settings.json
+ * @returns {string[]} findings for Jira write tools that are not behind an approval prompt
+ */
+export function checkSettingsWrites(settingsJsonText) {
+  const lists = permissionLists(settingsJsonText);
+  if (typeof lists === 'string') {
+    return [lists];
+  }
+  return WRITE_TOOLS.flatMap((tool) => {
+    if (lists.allow.includes(tool)) {
+      return [`${SETTINGS_FILE}: ${tool} is in allow; Jira writes need approval (ask)`];
+    }
+    return lists.ask.includes(tool)
+      ? []
+      : [`${SETTINGS_FILE}: ${tool} is not in ask; Jira writes need approval`];
+  });
+}
+
+/** @returns {string[]} findings for one command text */
+function checkCommand(key, text) {
+  const findings = [];
+  if (!/never invent/i.test(text) || !/\bstop\b/i.test(text)) {
+    findings.push(
+      `command ${key}: lacks the failure rule (stop, report, never invent ticket data)`,
+    );
+  }
+  if (WRITE_COMMANDS.includes(key) && !(/approval/i.test(text) && /\bonly\b|\bask/i.test(text))) {
+    findings.push(`command ${key}: does not say Jira writes happen only with the user's approval`);
+  }
+  return findings;
+}
+
+/**
+ * @param {Record<string, string>} commands command texts by path under .claude/commands, no `.md`
+ * @returns {string[]} findings for Jira-using commands without the failure or approval rules
+ */
+export function checkCommands(commands) {
+  return [...READ_COMMANDS, ...WRITE_COMMANDS].flatMap((key) =>
+    commands[key] === undefined ? [`command ${key}: is missing`] : checkCommand(key, commands[key]),
+  );
+}
+
+/** @returns {string | undefined} the file text, or undefined when the file is missing */
+const readIfExists = (root, file) =>
+  existsSync(join(root, file)) ? readFileSync(join(root, file), 'utf8') : undefined;
+
+/** @returns {string[]} every finding for the repository at `root` */
 function run(root) {
-  const path = join(root, MCP_FILE);
-  return existsSync(path) ? checkMcpConfig(readFileSync(path, 'utf8')) : [`${MCP_FILE} is missing`];
+  const config = readIfExists(root, MCP_FILE);
+  const settings = readIfExists(root, SETTINGS_FILE);
+  const commands = Object.fromEntries(
+    [...READ_COMMANDS, ...WRITE_COMMANDS]
+      .map((key) => [key, readIfExists(root, `.claude/commands/${key}.md`)])
+      .filter(([, text]) => text !== undefined),
+  );
+  return [
+    ...(config === undefined ? [`${MCP_FILE} is missing`] : checkMcpConfig(config)),
+    ...(settings === undefined ? [`${SETTINGS_FILE} is missing`] : checkSettingsWrites(settings)),
+    ...checkCommands(commands),
+  ];
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
