@@ -31,7 +31,7 @@ function build(service: Record<string, unknown> = {}): ReturnType<typeof createA
 }
 
 describe('tasks routes', () => {
-  it('FR-TASK-001: POST /projects/:id/tasks returns 201', async () => {
+  it('FR-TASK-001: status mapping of Valid task', async () => {
     const response = await request(build())
       .post(`/projects/${PROJECT}/tasks`)
       .set(IDENTITY)
@@ -48,7 +48,7 @@ describe('tasks routes', () => {
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('FR-TASK-001: ASSIGNEE_NOT_MEMBER maps to 400', async () => {
+  it('FR-TASK-001: status mapping of Assignee not a member', async () => {
     const create = vi.fn().mockRejectedValue(new AppError('ASSIGNEE_NOT_MEMBER', 400, 'no'));
     const response = await request(build({ create }))
       .post(`/projects/${PROJECT}/tasks`)
@@ -58,13 +58,13 @@ describe('tasks routes', () => {
     expect(response.body.error.code).toBe('ASSIGNEE_NOT_MEMBER');
   });
 
-  it('FR-TASK-002: GET /tasks/:id for a non-member returns 404 NOT_FOUND', async () => {
+  it('FR-TASK-002: status mapping of Missing or foreign task', async () => {
     const get = vi.fn().mockRejectedValue(new AppError('NOT_FOUND', 404, 'Task not found'));
     const response = await request(build({ get })).get(`/tasks/${TASK}`).set(IDENTITY);
     expect(response.status).toBe(404);
   });
 
-  it('FR-TASK-003: PATCH on an archived task returns 409 TASK_ARCHIVED', async () => {
+  it('FR-TASK-003: status mapping of Archived task', async () => {
     const update = vi.fn().mockRejectedValue(new AppError('TASK_ARCHIVED', 409, 'archived'));
     const response = await request(build({ update }))
       .patch(`/tasks/${TASK}`)
@@ -84,7 +84,7 @@ describe('tasks routes', () => {
     expect(assign).toHaveBeenCalledWith(USER, TASK, null);
   });
 
-  it('FR-TASK-005: an invalid transition returns 409 INVALID_STATUS_TRANSITION', async () => {
+  it('FR-TASK-005: status mapping of Disallowed transition', async () => {
     const changeStatus = vi
       .fn()
       .mockRejectedValue(new AppError('INVALID_STATUS_TRANSITION', 409, 'bad'));
@@ -104,7 +104,7 @@ describe('tasks routes', () => {
     expect(response.status).toBe(400);
   });
 
-  it('FR-TASK-006: POST archive returns 200', async () => {
+  it('FR-TASK-006: status mapping of Archive', async () => {
     const response = await request(build()).post(`/tasks/${TASK}/archive`).set(IDENTITY);
     expect(response.status).toBe(200);
   });
