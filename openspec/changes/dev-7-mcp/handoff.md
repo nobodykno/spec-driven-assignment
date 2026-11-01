@@ -64,3 +64,17 @@ produced: task 3.3 done (two Context7 lookups recorded, read-only tool names all
 checks: scripts tests 18/20; check:versions pass
 open: user stop 2 (task 3.4): live drill with /mcp disconnect and clear auth, then reconnect
 next: waiting for `commit` of task 3.3, then task 3.4
+
+### apply | 2026-11-01 | PAUSED
+head: 1f7a1bc
+produced: task 3.3 committed (1f7a1bc); tasks 9/14; task 3.4 started, only the missing-ticket drill is recorded
+checks: none run since 3.3
+open: user stop for task 3.4: disconnect atlassian in /mcp (MCP disabled drill), then clear auth (auth cleared drill), reconnect after each; Claude runs a read-only getJiraIssue after each step and records what it observes; unsupported-operation case is recorded without attempting the call
+next: waiting for the user to disconnect atlassian via /mcp and reply, then /opsx:apply dev-7-mcp resumes at task 3.4
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 1f7a1bc
+produced: task 3.4 done (MCP disabled, auth cleared and unsupported operation recorded in the Failure test log; reconnect verified with read-only getJiraIssue); tasks 10/14; 20/20 script tests green
+checks: scripts tests 20/20; check:mcp-docs pass
+open: none
+next: waiting for `commit` of task 3.4, then task 3.5 (checkpoint 3)
