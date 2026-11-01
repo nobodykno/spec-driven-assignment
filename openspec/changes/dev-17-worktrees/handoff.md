@@ -29,3 +29,10 @@ produced: task 1.2 done (checkCommands in scripts/check-worktree-docs.mjs); task
 checks: scripts/check-worktree-docs.test.mjs 3 passed; lint 0 errors
 open: none
 next: checkpoint 1 (task 1.3)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: aa7ac9f
+produced: group 1 done (tasks 1.1 to 1.3), tasks 3/14
+checks: PASS, see review.md "2026-11-01 | apply | group 1: Commands (AC-1)"; reviewer: PASS
+open: none
+next: task 2.1 test task for conflicts and contract approval
