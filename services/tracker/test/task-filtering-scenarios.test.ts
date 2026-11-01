@@ -41,8 +41,15 @@ describe('task filtering scenarios against the database', () => {
   });
 
   async function seed(rows: Seed[]): Promise<void> {
-    for (const row of rows) {
-      await Task.create({ projectId: world.projectId, createdById: world.owner.id, ...row });
+    // Distinct created_at values (one second apart) keep createdAt ordering deterministic.
+    const base = Date.now() - rows.length * 1000;
+    for (const [index, row] of rows.entries()) {
+      await Task.create({
+        projectId: world.projectId,
+        createdById: world.owner.id,
+        createdAt: new Date(base + index * 1000),
+        ...row,
+      });
     }
   }
 
