@@ -1,0 +1,247 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-10 delta)
+  version: 0.0.0-dev-10
+  description: >-
+    DEV-10 (assignment DEV-1007). Retroactive record of the endpoints as built (merged in PR #7):
+    this change ADDED GET/POST /projects, GET/PATCH /projects/{projectId}, POST /projects/{projectId}/archive,
+    POST /projects/{projectId}/members and DELETE /projects/{projectId}/members/{userId}. Every route needs a
+    Bearer access token verified by the gateway. Non-members get 404 NOT_FOUND, members without the Owner role
+    get 403 FORBIDDEN. Paths are relative to /api/v1.
+paths:
+  /projects:
+    get:
+      operationId: listProjects
+      x-unspecified-statuses: ['400', '401']  # no spec scenario; 400 = bad includeArchived value
+      summary: List the caller's projects (FR-PROJ-002)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: includeArchived
+          in: query
+          required: false
+          schema: { type: string, enum: ['true', 'false'], default: 'false' }
+      responses:
+        '200':
+          description: Only projects the caller belongs to; archived ones only with includeArchived=true
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectList' }
+    post:
+      operationId: createProject
+      x-unspecified-statuses: ['401']  # no spec scenario
+      summary: Create a project, creator becomes OWNER (FR-PROJ-001)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateProjectInput' }
+      responses:
+        '201':
+          description: Created ACTIVE project with its members
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectDetail' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+  /projects/{projectId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      operationId: getProject
+      x-unspecified-statuses: ['400', '401']  # no spec scenario; 400 = malformed projectId
+      summary: View a project with its members (FR-PROJ-002)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: The project, its members and the caller's role
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateProject
+      x-unspecified-statuses: ['400', '401']  # no spec scenario; 400 = empty body, bad field, malformed id
+      summary: Update name and description, Owner only, active project (FR-PROJ-003)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProjectInput' }
+      responses:
+        '200':
+          description: The updated project
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectDetail' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Project is archived, code PROJECT_ARCHIVED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /projects/{projectId}/archive:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      operationId: archiveProject
+      x-unspecified-statuses: ['400', '401', '409']  # 409 PROJECT_ARCHIVED when already archived; no spec scenario
+      summary: Archive a project, Owner only (FR-PROJ-004)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Project with status ARCHIVED and archivedAt set
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectDetail' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /projects/{projectId}/members:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      operationId: addProjectMember
+      x-unspecified-statuses: ['400', '401']  # no spec scenario; a 409 PROJECT_ARCHIVED also exists (shares the 409 entry)
+      summary: Add a registered user by email, Owner only (FR-PROJ-005)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddMemberInput' }
+      responses:
+        '201':
+          description: The new member
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectMember' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: Non-member caller, code NOT_FOUND; or email not registered, code USER_NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '409':
+          description: User is already a member, code ALREADY_MEMBER
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+  /projects/{projectId}/members/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      operationId: removeProjectMember
+      x-unspecified-statuses: ['400', '401']  # no spec scenario; a 409 PROJECT_ARCHIVED also exists (shares the 409 entry)
+      summary: Remove a member, Owner only; assigned tasks become unassigned (FR-PROJ-006)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Member removed, their tasks unassigned with one activity entry per task, in one transaction
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Removal would leave no Owner, code LAST_OWNER
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  responses:
+    ValidationError:
+      description: Invalid input, code VALIDATION_ERROR with field details
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Caller is a Member but the action is Owner only, code FORBIDDEN
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Caller is not a member of the project (or it does not exist), code NOT_FOUND
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+    ProjectRole: { type: string, enum: [OWNER, MEMBER] }
+    CreateProjectInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100, description: Trimmed }
+        description: { type: [string, 'null'], maxLength: 1000 }
+    UpdateProjectInput:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
+        description: { type: [string, 'null'], maxLength: 1000 }
+    AddMemberInput:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+        role: { $ref: '#/components/schemas/ProjectRole', default: MEMBER }
+    ProjectMember:
+      type: object
+      required: [userId, name, email, role]
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        role: { $ref: '#/components/schemas/ProjectRole' }
+    Project:
+      type: object
+      required: [id, name, description, status, ownerId, archivedAt, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        status: { type: string, enum: [ACTIVE, ARCHIVED] }
+        ownerId: { type: string, format: uuid }
+        archivedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ProjectDetail:
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          required: [members, myRole]
+          properties:
+            members: { type: array, items: { $ref: '#/components/schemas/ProjectMember' } }
+            myRole: { $ref: '#/components/schemas/ProjectRole' }
+    ProjectListItem:
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          required: [myRole]
+          properties:
+            myRole: { $ref: '#/components/schemas/ProjectRole' }
+    ProjectList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ProjectListItem' } }
