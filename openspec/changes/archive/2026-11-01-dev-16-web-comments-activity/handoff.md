@@ -35,3 +35,24 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: lows: IDs interpolated into API paths without encodeURIComponent (all web api files), form-errors falls back poorly for unknown server paths, describe-activity casts change metadata unchecked, extra tests beyond one per scenario, newest-first order not proven by a test, resolver type widening, no Cancel in comment edit mode
 next: /create-pr dev-16-web-comments-activity
+
+### pr | 2026-11-01 | MERGED
+head: 39b0429
+produced: PR #43 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-16-web-comments-activity
+
+### sync | 2026-11-01 | DONE
+head: 39b0429
+produced: new capabilities web-comments-activity created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-16-web-comments-activity
+
+### archive | 2026-11-01 | DONE
+head: 39b0429
+produced: archive/2026-11-01-dev-16-web-comments-activity, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
