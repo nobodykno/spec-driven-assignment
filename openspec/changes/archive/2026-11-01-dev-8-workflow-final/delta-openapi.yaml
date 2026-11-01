@@ -1,8 +1,0 @@
-openapi: 3.1.0
-info:
-  title: Team Task Tracker API
-  version: 0.0.0-dev-8-final
-  description: Delta for DEV-8 (DEV-1005), workflow follow-up. No endpoint is added, changed or removed; this change touches workflow specs, a guard hook and documentation only.
-paths: {}
-x-service-exercises: {}
-x-web-consumes: {}

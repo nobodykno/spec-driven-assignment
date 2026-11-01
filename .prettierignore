@@ -1,9 +1,0 @@
-pnpm-lock.yaml
-**/dist/
-**/coverage/
-*.tsbuildinfo
-.claude/*
-!.claude/hooks/
-openspec/changes/archive/
-*.md
-openspec/

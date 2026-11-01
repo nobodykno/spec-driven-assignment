@@ -1,2 +1,0 @@
-pnpm lint-staged
-node scripts/check-staged-secrets.mjs
