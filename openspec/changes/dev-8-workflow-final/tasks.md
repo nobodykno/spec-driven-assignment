@@ -18,7 +18,7 @@
 
 ## 3. Workflow documentation [docs]
 
-- [ ] 3.1 [docs] Edit `docs/workflow.md`: replace "Not done here (follow-up)" with the final state (specs aligned, guard approves from `handoff.md`), keep the append-only note. Verify: `node scripts/check-workflow.mjs`.
+- [x] 3.1 [docs] Edit `docs/workflow.md`: replace "Not done here (follow-up)" with the final state (specs aligned, guard approves from `handoff.md`), keep the append-only note. Verify: `node scripts/check-workflow.mjs`.
 - [ ] 3.2 [docs] Checkpoint 3.
 
 ## 4. Verification
