@@ -18,3 +18,24 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 ## 3. Quality gates
 
 - [x] 3.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass. [PARALLEL] worktree with DEV-10.
+
+## Scenario to test map
+
+| Capability | Scenario | FRS ID | Test file | Task |
+|------------|----------|--------|-----------|------|
+| tasks | Valid task | FR-TASK-001 | services/tracker/test/tasks-scenarios.test.ts | 2.2 |
+| tasks | Assignee not a member | FR-TASK-001 | services/tracker/test/tasks-scenarios.test.ts | 2.2 |
+| tasks | Past due date | FR-TASK-001 | services/tracker/test/tasks-scenarios.test.ts | 2.2 |
+| tasks | Non-member creates | FR-TASK-001 | services/tracker/test/tasks-scenarios.test.ts | 2.2 |
+| tasks | Archived project | FR-TASK-001 | services/tracker/test/tasks-scenarios.test.ts | 2.2 |
+| tasks | Member views | FR-TASK-002 | services/tracker/test/tasks-scenarios.test.ts | 2.3 |
+| tasks | Missing or foreign task | FR-TASK-002 | services/tracker/test/tasks-scenarios.test.ts | 2.3 |
+| tasks | Valid update | FR-TASK-003 | services/tracker/test/tasks-scenarios.test.ts | 2.3 |
+| tasks | Archived task | FR-TASK-003 | services/tracker/test/tasks-scenarios.test.ts | 2.3 |
+| tasks | Assign member | FR-TASK-004 | services/tracker/test/tasks-scenarios.test.ts | 2.4 |
+| tasks | Assign non-member | FR-TASK-004 | services/tracker/test/tasks-scenarios.test.ts | 2.4 |
+| tasks | Allowed transition | FR-TASK-005 | services/tracker/test/tasks-scenarios.test.ts | 2.5 |
+| tasks | Disallowed transition | FR-TASK-005 | services/tracker/test/tasks-scenarios.test.ts | 2.5 |
+| tasks | Archive | FR-TASK-006 | services/tracker/test/tasks-scenarios.test.ts | 2.6 |
+| tasks | Modify archived | FR-TASK-006 | services/tracker/test/tasks-scenarios.test.ts | 2.6 |
+| tasks | Non-member archives | FR-TASK-006 | services/tracker/test/tasks-scenarios.test.ts | 2.6 |
