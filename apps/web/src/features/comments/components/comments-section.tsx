@@ -1,4 +1,9 @@
-import { CreateCommentSchema, type Comment, type ProjectRole } from '@app/shared';
+import {
+  CreateCommentSchema,
+  UpdateCommentSchema,
+  type Comment,
+  type ProjectRole,
+} from '@app/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, type JSX } from 'react';
 import { useForm } from 'react-hook-form';
@@ -61,13 +66,20 @@ interface CommentItemProps {
 function CommentItem({ comment, userId, role }: CommentItemProps): JSX.Element {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(comment.body);
+  const [draftError, setDraftError] = useState<string | null>(null);
   const edit = useEditCommentMutation();
   const remove = useDeleteCommentMutation();
   const error = edit.error ?? remove.error;
 
   const save = async (): Promise<void> => {
+    const parsed = UpdateCommentSchema.safeParse({ body: draft });
+    if (!parsed.success) {
+      setDraftError(parsed.error.issues[0]?.message ?? 'Invalid comment');
+      return;
+    }
+    setDraftError(null);
     try {
-      await edit.mutateAsync({ commentId: comment.id, body: draft });
+      await edit.mutateAsync({ commentId: comment.id, body: parsed.data.body });
       setEditing(false);
     } catch {
       // The error is shown from the mutation state below.
@@ -106,6 +118,11 @@ function CommentItem({ comment, userId, role }: CommentItemProps): JSX.Element {
           </Button>
         ) : null}
       </div>
+      {draftError ? (
+        <p role="alert" className="text-sm text-red-700">
+          {draftError}
+        </p>
+      ) : null}
       {error ? (
         <p role="alert" className="text-sm text-red-700">
           {error.message}

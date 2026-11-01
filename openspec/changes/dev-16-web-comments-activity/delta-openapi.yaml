@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (delta for DEV-16)
+  version: 0.0.0-dev-16
+  description: >
+    DEV-16 (assignment DEV-1013) adds the web task forms, comments section and activity timeline.
+    No endpoint is added or changed: the web consumes endpoints that already exist, and
+    x-web-consumes lists each one with the observable reaction of the UI per status code.
+    Written retroactively (code merged in PR #13 before the opsx workflow).
+paths: {}
+x-web-consumes:
+  'POST /projects/{projectId}/tasks':
+    scenarios: ['Create and edit', 'Validation and server errors']
+    onStatus:
+      '201': the task list refetches and the create form resets
+      '400': the form shows the field message, or the message of ASSIGNEE_NOT_MEMBER
+      '409': the form shows the message of TASK_ARCHIVED or PROJECT_ARCHIVED
+  'PATCH /tasks/{taskId}':
+    scenarios: ['Create and edit', 'Validation and server errors']
+    onStatus:
+      '200': the task and activity queries are refreshed
+      '400': the edit form shows the field message
+      '409': the edit form shows the message of TASK_ARCHIVED or PROJECT_ARCHIVED
+  'GET /tasks/{taskId}/comments':
+    scenarios: ['Add comment', 'Buttons follow permissions', 'Edited indicator and API error', 'States']
+    onStatus:
+      '200': comments render in the order returned, with an edited label when editedAt is set; an empty list shows "No comments yet."
+      '403': the error message and a Retry button are shown
+      '404': the error message and a Retry button are shown
+  'POST /tasks/{taskId}/comments':
+    scenarios: ['Add comment', 'Edited indicator and API error']
+    onStatus:
+      '201': the comment appears in the list and the input is cleared
+      '400': the field message is shown (Comment is required; over 2000 characters is blocked before the request)
+      '409': the form shows the message of TASK_ARCHIVED
+  'PATCH /comments/{commentId}':
+    scenarios: ['Edited indicator and API error']
+    onStatus:
+      '200': the comment shows the new text and the edited label
+      '404': the error message is shown on the comment
+  'DELETE /comments/{commentId}':
+    scenarios: ['Buttons follow permissions', 'Edited indicator and API error']
+    onStatus:
+      '204': the comment is removed from the list
+      '403': the error message is shown on the comment
+  'GET /tasks/{taskId}/activity':
+    scenarios: ['Timeline entries', 'Empty or failed', 'States']
+    onStatus:
+      '200': entries render in the order returned (newest first) with actor, action, details and time; an empty list shows "No activity yet."
+      '403': the error message and a Retry button are shown
+      '404': the error message and a Retry button are shown
+      '500': the error message and a Retry button are shown; Retry requests again
+x-unspecified-statuses:
+  note: >
+    Statuses the web handles generically through the shared error path but that no scenario names.
+  statuses:
+    '401': a refresh is tried once; if it fails the session is cleared and protected routes redirect to login (FR-UI-002)
+    network failure: the error message of the failed request is shown with Retry on list views

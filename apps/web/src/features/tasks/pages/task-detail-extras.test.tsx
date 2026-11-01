@@ -1,4 +1,4 @@
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRoutes } from 'react-router';
 import { type JSX } from 'react';
@@ -96,7 +96,7 @@ describe('task detail page extras', () => {
     expect(within(item).queryByRole('button', { name: 'Edit' })).toBeNull();
   });
 
-  it('FR-UI-007: the status control only offers allowed transitions', async () => {
+  it('FR-UI-007: Allowed transitions only', async () => {
     stubTaskPage('MEMBER');
     renderWithProviders(<Routes />, `/tasks/${TASK}`);
     const select = (await screen.findByLabelText('Status')) as HTMLSelectElement;
@@ -110,6 +110,52 @@ describe('task detail page extras', () => {
     stubTaskPage('MEMBER');
     renderWithProviders(<Routes />, `/tasks/${TASK}`);
     expect(await screen.findByText('No activity yet.')).toBeTruthy();
+  });
+
+  it('FR-UI-010: States', async () => {
+    // Loading: both views show the loading text while their requests are pending.
+    stubFetch({
+      [`GET /tasks/${TASK}`]: () => jsonResponse(task),
+      [`GET /projects/${PROJECT}`]: () => jsonResponse(project('MEMBER')),
+      [`GET /tasks/${TASK}/comments?page=1&pageSize=20`]: () => new Promise<Response>(() => {}),
+      [`GET /tasks/${TASK}/activity?page=1&pageSize=20`]: () => new Promise<Response>(() => {}),
+    });
+    renderWithProviders(<Routes />, `/tasks/${TASK}`);
+    await screen.findByText('Comments');
+    expect(screen.getAllByText('Loading…')).toHaveLength(2);
+    cleanup();
+
+    // Empty.
+    stubFetch({
+      [`GET /tasks/${TASK}`]: () => jsonResponse(task),
+      [`GET /projects/${PROJECT}`]: () => jsonResponse(project('MEMBER')),
+      [`GET /tasks/${TASK}/comments?page=1&pageSize=20`]: () => jsonResponse(EMPTY_PAGE),
+      [`GET /tasks/${TASK}/activity?page=1&pageSize=20`]: () => jsonResponse(EMPTY_PAGE),
+    });
+    renderWithProviders(<Routes />, `/tasks/${TASK}`);
+    expect(await screen.findByText('No comments yet.')).toBeTruthy();
+    expect(await screen.findByText('No activity yet.')).toBeTruthy();
+    cleanup();
+
+    // Failing: 403, 404, 500 and a network error each show their message with a retry.
+    const failures: Array<[() => Response | Promise<Response>, string]> = [
+      [() => errorResponse('FORBIDDEN', 'Not allowed here', 403), 'Not allowed here'],
+      [() => errorResponse('NOT_FOUND', 'Nothing here', 404), 'Nothing here'],
+      [() => errorResponse('INTERNAL_ERROR', 'Server broke', 500), 'Server broke'],
+      [() => Promise.reject(new TypeError('Network down')), 'Network down'],
+    ];
+    for (const [fail, message] of failures) {
+      stubFetch({
+        [`GET /tasks/${TASK}`]: () => jsonResponse(task),
+        [`GET /projects/${PROJECT}`]: () => jsonResponse(project('MEMBER')),
+        [`GET /tasks/${TASK}/comments?page=1&pageSize=20`]: fail,
+        [`GET /tasks/${TASK}/activity?page=1&pageSize=20`]: fail,
+      });
+      renderWithProviders(<Routes />, `/tasks/${TASK}`);
+      await waitFor(() => expect(screen.getAllByText(message)).toHaveLength(2));
+      expect(screen.getAllByRole('button', { name: 'Retry' })).toHaveLength(2);
+      cleanup();
+    }
   });
 
   it('FR-UI-008: an API error on adding a comment is shown', async () => {
