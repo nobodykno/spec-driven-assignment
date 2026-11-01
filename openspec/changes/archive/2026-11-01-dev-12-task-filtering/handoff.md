@@ -29,3 +29,24 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: retroactive gaps: no 401 scenario for the list endpoint, one extra test (Default and timestamp sorts) outside the scenario map, dueFrom later than dueTo returns an empty 200, repeated query parameters not specified
 next: /create-pr dev-12-task-filtering
+
+### pr | 2026-11-01 | MERGED
+head: 92b9b44
+produced: PR #33 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-12-task-filtering
+
+### sync | 2026-11-01 | DONE
+head: 92b9b44
+produced: new capabilities task-filtering created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-12-task-filtering
+
+### archive | 2026-11-01 | DONE
+head: 92b9b44
+produced: archive/2026-11-01-dev-12-task-filtering, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
