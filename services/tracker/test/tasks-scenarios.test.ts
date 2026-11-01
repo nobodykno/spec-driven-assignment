@@ -500,11 +500,8 @@ describe('tasks scenarios against the database', () => {
     expect(missing.body.error.code).toBe('NOT_FOUND');
   });
 
-  // Known defect (listed in the verification report, production code untouched): mutate() reads
-  // the task without a row lock, so two concurrent identical transitions both see the old status
-  // and both succeed with two activity entries. `it.fails` stays green while the defect exists and
-  // turns red when it is fixed, at which point it must become a plain `it`.
-  it.fails('FR-TASK-005: concurrent identical transitions yield one winner', async () => {
+  // mutate() locks the task row, so two concurrent identical transitions yield one winner (409 for the other).
+  it('FR-TASK-005: concurrent identical transitions yield one winner', async () => {
     const slow = createApp({
       checkDatabase: async () => true,
       config: { internalToken: INTERNAL_TOKEN },
