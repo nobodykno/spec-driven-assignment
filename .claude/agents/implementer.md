@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Implements tasks of an APPROVED OpenSpec change, test first, one local commit per task. Use from /sdd:apply for a task or a group of tasks. Never pushes, never opens PRs, never writes to Jira.
+description: Implements tasks of an APPROVED OpenSpec change, test first, one local commit per task. Not used by /opsx:apply (the main session implements and commits only after the user replies commit); kept for manual delegation of an approved task. Never pushes, never opens PRs, never writes to Jira.
 tools: Read, Grep, Glob, Edit, Write, MultiEdit, Skill, Bash(pnpm:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*)
 hooks:
   PreToolUse:
