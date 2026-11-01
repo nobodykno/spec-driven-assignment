@@ -1,0 +1,140 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-12 delta)
+  version: 0.0.0-dev-12
+  description: >-
+    DEV-12 (assignment DEV-1009). Retroactive record of the endpoint behaviour as built (merged in PR #9):
+    this change ADDED the filtering, sorting and pagination of GET /projects/{projectId}/tasks (the
+    route and the strict query schema). The route needs a Bearer access token verified by the gateway.
+    Non-members get 404 NOT_FOUND. Unknown or invalid query parameters get 400 VALIDATION_ERROR.
+    Paths are relative to /api/v1.
+paths:
+  /projects/{projectId}/tasks:
+    get:
+      operationId: listProjectTasks
+      x-unspecified-statuses: ['401']  # no spec scenario; missing or invalid token, rejected by the gateway
+      summary: List a project's tasks, filtered, sorted and paginated (FR-FILT-001, FR-FILT-002, FR-FILT-003)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          required: false
+          description: Comma separated TaskStatus values, combined with OR
+          schema: { type: string, examples: ['TODO,IN_PROGRESS'] }
+        - name: priority
+          in: query
+          required: false
+          description: Comma separated TaskPriority values, combined with OR
+          schema: { type: string, examples: ['HIGH,URGENT'] }
+        - name: assigneeId
+          in: query
+          required: false
+          description: A user id, `me` (the caller) or `none` (unassigned)
+          schema:
+            oneOf:
+              - { type: string, format: uuid }
+              - { type: string, enum: [me, none] }
+        - name: dueFrom
+          in: query
+          required: false
+          description: Inclusive lower bound of the due date (YYYY-MM-DD)
+          schema: { type: string, format: date }
+        - name: dueTo
+          in: query
+          required: false
+          description: Inclusive upper bound of the due date (YYYY-MM-DD)
+          schema: { type: string, format: date }
+        - name: includeArchived
+          in: query
+          required: false
+          schema: { type: string, enum: ['true', 'false'], default: 'false' }
+        - name: sort
+          in: query
+          required: false
+          description: Tasks without a due date sort last; priority sorts by rank
+          schema: { type: string, enum: [dueDate, priority, createdAt, updatedAt], default: createdAt }
+        - name: order
+          in: query
+          required: false
+          schema: { type: string, enum: [asc, desc], default: desc }
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: One page of matching tasks with pagination meta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaskList' }
+        '400':
+          description: Invalid or unknown query parameter, or malformed projectId, code VALIDATION_ERROR
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '404':
+          description: Caller is not a member of the project (or it does not exist), code NOT_FOUND
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+    TaskStatus: { type: string, enum: [TODO, IN_PROGRESS, IN_REVIEW, DONE] }
+    TaskPriority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
+    UserRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+    Task:
+      type: object
+      required: [id, projectId, title, description, status, priority, dueDate, assignee, createdBy, archivedAt, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: [string, 'null'] }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        dueDate: { type: [string, 'null'], format: date }
+        assignee: { oneOf: [{ $ref: '#/components/schemas/UserRef' }, { type: 'null' }] }
+        createdBy: { $ref: '#/components/schemas/UserRef' }
+        archivedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginationMeta:
+      type: object
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    TaskList:
+      type: object
+      required: [items, meta]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Task' } }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
