@@ -29,3 +29,24 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: lows: projectId from the URL interpolated into API paths without encodeURIComponent (also task and comment APIs), logout failure leaves the refresh cookie valid, bootstrap race with manual login, extra tests beyond one per scenario
 next: /create-pr dev-14-web-auth-projects
+
+### pr | 2026-11-01 | MERGED
+head: dfc7e12
+produced: PR #37 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-14-web-auth-projects
+
+### sync | 2026-11-01 | DONE
+head: dfc7e12
+produced: new capabilities web-auth-projects created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-14-web-auth-projects
+
+### archive | 2026-11-01 | DONE
+head: dfc7e12
+produced: archive/2026-11-01-dev-14-web-auth-projects, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
