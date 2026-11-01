@@ -11,6 +11,7 @@ paths:
   /auth/register:
     post:
       operationId: registerUser
+      x-unspecified-statuses: ['429', '503']  # observed in code, no spec scenario (see review.md)
       summary: Register a user (FR-AUTH-001)
       security: []
       requestBody:
@@ -30,11 +31,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
-        '429': { $ref: '#/components/responses/RateLimited' }
-        '503': { $ref: '#/components/responses/ServiceUnavailable' }
   /auth/login:
     post:
       operationId: loginUser
+      x-unspecified-statuses: ['503']  # observed in code, no spec scenario (see review.md)
       summary: Log in (FR-AUTH-002)
       security: []
       requestBody:
@@ -57,10 +57,10 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
         '429': { $ref: '#/components/responses/RateLimited' }
-        '503': { $ref: '#/components/responses/ServiceUnavailable' }
   /auth/refresh:
     post:
       operationId: refreshToken
+      x-unspecified-statuses: ['503']  # observed in code, no spec scenario (see review.md)
       summary: Rotate the refresh token (FR-AUTH-003)
       security:
         - refreshCookie: []
@@ -77,21 +77,20 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
-        '503': { $ref: '#/components/responses/ServiceUnavailable' }
   /auth/logout:
     post:
       operationId: logoutUser
+      x-unspecified-statuses: ['401', '503']  # observed in code, no spec scenario (see review.md)
       summary: Revoke the current refresh token (FR-AUTH-004)
       security:
         - bearerAuth: []
       responses:
         '204':
           description: Refresh token revoked and cookie cleared
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '503': { $ref: '#/components/responses/ServiceUnavailable' }
   /auth/me:
     get:
       operationId: getCurrentUser
+      x-unspecified-statuses: ['503']  # observed in code, no spec scenario (see review.md)
       summary: Current user profile (FR-AUTH-007)
       security:
         - bearerAuth: []
@@ -102,7 +101,6 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/User' }
         '401': { $ref: '#/components/responses/Unauthorized' }
-        '503': { $ref: '#/components/responses/ServiceUnavailable' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
