@@ -79,7 +79,7 @@ function CommentItem({ comment, userId, role }: CommentItemProps): JSX.Element {
     }
     setDraftError(null);
     try {
-      await edit.mutateAsync({ commentId: comment.id, body: draft });
+      await edit.mutateAsync({ commentId: comment.id, body: parsed.data.body });
       setEditing(false);
     } catch {
       // The error is shown from the mutation state below.
