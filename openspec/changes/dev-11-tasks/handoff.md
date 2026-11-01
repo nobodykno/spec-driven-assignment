@@ -22,3 +22,10 @@ produced: retroactive (merged in PR #8 before the opsx workflow); 8/8 tasks tick
 checks: PASS, see review.md "2026-11-01 | apply | final"
 open: known defect, status changes have no row lock (concurrent identical transitions both succeed); pinned by an it.fails test, fix is out of scope here
 next: /opsx:verify dev-11-tasks
+
+### review | 2026-11-01 | PASS
+head: ea041f1
+produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors); isolated subagent review (Rule 23): reviewer round 1 CHANGES REQUIRED (stale records, fixed by this superseding record), security audit APPROVE; see review.md latest review section
+checks: PASS, coverage waived by the user
+open: deferred: assign and create race with member removal and project archive (task writes read membership and project status without a lock), create() checks outside the transaction, x-user-id not UUID-checked, update activity stores full descriptions, dueFrom later than dueTo accepted
+next: /create-pr dev-11-tasks
