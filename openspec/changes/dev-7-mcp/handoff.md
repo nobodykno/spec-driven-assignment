@@ -43,3 +43,10 @@ produced: group 2 done (tasks 2.1 to 2.3), tasks 6/14; check:mcp-docs in the lin
 checks: PASS, see review.md "2026-11-01 | apply | group 2: Approval and command checks"; reviewer: PASS
 open: Context7 read-only tools still to be added to the allow list in task 3.3; low review findings (per-case failure keywords, looser approval check)
 next: group 3, task 3.1 (test-writer)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 3726a00
+produced: task 3.1 done (8 failing tests; exports checkContext7Log and checkFailureLog missing); tasks 7/14
+checks: tests red as intended (test-first)
+open: none
+next: task 3.2 implement checkContext7Log, checkFailureLog and the docs/mcp-setup.md tables

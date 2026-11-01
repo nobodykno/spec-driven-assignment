@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkCommands, checkMcpConfig, checkSettingsWrites } from './check-mcp-docs.mjs';
+import {
+  checkCommands,
+  checkContext7Log,
+  checkFailureLog,
+  checkMcpConfig,
+  checkSettingsWrites,
+} from './check-mcp-docs.mjs';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 
@@ -226,5 +232,116 @@ describe('Jira failure handling (commands)', () => {
     expect(findings.length).toBeGreaterThan(0);
     expect(text).toContain('opsx/archive');
     expect(text).not.toContain('opsx/explore');
+  });
+});
+
+const CONTEXT7_HEADER = '| Date (IST) | Library | Version | Topic | Result |';
+const FAILURE_HEADER = '| Date (IST) | Case | Call | Result |';
+
+const context7Table = (rows) =>
+  ['## Context7 lookups', '', CONTEXT7_HEADER, '| --- | --- | --- | --- | --- |', ...rows, ''].join(
+    '\n',
+  );
+
+const failureTable = (rows) =>
+  ['## Failure test log', '', FAILURE_HEADER, '| --- | --- | --- | --- |', ...rows, ''].join('\n');
+
+const LOOKUP_ROW = '| 2026-11-01 10:12 | express | 5.1.0 | routing | documented |';
+
+const FAILURE_ROWS = {
+  missing:
+    '| 2026-11-01 10:20 | missing ticket | getJiraIssue DEV-999 | not found, no data invented |',
+  disabled: '| 2026-11-01 10:25 | MCP disabled | getJiraIssue DEV-1004 | stopped and reported |',
+  auth: '| 2026-11-01 10:30 | auth cleared | getJiraIssue DEV-1004 | stopped and reported |',
+  unsupported:
+    '| 2026-11-01 10:35 | unsupported operation | deleteJiraIssue DEV-1004 | reported, not attempted by another route |',
+};
+
+const validFailureRows = () => Object.values(FAILURE_ROWS);
+
+const validDoc = () =>
+  ['# MCP setup', '', context7Table([LOOKUP_ROW]), failureTable(validFailureRows())].join('\n');
+
+const readRealDoc = () => readFileSync(join(ROOT, 'docs', 'mcp-setup.md'), 'utf8');
+
+const bothFindings = (text) => [...checkContext7Log(text), ...checkFailureLog(text)];
+
+describe('Context7 lookup recorded', () => {
+  it('DEV-1004-AC-1: Context7 lookup recorded with library, version and time', () => {
+    expect(checkContext7Log(validDoc())).toEqual([]);
+
+    const real = checkContext7Log(readRealDoc()).filter((finding) =>
+      /context7|lookup/i.test(finding),
+    );
+    expect(real).toEqual([]);
+  });
+
+  it('DEV-1004-AC-1: Lookup row without version rejected', () => {
+    const noVersion = '| 2026-11-01 10:12 | express |  | routing | documented |';
+    const doc = ['# MCP setup', '', context7Table([noVersion]), failureTable(validFailureRows())];
+    const findings = checkContext7Log(doc.join('\n'));
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(text).toContain('express');
+    expect(text).toMatch(/version/i);
+  });
+});
+
+describe('Failure log', () => {
+  it('DEV-1004-AC-2: Missing ticket reported as not found', () => {
+    expect(checkFailureLog(validDoc())).toEqual([]);
+
+    const real = checkFailureLog(readRealDoc()).filter((finding) =>
+      /missing ticket|DEV-999/i.test(finding),
+    );
+    expect(real).toEqual([]);
+  });
+
+  it('DEV-1004-AC-3: Disabled MCP and cleared auth recorded as a stop', () => {
+    expect(checkFailureLog(validDoc())).toEqual([]);
+
+    const real = checkFailureLog(readRealDoc()).filter((finding) =>
+      /MCP disabled|auth cleared/i.test(finding),
+    );
+    expect(real).toEqual([]);
+  });
+
+  it('DEV-1004-AC-3: Unsupported operation recorded', () => {
+    expect(checkFailureLog(validDoc())).toEqual([]);
+
+    const real = checkFailureLog(readRealDoc()).filter((finding) => /unsupported/i.test(finding));
+    expect(real).toEqual([]);
+  });
+
+  it('DEV-1004-AC-2: Failure log missing a case rejected', () => {
+    const rows = validFailureRows().filter((row) => !row.includes('auth cleared'));
+    const findings = checkFailureLog(['# MCP setup', failureTable(rows)].join('\n'));
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(text).toMatch(/auth cleared/i);
+    expect(text).not.toMatch(/missing ticket|MCP disabled|unsupported operation/i);
+  });
+});
+
+describe('Failure log entries', () => {
+  it('DEV-1004-AC-5: Failure log entries carry date and time', () => {
+    expect(bothFindings(validDoc())).toEqual([]);
+
+    const real = bothFindings(readRealDoc()).filter((finding) => /timestamp|date/i.test(finding));
+    expect(real).toEqual([]);
+  });
+
+  it('DEV-1004-AC-5: Log entry without date rejected', () => {
+    const rows = validFailureRows().map((row) =>
+      row.includes('MCP disabled') ? row.replace('2026-11-01 10:25', '') : row,
+    );
+    const findings = checkFailureLog(['# MCP setup', failureTable(rows)].join('\n'));
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(text).toMatch(/MCP disabled/i);
+    expect(text).toMatch(/timestamp|date/i);
   });
 });
