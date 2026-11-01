@@ -1,0 +1,29 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-15 delta)
+  version: 0.0.0-dev-15
+  description: >-
+    DEV-15 (assignment DEV-1012). Retroactive record (merged in PR #12). No endpoint is added or changed:
+    the web task list and task detail pages consume existing endpoints, listed under x-web-consumes with the
+    observable UI reaction per status. Paths are relative to /api/v1.
+paths: {}
+x-web-consumes:
+  'GET /projects/{projectId}/tasks':
+    scenarios: [Filters in URL, State survives reload, Invalid URL value, Pagination, States]
+    query: status, priority, assigneeId, dueFrom, dueTo, includeArchived, sort, order, page, pageSize
+    x-unspecified-statuses: ['400', '401', '403', '404']  # no spec scenario; shown through the generic error state
+    onStatus:
+      '200': the list renders and the pagination bar shows "Page n of m"; an empty items array shows "No tasks match these filters."
+      default: any failure (for example 500) shows an error alert with the message and a Retry button that repeats the request
+  'GET /projects/{projectId}':
+    scenarios: [Filters in URL]
+    x-unspecified-statuses: ['401', '404']  # no spec scenario; the project header falls back to "Project"
+    onStatus:
+      '200': the project name is shown in the page header
+  'GET /tasks/{taskId}':
+    scenarios: [Shows fields, Task not found, States]
+    x-unspecified-statuses: ['401', '403']  # no spec scenario; shown through the generic error state
+    onStatus:
+      '200': title, description, status, priority, due date, assignee, creator, created and updated timestamps are shown
+      '404': the alert "Task not found." is shown and no task fields are rendered
+      default: any other failure shows an error alert with a Retry button; while loading, "Loading…" is shown

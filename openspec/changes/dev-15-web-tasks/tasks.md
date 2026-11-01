@@ -16,3 +16,17 @@ Rules: one commit per task `type(area): <n.m> <summary>` with footer `Refs: DEV-
 ## 3. Quality gates
 
 - [x] 3.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass. [PARALLEL] worktree with DEV-14.
+
+## Scenario to test map
+
+Retroactive: tests were titled to the scenario names after merge (PR #12). The task is the original task that built the behaviour.
+
+| Capability | Scenario | FRS ID | Test file | Task |
+|------------|----------|--------|-----------|------|
+| web-tasks | Filters in URL | FR-UI-005 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.3 |
+| web-tasks | State survives reload | FR-UI-005 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.3 |
+| web-tasks | Invalid URL value | FR-UI-005 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.1 |
+| web-tasks | Pagination | FR-UI-005 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.3 |
+| web-tasks | Shows fields | FR-UI-006 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.4 |
+| web-tasks | Task not found | FR-UI-006 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.4 |
+| web-tasks | States | FR-UI-010 | apps/web/src/features/tasks/pages/project-page.test.tsx | 2.3 |
