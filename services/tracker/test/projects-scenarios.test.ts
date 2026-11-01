@@ -5,6 +5,7 @@ import {
   asUser,
   buildRealApp,
   closeConnection,
+  createUser,
   resetDatabase,
   seedWorld,
   type World,
@@ -23,6 +24,114 @@ describe('projects scenarios against the database', () => {
   afterAll(async () => {
     await resetDatabase();
     await closeConnection();
+  });
+
+  it('FR-PROJ-001: Valid project', async () => {
+    const response = await request(app)
+      .post('/projects')
+      .set(asUser(world.outsider.id))
+      .send({ name: 'Fresh', description: 'about it' });
+    expect(response.status).toBe(201);
+    expect(response.body.status).toBe('ACTIVE');
+    expect(response.body.name).toBe('Fresh');
+
+    const row = await Project.findByPk(response.body.id);
+    expect(row?.status).toBe('ACTIVE');
+    expect(row?.ownerId).toBe(world.outsider.id);
+    const membership = await ProjectMember.findOne({
+      where: { projectId: response.body.id, userId: world.outsider.id },
+    });
+    expect(membership?.role).toBe('OWNER');
+
+    // Boundaries: name of exactly 100 characters and description of exactly 1000 are accepted.
+    const edge = await request(app)
+      .post('/projects')
+      .set(asUser(world.outsider.id))
+      .send({ name: 'n'.repeat(100), description: 'd'.repeat(1000) });
+    expect(edge.status).toBe(201);
+    expect(edge.body.name).toHaveLength(100);
+    expect(edge.body.description).toHaveLength(1000);
+    expect(await Project.count({ where: { ownerId: world.outsider.id } })).toBe(2);
+  });
+
+  it('FR-PROJ-005: Add user', async () => {
+    const before = await request(app)
+      .get(`/projects/${world.projectId}`)
+      .set(asUser(world.outsider.id));
+    expect(before.status).toBe(404);
+
+    const response = await request(app)
+      .post(`/projects/${world.projectId}/members`)
+      .set(asUser(world.owner.id))
+      .send({ email: world.outsider.email, role: 'MEMBER' });
+    expect(response.status).toBe(201);
+    expect(response.body.userId).toBe(world.outsider.id);
+
+    const row = await ProjectMember.findOne({
+      where: { projectId: world.projectId, userId: world.outsider.id },
+    });
+    expect(row?.role).toBe('MEMBER');
+    const after = await request(app)
+      .get(`/projects/${world.projectId}`)
+      .set(asUser(world.outsider.id));
+    expect(after.status).toBe(200);
+    expect(after.body.myRole).toBe('MEMBER');
+  });
+
+  it('FR-PROJ-006: Remove member', async () => {
+    const response = await request(app)
+      .delete(`/projects/${world.projectId}/members/${world.spare.id}`)
+      .set(asUser(world.owner.id));
+    expect(response.status).toBe(204);
+    expect(
+      await ProjectMember.count({ where: { projectId: world.projectId, userId: world.spare.id } }),
+    ).toBe(0);
+    const after = await request(app)
+      .get(`/projects/${world.projectId}`)
+      .set(asUser(world.spare.id));
+    expect(after.status).toBe(404);
+    expect(after.body.error.code).toBe('NOT_FOUND');
+  });
+
+  it('FR-PROJ-006: Last owner', async () => {
+    const response = await request(app)
+      .delete(`/projects/${world.projectId}/members/${world.owner.id}`)
+      .set(asUser(world.owner.id));
+    expect(response.status).toBe(409);
+    expect(response.body.error.code).toBe('LAST_OWNER');
+    const row = await ProjectMember.findOne({
+      where: { projectId: world.projectId, userId: world.owner.id },
+    });
+    expect(row?.role).toBe('OWNER');
+  });
+
+  it('FR-PROJ-006: concurrent removal of two owners keeps one owner', async () => {
+    const rounds = 20;
+    for (let round = 0; round < rounds; round += 1) {
+      const a = await createUser(`RaceA${round}`);
+      const b = await createUser(`RaceB${round}`);
+      const project = await Project.create({ name: `Race ${round}`, ownerId: a.id });
+      await ProjectMember.bulkCreate([
+        { projectId: project.id, userId: a.id, role: 'OWNER' },
+        { projectId: project.id, userId: b.id, role: 'OWNER' },
+      ]);
+
+      const [first, second] = await Promise.all([
+        request(app).delete(`/projects/${project.id}/members/${b.id}`).set(asUser(a.id)),
+        request(app).delete(`/projects/${project.id}/members/${a.id}`).set(asUser(b.id)),
+      ]);
+
+      const owners = await ProjectMember.count({
+        where: { projectId: project.id, role: 'OWNER' },
+      });
+      expect(owners, `round ${round}: project left without an owner`).toBeGreaterThanOrEqual(1);
+      // One removal wins; the other is refused (409 LAST_OWNER) or, once the winner has
+      // removed the caller, no longer authorised (404).
+      const succeeded = [first.status, second.status].filter((s) => s === 204);
+      expect(succeeded, `round ${round}: both removals succeeded`).toHaveLength(1);
+      const loser = first.status === 204 ? second : first;
+      expect([404, 409]).toContain(loser.status);
+    }
   });
 
   it('FR-PROJ-002: List own projects', async () => {
@@ -145,6 +254,11 @@ describe('projects scenarios against the database', () => {
     expect(tasks.every((t) => t.assigneeId === null)).toBe(true);
     const entries = await Activity.findAll({ where: { action: 'TASK_ASSIGNED' } });
     expect(entries.map((e) => e.taskId).sort()).toEqual([world.taskId, second.id].sort());
+    expect(entries).toHaveLength(2);
+    for (const entry of entries) {
+      expect(entry.actorId).toBe(world.owner.id);
+      expect(entry.metadata).toEqual({ from: world.spare.id, to: null });
+    }
     expect(await ProjectMember.count({ where: { userId: world.spare.id } })).toBe(0);
   });
 

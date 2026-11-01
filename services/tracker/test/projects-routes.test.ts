@@ -29,7 +29,7 @@ function build(service: Record<string, unknown> = {}): ReturnType<typeof createA
 }
 
 describe('projects routes', () => {
-  it('FR-PROJ-001: Valid project', async () => {
+  it('FR-PROJ-001: status mapping of Valid project', async () => {
     const response = await request(build()).post('/projects').set(IDENTITY).send({ name: 'Alpha' });
     expect(response.status).toBe(201);
   });
@@ -44,6 +44,15 @@ describe('projects routes', () => {
       .send({ name: 'x'.repeat(101) });
     expect(tooLong.status).toBe(400);
     expect(tooLong.body.error.code).toBe('VALIDATION_ERROR');
+    const empty = await request(build()).post('/projects').set(IDENTITY).send({ name: '' });
+    expect(empty.status).toBe(400);
+    expect(empty.body.error.code).toBe('VALIDATION_ERROR');
+    const longDescription = await request(build())
+      .post('/projects')
+      .set(IDENTITY)
+      .send({ name: 'Alpha', description: 'd'.repeat(1001) });
+    expect(longDescription.status).toBe(400);
+    expect(longDescription.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('FR-PROJ-002: Non-member views project', async () => {
@@ -68,7 +77,7 @@ describe('projects routes', () => {
     expect(response.body.error.code).toBe('FORBIDDEN');
   });
 
-  it('FR-PROJ-005: Add user', async () => {
+  it('FR-PROJ-005: status mapping of Add user', async () => {
     const response = await request(build())
       .post(`/projects/${PROJECT}/members`)
       .set(IDENTITY)
@@ -86,12 +95,12 @@ describe('projects routes', () => {
     expect(dup.body.error.code).toBe('ALREADY_MEMBER');
   });
 
-  it('FR-PROJ-006: Remove member', async () => {
+  it('FR-PROJ-006: status mapping of Remove member', async () => {
     const url = `/projects/${PROJECT}/members/${USER}`;
     expect((await request(build()).delete(url).set(IDENTITY)).status).toBe(204);
   });
 
-  it('FR-PROJ-006: Last owner', async () => {
+  it('FR-PROJ-006: status mapping of Last owner', async () => {
     const url = `/projects/${PROJECT}/members/${USER}`;
     const removeMember = vi.fn().mockRejectedValue(new AppError('LAST_OWNER', 409, 'last'));
     const last = await request(build({ removeMember })).delete(url).set(IDENTITY);
