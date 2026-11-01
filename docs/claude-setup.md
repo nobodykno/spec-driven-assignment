@@ -22,7 +22,7 @@ Subagents (implementer, test-writer, reviewer, coordinator) and their scope guar
 
 | File | Loaded when | Content |
 | --- | --- | --- |
-| `CLAUDE.md` | always | workflow (`/sdd:run`, chat approval), structure, commands, code rules, Git hooks, Claude Code setup, never-list |
+| `CLAUDE.md` | always | workflow (`/opsx:*` table, rule-file index, Gate 1 and Gate 2), structure, commands, code rules, Git hooks, Claude Code setup, never-list |
 | `services/CLAUDE.md` | working under `services/` | layering, `createApp(deps)`, Zod input, AppError + SDS §6.4, 404/403, transactions, tests, logging |
 | `apps/web/CLAUDE.md` | working under `apps/web/` | feature folders, kebab-case + named exports, gateway-only API, Query hooks, token in memory, states, RTL tests |
 | `docs/CODING_GUIDELINES.md` | referenced by all three | naming, style, structure, TypeScript, errors, commits |

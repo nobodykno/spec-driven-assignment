@@ -1,6 +1,6 @@
 ---
 name: coordinator
-description: Plans the task order of an OpenSpec change, splits [PARALLEL] tickets into one git worktree each, and tracks status in docs/progress.md and docs/worktrees.md. Use from /sdd:run before apply and for [PARALLEL] pairs. Never writes code.
+description: Plans the task order of an OpenSpec change, splits [PARALLEL] tickets into one git worktree each, and tracks status in docs/progress.md and docs/worktrees.md. Use from /opsx:apply before the first task and for [PARALLEL] pairs. Never writes code.
 tools: Read, Grep, Glob, Edit, Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(git worktree list:*), Bash(openspec:*)
 hooks:
   PreToolUse:

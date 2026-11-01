@@ -22,10 +22,10 @@ Frontmatter hooks of project agents run only after the workspace trust dialog ha
 
 | Agent | Writes | Used by |
 | --- | --- | --- |
-| implementer | production code and tests of an approved change; local commits | `/sdd:apply` |
-| test-writer | test files only | `/sdd:apply` (test-first step) |
-| reviewer | nothing | `/sdd:verify` |
-| coordinator | `docs/progress.md`, `docs/worktrees.md` | `/sdd:run` (planning, `[PARALLEL]` pairs) |
+| implementer | production code and tests of an approved change; local commits | `/opsx:apply` |
+| test-writer | test files only | `/opsx:apply` (test-first step) |
+| reviewer | nothing | `/opsx:verify` |
+| coordinator | `docs/progress.md`, `docs/worktrees.md` | `/opsx:apply` (planning, `[PARALLEL]` pairs) |
 
 ## implementer
 
@@ -54,7 +54,7 @@ Tasks done with commit hashes, verification command → result per task, problem
   (global guard).
 
 ### When used
-`/sdd:apply`, for a task or a group of tasks, after the test-writer has written the failing tests
+`/opsx:apply`, for a task or a group of tasks, after the test-writer has written the failing tests
 (or for tasks with no spec scenario, such as configuration).
 
 ## test-writer
@@ -82,7 +82,7 @@ test.
 - No MCP tools.
 
 ### When used
-`/sdd:apply`, at the start of each task group, before the implementer.
+`/opsx:apply`, at the start of each task group, before the implementer.
 
 ## reviewer
 
@@ -106,7 +106,7 @@ suggested fix), requirements without tests, not verifiable.
 - Gets only the change folder, the diff and the relevant FRS IDs, not the implementer's summary.
 
 ### When used
-`/sdd:verify`, in a session that did not implement the change; up to three rounds per ticket.
+`/opsx:verify`, in a session that did not implement the change; up to three rounds per ticket.
 
 ## coordinator
 
@@ -132,7 +132,7 @@ status rows recorded.
   the main session runs the commands it plans.
 
 ### When used
-`/sdd:run` before apply for multi-group changes, and for the `[PARALLEL]` pairs DEV-10 + DEV-11 and
+`/opsx:apply` before the first task for multi-group changes, and for the `[PARALLEL]` pairs DEV-10 + DEV-11 and
 DEV-14 + DEV-15.
 
 ## Checks

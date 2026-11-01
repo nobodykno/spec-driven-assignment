@@ -1,42 +1,54 @@
-// Approval and verification gates for OpenSpec changes, and a check that docs/workflow.md
-// documents every /sdd:* command (DEV-8 design D1, D4).
+// Gate checks for OpenSpec changes (handoff.md, review.md) and a check that docs/workflow.md
+// documents every /opsx:* command (DEV-8 design D1, D4; reworked for the opsx command set).
 // Usage: node scripts/check-workflow.mjs   (run from the repository root; part of pnpm lint)
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-
-const COMMANDS_DIR = join('.claude', 'commands', 'sdd');
+const COMMANDS_DIR = join('.claude', 'commands', 'opsx');
 const DOC = join('docs', 'workflow.md');
-const field = (text, name) => new RegExp(`^${name}:[ \\t]*(.*)$`, 'm').exec(text)?.[1].trim() ?? '';
 
-/** @returns {string[]} reasons why implementation must be refused (empty when approved) */
-export function checkApproval(proposalText) {
-  if (field(proposalText, 'Status') !== 'Approved') {
-    return ['proposal.md must contain "Status: Approved"'];
+/** @returns {{ stage: string, status: string, index: number }[]} handoff blocks in file order */
+const blocks = (text) =>
+  [...text.matchAll(/^### (\S+) \| [^|]+ \| (\S+)\s*$/gm)].map((match, index) => ({
+    stage: match[1],
+    status: match[2],
+    index,
+  }));
+const latest = (list, ...stages) => list.filter((b) => stages.includes(b.stage)).at(-1);
+
+/** @returns {string[]} reasons why implementation must be refused (empty when Gate 1 is approved) */
+export function checkApproval(handoffText) {
+  if (handoffText === undefined) {
+    return ['handoff.md is missing: run /opsx:propose first'];
   }
-  return ['Approved-by', 'Approved-on']
-    .filter((name) => field(proposalText, name) === '')
-    .map((name) => `proposal.md must have a filled-in "${name}:"`);
+  const list = blocks(handoffText);
+  const gate = latest(list, 'gate-1');
+  const plan = latest(list, 'propose', 'update');
+  if (gate === undefined || gate.status !== 'APPROVED') {
+    return ['handoff.md has no "gate-1 | APPROVED" block'];
+  }
+  return plan !== undefined && plan.index > gate.index
+    ? ['a propose/update block is newer than gate-1: approval is cancelled']
+    : [];
 }
 
-/** @returns {string[]} reasons why a change must not be archived (empty when verified) */
-export function checkVerified(verificationText) {
-  if (verificationText === undefined) {
-    return ['verification.md is missing: run /sdd:verify first'];
+/** @returns {string[]} reasons why a change must not be archived (empty when the review passed) */
+export function checkVerified(handoffText) {
+  if (handoffText === undefined) {
+    return ['handoff.md is missing: run /opsx:verify first'];
   }
-  if (verificationText.includes('NOT READY')) {
-    return ['verification.md reports NOT READY'];
+  const review = latest(blocks(handoffText), 'review');
+  if (review === undefined) {
+    return ['handoff.md has no review block: run /opsx:verify first'];
   }
-  return verificationText.includes('READY FOR PR')
-    ? []
-    : ['verification.md has no "READY FOR PR" result'];
+  return review.status === 'PASS' ? [] : [`latest review block is ${review.status}, not PASS`];
 }
 
-/** @returns {string[]} one finding per command without a "### /sdd:<name>" heading in the doc */
+/** @returns {string[]} one finding per command without a "### /opsx:<name>" heading in the doc */
 export function checkWorkflowDocs(commands, doc) {
   return commands
-    .filter((name) => !new RegExp(`^#{2,4} /sdd:${name}\\b`, 'm').test(doc))
-    .map((name) => `${DOC}: command /sdd:${name} is not documented`);
+    .filter((name) => !new RegExp(`^#{2,4} /opsx:${name}\\b`, 'm').test(doc))
+    .map((name) => `${DOC}: command /opsx:${name} is not documented`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

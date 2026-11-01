@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Independent read-only reviewer. Compares the implementation on the current branch with the approved OpenSpec change, docs/FRS.md and docs/SDS.md. Use during /sdd:verify, never in the implementing session.
+description: Independent read-only reviewer. Compares the implementation on the current branch with the approved OpenSpec change, docs/FRS.md and docs/SDS.md. Use during /opsx:verify and at the end of every /opsx:apply task group (code-review-graph as an advisory pointer; the one review mechanism), never in the implementing session.
 tools: Read, Grep, Glob, Bash(git diff:*), Bash(git log:*)
 hooks:
   PreToolUse:

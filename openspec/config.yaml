@@ -20,31 +20,41 @@ context: |
   Database: PostgreSQL 16 in Docker Compose on host port 5433.
   API: REST under /api/v1; errors { error: { code, message, details? } }; lists { items, meta }.
   Testing: Vitest + Supertest (services), Vitest + RTL (web), Playwright (e2e).
-  Issue tracker keys: DEV-1001 ... DEV-1018. Tickets are fetched via the issue-tracker MCP.
+  Issue tracker: Jira keys DEV-1 ... DEV-21 (assignment IDs DEV-1001 ... DEV-1018, map in docs/mcp-setup.md). Tickets are fetched live via the Atlassian MCP; never invented.
   Quality gates: pnpm build, pnpm lint, pnpm typecheck, pnpm test.
 
 rules:
   proposal:
-    - "First lines must be: 'Ticket: <KEY>', 'Ticket source: live MCP | FIXTURE (reason)', 'Status: Draft', 'Approved-by:', 'Approved-on:'"
-    - List the FRS requirement IDs covered and the SDS sections followed or changed
-    - List the affected packages/services
-    - List every new dependency with exact version and reason
-    - List database changes (tables, columns, indexes, migrations), or state "none"
-    - Include a rollback plan
-    - List ticket dependencies and confirm they are done
+    - "Start with the Ticket section: Jira key, summary, status, acceptance criteria and blockers (all Done), fetched live via MCP (.claude/rules/propose-artifacts.md)"
+    - List the FRS requirement IDs covered and the SDS sections followed or changed (workflow tickets: trace to the ticket's acceptance criteria)
+    - Include an Open decisions table; none may stay Open before specs are written (.claude/rules/open-decisions.md)
+    - List the affected packages/services using the layer tags in .claude/rules/layout.md
+    - List every new dependency with exact version and reason, or state "None"
+    - List database changes (tables, columns, indexes, migrations), or state "No schema change"
+    - Include impact, rollback plan and what is out of scope
   specs:
-    - Use WHEN/THEN scenarios copied or derived from FRS acceptance criteria
-    - Every scenario title ends with its FRS ID in brackets, e.g. "Wrong password rejected [FR-AUTH-002]"
+    - Use WHEN/THEN scenarios with SHALL/MUST wording, derived from FRS acceptance criteria
+    - "Every scenario title ends with its FRS ID in brackets, e.g. 'Wrong password rejected [FR-AUTH-002]'; its test title is 'FR-AUTH-002: Wrong password rejected'"
     - Every requirement has a success scenario and at least one failure scenario
-    - Endpoints touching projects/tasks include a non-member (404) and wrong-role (403) scenario
+    - Endpoints touching projects/tasks include a non-member (404) and wrong-role (403) scenario, plus unauthenticated (401) and validation-failure (400)
+    - Use ADDED/MODIFIED/REMOVED/RENAMED; for MODIFIED copy the full current requirement and keep its title
   design:
-    - Reference the SDS sections followed (e.g. "Follows SDS §7.2")
-    - If the design differs from the SDS, state the difference and update docs/SDS.md in the same change
-    - Define Zod schemas in packages/shared before service or web code
-    - Record library APIs checked with Context7 MCP (library, version, topic), or why it was unavailable
+    - Reference the SDS sections followed (e.g. "Follows SDS 7.2"); if the design differs, state the difference and list the SDS update
+    - Define Zod schemas in packages/shared before service or web code (contract first)
+    - Record library APIs checked with Context7 MCP (library, version, topic) under "Docs checked", or why it was unavailable
   tasks:
-    - Group tasks by package (Shared, Database, Auth, Tracker, Gateway, Web, Docker, Docs)
-    - Each task names the FRS IDs it implements and the command that verifies it
-    - Tests are written before implementation; test names start with the FRS ID
-    - Final task group runs all quality gates
-    - Mark tasks that can run in parallel worktrees with [PARALLEL]
+    - Write tests before implementation; test titles start with the FRS ID
+    - Group tasks by layer tag (shared, database, auth, tracker, gateway, web, e2e, docker, docs) so they can run in parallel worktrees; mark them [PARALLEL]
+    - Size each task at about 1 to 2 hours of agent work, one commit per task
+    - Map every spec scenario to exactly one named test task (Scenario to test map)
+    - End every task group, database groups included, with the full checkpoint in .claude/rules/checkpoint.md; results go to review.md
+    - Every change carries a delta-openapi.yaml (empty paths when no endpoint changes)
+
+operations:
+  apply:
+    guidance:
+      - Failing test first, then code, then checkpoint; stage one task and commit only after the user replies commit
+      - Verify library APIs with Context7 and pin exact versions
+  archive:
+    guidance:
+      - Run only after the PR is merged and the change has been synced, on a follow-up branch (never on main)

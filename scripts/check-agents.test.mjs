@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ALLOWED_TOOLS,
   POLICY_LINE,
-  SDD_COMMANDS,
+  POLICY_COMMANDS,
   checkAgents,
   parseFrontmatter,
 } from './check-agents.mjs';
@@ -52,7 +52,7 @@ const validInput = () => {
     docs: ['# Agents', ...names.map((name) => docSection(name))].join('\n\n'),
     scriptExists: (path) => path === GUARD || path === 'docs/token-policy.md',
     commands: Object.fromEntries(
-      SDD_COMMANDS.map((name) => [
+      POLICY_COMMANDS.map((name) => [
         name,
         `---\ndescription: ${name}\n---\n\n${POLICY_LINE}\n\nSteps.`,
       ]),
@@ -174,7 +174,8 @@ describe('check-agents', () => {
 
   it('NFR-MNT-001: policy referenced everywhere', () => {
     expect(POLICY_LINE).toBe('Follow docs/token-policy.md');
-    expect(SDD_COMMANDS).toEqual(['propose', 'apply', 'verify', 'ship', 'run']);
+    expect(POLICY_COMMANDS).toContain('opsx/verify');
+    expect(POLICY_COMMANDS).toContain('create-pr');
     expect(checkAgents(validInput())).toEqual([]);
   });
 
@@ -193,14 +194,14 @@ describe('check-agents', () => {
       'reviewer: .claude/agents/reviewer.md lacks "Follow docs/token-policy.md"',
     ],
     [
-      'sdd command without the line',
-      (i) => (i.commands.ship = '---\ndescription: ship\n---\n\nSteps.'),
-      'sdd/ship: .claude/commands/sdd/ship.md lacks "Follow docs/token-policy.md"',
+      'command without the line',
+      (i) => (i.commands['create-pr'] = '---\ndescription: pr\n---\n\nSteps.'),
+      'command create-pr: .claude/commands/create-pr.md lacks "Follow docs/token-policy.md"',
     ],
     [
-      'sdd command missing',
-      (i) => delete i.commands.verify,
-      'sdd/verify: .claude/commands/sdd/verify.md is missing',
+      'command missing',
+      (i) => delete i.commands['opsx/verify'],
+      'command opsx/verify: .claude/commands/opsx/verify.md is missing',
     ],
     [
       'policy file missing',
