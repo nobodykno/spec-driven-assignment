@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API (DEV-14 delta)
+  version: 0.0.0-dev-14
+  description: >-
+    DEV-14 (assignment DEV-1011). Retroactive record (merged in PR #11). No endpoint is added or
+    changed by this change: the web app (register, login, logout, session refresh, projects and
+    members pages) consumes endpoints that already exist. The x-web-consumes map lists each
+    endpoint the web relies on and the observable UI reaction per status code. Paths are relative
+    to /api/v1.
+paths: {}
+x-web-consumes:
+  'POST /auth/login':
+    scenarios: [Successful login, Inline validation errors]
+    onStatus:
+      '200': 'Session (token and user) stored in memory only; navigate to /projects'
+      '401': 'INVALID_CREDENTIALS message shown on the login form; session stays guest'
+    x-unspecified-statuses: ['400']  # server VALIDATION_ERROR details are mapped to the fields
+  'POST /auth/register':
+    scenarios: [Inline validation errors]
+    onStatus:
+      '400': 'VALIDATION_ERROR details shown next to each field'
+    x-unspecified-statuses: ['201', '409']  # 201: web then logs in; 409 message shown on the form
+  'POST /auth/logout':
+    scenarios: [Logout]
+    onStatus:
+      '204': 'Session and query cache cleared; app shows /login'
+    x-unspecified-statuses: ['401']  # logout always ends the local session, even when the call fails
+  'POST /auth/refresh':
+    scenarios: [Automatic refresh, Refresh fails]
+    onStatus:
+      '200': 'New access token kept in memory; the failed call is retried once with it'
+      '401': 'Session cleared; user is redirected to /login'
+  'GET /auth/me':
+    scenarios: []
+    x-unspecified-statuses: ['200', '401']  # session bootstrap after reload; 401 leaves the user a guest
+  'GET /projects':
+    scenarios: [List and create, Edit and archive, Member sees no owner controls, States, Protected page as guest]
+    onStatus:
+      '200': 'Projects listed (empty message when no items); owner-only controls only for OWNER rows'
+      '401': 'Refresh once; when refresh fails the user is redirected to /login'
+    x-unspecified-statuses: ['500']  # error message with Retry button (States)
+  'POST /projects':
+    scenarios: [List and create]
+    onStatus:
+      '201': 'Project appears in the list; form is reset'
+    x-unspecified-statuses: ['400']  # name rules are checked in the form before the request
+  'GET /projects/{projectId}':
+    scenarios: [Edit and archive, Owner manages members, Member sees no owner controls]
+    onStatus:
+      '200': 'Settings page shows details and members; a Member is redirected away from settings'
+  'PATCH /projects/{projectId}':
+    scenarios: [Edit and archive]
+    onStatus:
+      '200': 'List reflects the new name'
+      '409': 'PROJECT_ARCHIVED message shown on the form'
+  'POST /projects/{projectId}/archive':
+    scenarios: [Edit and archive]
+    onStatus:
+      '200': 'Project leaves the active list'
+      '409': 'PROJECT_ARCHIVED message shown next to the project'
+  'POST /projects/{projectId}/members':
+    scenarios: [Owner manages members]
+    onStatus:
+      '201': 'Member list updates'
+      '404': 'USER_NOT_FOUND message shown on the form'
+      '409': 'ALREADY_MEMBER message shown on the form'
+  'DELETE /projects/{projectId}/members/{userId}':
+    scenarios: [Owner manages members]
+    onStatus:
+      '204': 'Member list updates'
+      '409': 'LAST_OWNER message shown above the member form'
+x-unspecified-statuses-note: >-
+  403 and 404 on project endpoints for non-members or wrong roles have no web scenario; the web
+  hides Owner-only controls and relies on the API for enforcement (apps/web/CLAUDE.md).
