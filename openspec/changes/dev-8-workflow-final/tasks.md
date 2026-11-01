@@ -19,11 +19,11 @@
 ## 3. Workflow documentation [docs]
 
 - [x] 3.1 [docs] Edit `docs/workflow.md`: replace "Not done here (follow-up)" with the final state (specs aligned, guard approves from `handoff.md`), keep the append-only note. Verify: `node scripts/check-workflow.mjs`.
-- [ ] 3.2 [docs] Checkpoint 3.
+- [x] 3.2 [docs] Checkpoint 3.
 
 ## 4. Verification
 
-- [ ] 4.1 [docs] Full-diff checkpoint, `reviewer` on `git diff main...HEAD`, then `/opsx:verify dev-8-workflow-final` in a fresh session.
+- [x] 4.1 [docs] Full-diff checkpoint, `reviewer` on `git diff main...HEAD`, then `/opsx:verify dev-8-workflow-final` in a fresh session.
 
 ## Scenario to test map
 

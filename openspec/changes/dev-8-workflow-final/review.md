@@ -41,3 +41,42 @@ round: 1
 
 Findings: low: loops stop at the first failing case without naming it; handoff block regex ignores code fences (accepted, append-only file); long line in implementer.md. A repo search for leftover Status: Approved found only the intended test fixture, the docs/workflow.md explanation and the not-yet-archived changes dev-9 to dev-16 (they need a handoff.md before verify).
 Next: group 3
+
+## 2026-11-01 | apply | group 3: workflow documentation | PASS
+head: c87244c
+round: 1
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint | 0 errors, 24 existing warnings (script ignores --max-warnings) |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 421 passed, 0 failed, 0 skipped |
+| coverage | pnpm test --coverage | waived by the user (no provider installed) |
+| spec | openspec validate dev-8-workflow-final --strict | valid |
+| scenarios | all test tasks | 19/19 green |
+| database | n/a | n/a (no database changes) |
+| reviewer | reviewer | APPROVE (0 critical, 0 high, 1 medium, 4 low) |
+| graph | code-review-graph | unavailable (not run) |
+
+Findings: see the final section below (one reviewer run covered group 3 and the full diff).
+Next: final
+
+## 2026-11-01 | apply | final | PASS
+head: c87244c
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint | 0 errors, 24 existing warnings (script ignores --max-warnings) |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test | 421 passed, 0 failed, 0 skipped |
+| coverage | pnpm test --coverage | waived by the user (no provider installed) |
+| spec | openspec validate dev-8-workflow-final --strict | valid |
+| scenarios | all test tasks | 19/19 green |
+| database | n/a | n/a (no database changes) |
+| reviewer | reviewer | APPROVE (0 critical, 0 high, 1 medium, 4 low) |
+| graph | code-review-graph | unavailable (not run) |
+
+Findings: medium: proposal Impact omits docs/agents.md and .claude/agents/implementer.md (approval wording edited with D1); recorded as a correction block in handoff.md (append-only), the specs are unchanged. Lows: Impact says 440 tests (actual 421 after merging it.each cases into loops); guard tests loop several cases per test; makeRepo declares git before root.
+Next: /opsx:verify dev-8-workflow-final

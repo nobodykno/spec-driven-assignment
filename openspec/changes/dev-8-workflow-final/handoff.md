@@ -43,3 +43,10 @@ produced: group 2 done (tasks 2.1 to 2.3), tasks 6/9 including 3.1 pending commi
 checks: PASS, see review.md "2026-11-01 | apply | group 2: guard approves from the handoff only"; reviewer: PASS
 open: dev-9 to dev-16 carry only proposal.md approval; they need a handoff.md gate-1 block before the guard lets an implementer edit them
 next: commit 3.1 docs/workflow.md, then checkpoint 3 and the final full-diff review
+
+### apply | 2026-11-01 | COMPLETE
+head: c87244c
+produced: commit range main..HEAD (9 commits); 9/9 tasks, 19/19 scenarios have a passing test
+checks: PASS, see review.md "2026-11-01 | apply | final"; build, lint (0 errors), typecheck exit 0, test 421 passed, 0 failed; coverage waived by the user; reviewer: APPROVE
+open: correction: Impact also covers docs/agents.md and .claude/agents/implementer.md (approval wording, no behaviour change) and the test count is 421, not 440; lows in review.md; dev-9 to dev-16 need a handoff.md gate-1 block
+next: /opsx:verify dev-8-workflow-final in a fresh session, then /create-pr dev-8-workflow-final
