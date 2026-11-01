@@ -36,3 +36,10 @@ produced: group 1 done (tasks 1.1 to 1.3), tasks 3/14
 checks: PASS, see review.md "2026-11-01 | apply | group 1: Commands (AC-1)"; reviewer: PASS
 open: none
 next: task 2.1 test task for conflicts and contract approval
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: f8e52e1
+produced: task 2.1 done (6 tests added, red: checkConflicts and checkContractApproval missing); tasks 4/14
+checks: 6 red as intended, 3 existing pass
+open: none
+next: task 2.2 implement checkConflicts and checkContractApproval
