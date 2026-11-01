@@ -57,3 +57,24 @@ produced: gates build, typecheck, test 421/0, validate --strict green, lint 0 er
 checks: PASS, coverage waived by the user
 open: medium: dev-9 to dev-16 need a handoff.md gate-1 block before an implementer can edit them; medium (pre-existing): guard does not stop the approved implementer from editing handoff.md or .claude/**, follow-up
 next: /create-pr dev-8-workflow-final
+
+### pr | 2026-11-01 | MERGED
+head: 3cc7584
+produced: PR #24 merged into main (30824d0)
+checks: PASS, see review.md "2026-11-01 | review | fresh-session review"
+open: none
+next: /opsx:sync dev-8-workflow-final
+
+### sync | 2026-11-01 | DONE
+head: 30824d0
+produced: sdd-workflow (3 requirements removed, 4 added, Purpose rewritten) and agent-roles (1 modified) synced into openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-8-workflow-final
+
+### archive | 2026-11-01 | DONE
+head: 30824d0
+produced: archive/2026-11-01-dev-8-workflow-final, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR
