@@ -21,3 +21,10 @@ produced: retroactive (merged in PR #13 before the opsx workflow); 7/7 tasks tic
 checks: PASS, see review.md "2026-11-01 | apply | final"
 open: none
 next: /opsx:verify dev-16-web-comments-activity
+
+### review | 2026-11-01 | PASS
+head: 25eafdc
+produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors); isolated subagent review (Rule 23): reviewer CHANGES REQUIRED (0 critical, 0 high, 3 medium, 5 low), shipped on the user's request with the gaps recorded as deferred; see review.md latest review section
+checks: PASS, coverage waived by the user
+open: deferred mediums: comment edit draft not validated with the shared CreateCommentSchema before PATCH; no tests for comment edit success (200) and delete (204); no edit-form PATCH 400/409 tests and no refetch assertion after PATCH. Lows: over-length messages not asserted, extra tests beyond one per scenario, newest-first order not proven, resolver type widening, no Cancel in comment edit mode
+next: /create-pr dev-16-web-comments-activity
