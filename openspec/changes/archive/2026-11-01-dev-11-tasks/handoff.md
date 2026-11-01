@@ -29,3 +29,24 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: deferred: assign and create race with member removal and project archive (task writes read membership and project status without a lock), create() checks outside the transaction, x-user-id not UUID-checked, update activity stores full descriptions, dueFrom later than dueTo accepted
 next: /create-pr dev-11-tasks
+
+### pr | 2026-11-01 | MERGED
+head: e932de0
+produced: PR #30 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-11-tasks
+
+### sync | 2026-11-01 | DONE
+head: e932de0
+produced: new capabilities tasks created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-11-tasks
+
+### archive | 2026-11-01 | DONE
+head: e932de0
+produced: archive/2026-11-01-dev-11-tasks, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
