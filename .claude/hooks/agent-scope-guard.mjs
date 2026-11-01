@@ -187,11 +187,11 @@ export function evaluateAgentCall(agent, payload, context) {
 }
 
 /**
- * @param {string} branch e.g. `feature/DEV-6-agents`
+ * @param {string} branch e.g. `feature/DEV-6-agents` or `feature/docs/DEV-7-mcp`
  * @returns {string | null} the OpenSpec change name, e.g. `dev-6-agents`
  */
 export function changeNameForBranch(branch) {
-  const match = /^feature\/([A-Z]+-\d+-[a-z0-9-]+)$/.exec(branch);
+  const match = /^feature\/(?:[a-z]+\/)?([A-Z]+-\d+-[a-z0-9-]+)$/.exec(branch);
   return match ? match[1].toLowerCase() : null;
 }
 
@@ -204,6 +204,22 @@ export function isApprovedProposal(proposal) {
   return (
     field('Status') === 'Approved' && Boolean(field('Approved-by')) && Boolean(field('Approved-on'))
   );
+}
+
+/**
+ * Gate 1 of the opsx workflow: the latest `gate-1` block of handoff.md is APPROVED and no
+ * `propose` or `update` block follows it.
+ * @param {string} handoff handoff.md text
+ * @returns {boolean} true when the plan is approved and not reopened
+ */
+export function isApprovedHandoff(handoff) {
+  const blocks = [...handoff.matchAll(/^### (\S+) \| [^|]+ \| (\S+)\s*$/gm)].map((m) => [
+    m[1],
+    m[2],
+  ]);
+  const gate = blocks.findLastIndex(([stage]) => stage === 'gate-1');
+  const plan = blocks.findLastIndex(([stage]) => stage === 'propose' || stage === 'update');
+  return gate !== -1 && blocks[gate][1] === 'APPROVED' && plan < gate;
 }
 
 const git = (cwd, args) =>
@@ -247,12 +263,23 @@ function startDirectory(base, target) {
   return typeof target === 'string' && target !== '' ? existingDir(resolve(base, target)) : base;
 }
 
+const approvedByHandoff = (dir) =>
+  existsSync(join(dir, 'handoff.md')) &&
+  isApprovedHandoff(readFileSync(join(dir, 'handoff.md'), 'utf8'));
+
+const approvedByProposal = (dir) =>
+  existsSync(join(dir, 'proposal.md')) &&
+  isApprovedProposal(readFileSync(join(dir, 'proposal.md'), 'utf8'));
+
 export function readApproval(root) {
   try {
     const branch = git(root, ['branch', '--show-current']);
     const change = changeNameForBranch(branch);
-    const file = change && join(root, 'openspec/changes', change, 'proposal.md');
-    return Boolean(file) && isApprovedProposal(readFileSync(file, 'utf8'));
+    if (!change) {
+      return false;
+    }
+    const dir = join(root, 'openspec/changes', change);
+    return approvedByHandoff(dir) || approvedByProposal(dir);
   } catch {
     // No branch or no proposal: the change is not approved (fail closed).
     return false;
