@@ -34,3 +34,27 @@ Per the batch instruction, tests are limited to unit/Supertest tests of pure log
 ## 6. Quality gates
 
 - [x] 6.1 `pnpm build && pnpm lint && pnpm typecheck && pnpm test` all pass.
+
+## Scenario to test map
+
+Retroactive: tests were titled to the scenario names after merge (PR #6). The task is the original task that built the behaviour.
+
+| Capability | Scenario | FRS ID | Test file | Task |
+|------------|----------|--------|-----------|------|
+| auth | Valid registration | FR-AUTH-001 | services/auth/test/auth-routes.test.ts | 3.2 |
+| auth | Duplicate email | FR-AUTH-001 | services/auth/test/auth-routes.test.ts | 3.2 |
+| auth | Invalid input | FR-AUTH-001 | services/auth/test/auth-routes.test.ts | 3.2 |
+| auth | Valid login | FR-AUTH-002 | services/auth/test/auth-routes.test.ts | 3.3 |
+| auth | Wrong email or password | FR-AUTH-002 | services/auth/src/auth-service.test.ts | 3.3 |
+| auth | Rate limited | FR-AUTH-002 | services/api-gateway/src/gateway-auth.test.ts | 4.2 |
+| auth | Rotation | FR-AUTH-003 | services/auth/src/auth-service.test.ts | 3.4 |
+| auth | Invalid token | FR-AUTH-003 | services/auth/src/auth-service.test.ts | 3.4 |
+| auth | Reuse detection | FR-AUTH-003 | services/auth/src/auth-service.test.ts | 3.4 |
+| auth | Logout | FR-AUTH-004 | services/auth/test/auth-routes.test.ts | 3.4 |
+| auth | Revoked token reused | FR-AUTH-004 | services/auth/src/auth-service.test.ts | 3.4 |
+| auth | Missing, invalid or expired token | FR-AUTH-005 | services/api-gateway/src/gateway-auth.test.ts | 4.1 |
+| auth | Valid token forwards identity | FR-AUTH-005 | services/api-gateway/src/gateway-auth.test.ts | 4.1 |
+| auth | Profile | FR-AUTH-007 | services/auth/test/auth-routes.test.ts | 3.5 |
+| auth | No identity | FR-AUTH-007 | services/auth/test/auth-routes.test.ts | 3.5 |
+| auth | Redaction | NFR-SEC-005 | services/auth/src/logger.test.ts | 3.1 |
+| auth | Contracts parse valid and reject invalid data | NFR-SEC-003 | packages/shared/src/schemas/contracts.test.ts | 1.1 |
