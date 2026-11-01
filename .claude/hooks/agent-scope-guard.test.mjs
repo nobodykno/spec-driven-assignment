@@ -8,7 +8,6 @@ import {
   changeNameForBranch,
   evaluateAgentCall,
   isApprovedHandoff,
-  isApprovedProposal,
   readApproval,
   resolveWorkRoot,
 } from './agent-scope-guard.mjs';
@@ -22,6 +21,38 @@ const call = (agent, toolName, toolInput, context = APPROVED) =>
   evaluateAgentCall(agent, { tool_name: toolName, tool_input: toolInput }, context);
 const bash = (agent, command, context) => call(agent, 'Bash', { command }, context);
 const edit = (agent, filePath, context) => call(agent, 'Edit', { file_path: filePath }, context);
+
+const block = (stage, status) => `### ${stage} | 2026-11-01 | ${status}\nhead: abc1234\n`;
+const LEGACY_PROPOSAL =
+  'Ticket: DEV-7\nStatus: Approved\nApproved-by: A (via chat)\nApproved-on: 2026-10-30 16:10 IST\n';
+
+/** A temp git repo on `branch`; optional handoff.md / proposal.md of change dev-7-mcp. */
+function makeRepo(branch, handoff, proposal) {
+  const git = (...args) => execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'guard-gate-')));
+  git('init', '-q', '-b', branch);
+  git('config', 'user.email', 't@example.com');
+  git('config', 'user.name', 't');
+  writeFileSync(join(root, 'f.txt'), 'x');
+  git('add', '.');
+  git('commit', '-q', '-m', 'init');
+  const dir = join(root, 'openspec/changes/dev-7-mcp');
+  mkdirSync(dir, { recursive: true });
+  if (handoff !== undefined) {
+    writeFileSync(join(dir, 'handoff.md'), handoff);
+  }
+  if (proposal !== undefined) {
+    writeFileSync(join(dir, 'proposal.md'), proposal);
+  }
+  return root;
+}
+
+const runCli = (root, agent, payload) =>
+  spawnSync(process.execPath, [HOOK, '--agent', agent], {
+    input: JSON.stringify({ ...payload, cwd: root }),
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+  });
 
 const expectAllowed = (result) => expect(result).toEqual({ allow: true });
 const expectBlocked = (result, rule) => {
@@ -41,13 +72,31 @@ describe('agent-scope-guard: implementer', () => {
     expectAllowed(bash('implementer', 'git add -A && git commit -m "feat(auth): 2.1 add login"'));
   });
 
-  it.each(['Edit', 'Write', 'MultiEdit'])(
-    'NFR-MNT-001: implementer edits blocked on an unapproved change (%s)',
-    (toolName) =>
-      expectBlocked(call('implementer', toolName, { file_path: 'a.ts' }, DRAFT), 'not-approved'),
-  );
+  it('NFR-MNT-001: Edits blocked on an unapproved change', () => {
+    for (const toolName of ['Edit', 'Write', 'MultiEdit']) {
+      const result = call('implementer', toolName, { file_path: 'a.ts' }, DRAFT);
+      expectBlocked(result, 'not-approved');
+      expect(result.reason).toMatch(/no approved OpenSpec change/);
+    }
+    // On a branch with no change at all the CLI exits 2 with the same message.
+    const root = makeRepo('main');
+    const cli = runCli(root, 'implementer', {
+      tool_name: 'Edit',
+      tool_input: { file_path: 'a.ts' },
+    });
+    expect(cli.status).toBe(2);
+    expect(cli.stderr).toMatch(/no approved OpenSpec change/);
+    // A change whose handoff holds only propose (no gate-1 APPROVED) is unapproved too.
+    const planned = makeRepo('feature/docs/DEV-7-mcp', block('propose', 'AWAITING_GATE_1'));
+    const planCli = runCli(planned, 'implementer', {
+      tool_name: 'Write',
+      tool_input: { file_path: join(planned, 'a.ts') },
+    });
+    expect(planCli.status).toBe(2);
+    expect(planCli.stderr).toMatch(/no approved OpenSpec change/);
+  });
 
-  it.each([
+  const PUSH_COMMANDS = [
     'git push',
     'git push origin feature/DEV-6-agents',
     'git -C . push',
@@ -64,18 +113,41 @@ describe('agent-scope-guard: implementer', () => {
     'echo $(git push)',
     'gh pr create --fill',
     'gh pr merge 3 --merge',
-  ])('NFR-MNT-001: implementer push blocked (%s)', (command) =>
-    expectBlocked(bash('implementer', command), 'push-or-pr'),
-  );
-
-  it.each([
+  ];
+  const JIRA_WRITES = [
     'mcp__atlassian__transitionJiraIssue',
     'mcp__atlassian__addCommentToJiraIssue',
     'mcp__atlassian__editJiraIssue',
     'mcp__atlassian__createJiraIssue',
-  ])('NFR-MNT-001: implementer Jira writes blocked (%s)', (toolName) =>
-    expectBlocked(call('implementer', toolName, {}), 'jira-write'),
-  );
+  ];
+
+  it('NFR-MNT-001: Push and Jira writes blocked', () => {
+    for (const command of PUSH_COMMANDS) {
+      const result = bash('implementer', command);
+      expectBlocked(result, 'push-or-pr');
+      expect(result.reason).toMatch(/never pushes or opens\/merges PRs/);
+    }
+    for (const toolName of JIRA_WRITES) {
+      const result = call('implementer', toolName, {});
+      expectBlocked(result, 'jira-write');
+      expect(result.reason).toMatch(/never writes to Jira/);
+    }
+    // Through the CLI the same calls exit 2 even on an approved change.
+    const root = makeRepo(
+      'feature/docs/DEV-7-mcp',
+      block('propose', 'AWAITING_GATE_1') + block('gate-1', 'APPROVED'),
+    );
+    for (const [name, input] of [
+      ['Bash', { command: 'git push' }],
+      ['Bash', { command: 'gh pr create --fill' }],
+      ['Bash', { command: 'gh pr merge 3 --merge' }],
+      ['mcp__atlassian__transitionJiraIssue', {}],
+    ]) {
+      const cli = runCli(root, 'implementer', { tool_name: name, tool_input: input });
+      expect(cli.status).toBe(2);
+      expect(cli.stderr).toMatch(/never (pushes|writes to Jira)/);
+    }
+  });
 
   it('NFR-MNT-001: implementer may read Jira', () =>
     expectAllowed(call('implementer', 'mcp__atlassian__getJiraIssue', { issueIdOrKey: 'DEV-6' })));
@@ -206,15 +278,6 @@ describe('agent-scope-guard: input handling', () => {
     expect(changeNameForBranch('feature/DEV-6-agents')).toBe('dev-6-agents');
     expect(changeNameForBranch('main')).toBeNull();
   });
-
-  it('NFR-MNT-001: approval needs status, approver and date', () => {
-    const approved =
-      'Ticket: DEV-6\nStatus: Approved\nApproved-by: A (via chat)\nApproved-on: 2026-10-30 16:10 IST\n';
-    expect(isApprovedProposal(approved)).toBe(true);
-    expect(isApprovedProposal(approved.replace('Approved\n', 'Draft\n'))).toBe(false);
-    expect(isApprovedProposal(approved.replace('A (via chat)', ''))).toBe(false);
-    expect(isApprovedProposal(approved.replace('2026-10-30 16:10 IST', ''))).toBe(false);
-  });
 });
 
 describe('agent-scope-guard CLI', () => {
@@ -264,8 +327,8 @@ describe('agent-scope-guard: git worktrees (DEV-22)', () => {
     const dir = join(wt, 'openspec/changes/dev-1-demo');
     mkdirSync(dir, { recursive: true });
     writeFileSync(
-      join(dir, 'proposal.md'),
-      'Status: Approved\nApproved-by: Me\nApproved-on: 2026-01-01 10:00 IST\n',
+      join(dir, 'handoff.md'),
+      '### propose | 2026-01-01 | AWAITING_GATE_1\nhead: abc1234\n\n### gate-1 | 2026-01-01 | APPROVED\nhead: abc1234\n',
     );
     return { main, wt };
   }
@@ -288,8 +351,11 @@ describe('agent-scope-guard: git worktrees (DEV-22)', () => {
 });
 
 describe('opsx gate (DEV-8): domain branches and the gate-1 handoff block', () => {
-  const git = (cwd, ...args) => execFileSync('git', args, { cwd, stdio: 'ignore' });
-  const block = (stage, status) => `### ${stage} | 2026-11-01 | ${status}\nhead: abc1234\n`;
+  const APPROVED_HANDOFF = block('propose', 'AWAITING_GATE_1') + block('gate-1', 'APPROVED');
+  const editPayload = (root) => ({
+    tool_name: 'Edit',
+    tool_input: { file_path: join(root, 'a.ts') },
+  });
 
   it('NFR-MNT-001: a feature/{domain}/DEV-n branch maps to its change name', () => {
     expect(changeNameForBranch('feature/docs/DEV-7-mcp')).toBe('dev-7-mcp');
@@ -297,29 +363,42 @@ describe('opsx gate (DEV-8): domain branches and the gate-1 handoff block', () =
     expect(changeNameForBranch('feature/docs/not-a-ticket')).toBeNull();
   });
 
-  it('NFR-MNT-001: gate-1 APPROVED after propose approves; a later update cancels it', () => {
-    const base = block('propose', 'AWAITING_GATE_1') + block('gate-1', 'APPROVED');
-    expect(isApprovedHandoff(base)).toBe(true);
-    expect(isApprovedHandoff(base + block('update', 'AWAITING_GATE_1'))).toBe(false);
+  it('NFR-MNT-001: Reopened gate blocks edits', () => {
+    expect(isApprovedHandoff(APPROVED_HANDOFF)).toBe(true);
+    expect(isApprovedHandoff(APPROVED_HANDOFF + block('update', 'AWAITING_GATE_1'))).toBe(false);
     expect(isApprovedHandoff(block('propose', 'AWAITING_GATE_1'))).toBe(false);
     expect(isApprovedHandoff(block('gate-1', 'REJECTED'))).toBe(false);
+    const root = makeRepo(
+      'feature/docs/DEV-7-mcp',
+      APPROVED_HANDOFF + block('update', 'AWAITING_GATE_1'),
+    );
+    expect(readApproval(root)).toBe(false);
+    const cli = runCli(root, 'implementer', editPayload(root));
+    expect(cli.status).toBe(2);
+    expect(cli.stderr).toMatch(/no approved OpenSpec change/);
   });
 
-  it('NFR-MNT-001: readApproval accepts the handoff gate on a domain branch', () => {
-    const root = realpathSync(mkdtempSync(join(tmpdir(), 'guard-gate-')));
-    git(root, 'init', '-q', '-b', 'feature/docs/DEV-7-mcp');
-    git(root, 'config', 'user.email', 't@example.com');
-    git(root, 'config', 'user.name', 't');
-    writeFileSync(join(root, 'f.txt'), 'x');
-    git(root, 'add', '.');
-    git(root, 'commit', '-q', '-m', 'init');
-    const dir = join(root, 'openspec/changes/dev-7-mcp');
-    mkdirSync(dir, { recursive: true });
+  it('NFR-MNT-001: Edits allowed on an approved change', () => {
+    const root = makeRepo('feature/docs/DEV-7-mcp');
     expect(readApproval(root)).toBe(false);
-    writeFileSync(
-      join(dir, 'handoff.md'),
-      block('propose', 'AWAITING_GATE_1') + block('gate-1', 'APPROVED'),
+    const approved = makeRepo('feature/docs/DEV-7-mcp', APPROVED_HANDOFF);
+    expect(readApproval(approved)).toBe(true);
+    const cli = runCli(approved, 'implementer', editPayload(approved));
+    expect(cli.status).toBe(0);
+    expect(cli.stderr).toBe('');
+  });
+
+  it('NFR-MNT-001: Legacy proposal status does not approve', () => {
+    const root = makeRepo('feature/docs/DEV-7-mcp', undefined, LEGACY_PROPOSAL);
+    expect(readApproval(root)).toBe(false);
+    const withPlanOnly = makeRepo(
+      'feature/docs/DEV-7-mcp',
+      block('propose', 'AWAITING_GATE_1'),
+      LEGACY_PROPOSAL,
     );
-    expect(readApproval(root)).toBe(true);
+    expect(readApproval(withPlanOnly)).toBe(false);
+    const cli = runCli(withPlanOnly, 'implementer', editPayload(withPlanOnly));
+    expect(cli.status).toBe(2);
+    expect(cli.stderr).toMatch(/no approved OpenSpec change/);
   });
 });

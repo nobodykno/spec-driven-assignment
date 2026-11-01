@@ -148,11 +148,14 @@ the rule files).
 | 11 | Replaced the `sdd` commands; `run` orchestration lives in `handoff.md` rules and the coordinator agent; `check-workflow.mjs` and `check-agents.mjs` now read opsx/handoff | One command set; Gate 1 moved from `proposal.md` fields to the `gate-1` handoff block |
 | 12 | `save-context` writes the snapshot itself (no PreCompact hook) | We have no `save-context.mjs` hook |
 
-## Not done here (follow-up)
+## Specs and guard (final state)
 
-`openspec/specs/sdd-workflow/spec.md` and `agent-roles/spec.md` still describe the `sdd` commands and the
-`proposal.md` approval fields. Specs change through their own OpenSpec change, so they are left as they are. No Husky
-hook enforces the append-only logs or the spec/code commit separation yet.
+The `sdd-workflow` and `agent-roles` specs describe the opsx workflow (change `dev-8-workflow-final`, DEV-8):
+`/opsx:apply` and the implementer guard approve a change only from the latest `gate-1 APPROVED` block of
+`handoff.md` that no later `propose` or `update` block follows; the `Status: Approved` fields of `proposal.md` are
+no longer read. `/create-pr` needs a `review` PASS and `/opsx:archive` runs on a follow-up branch after the merge.
+
+Not done: no Husky hook enforces the append-only logs or the spec/code commit separation yet.
 
 ## First archive: DEV-1001
 

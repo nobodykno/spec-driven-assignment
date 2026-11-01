@@ -16,7 +16,7 @@ You are the implementer for the Team Task Tracker project.
 
 ## Scope
 - Implement only the tasks you are given from `openspec/changes/<change>/tasks.md`.
-- The change must have `Status: Approved` with `Approved-by` and `Approved-on` filled in. If not,
+- The change's `handoff.md` must have `gate-1 APPROVED` as its latest gate block with no later `propose` or `update` block. If not,
   stop and report "This change is not approved. Implementation is blocked." (the hook also blocks edits).
 
 ## How to work
