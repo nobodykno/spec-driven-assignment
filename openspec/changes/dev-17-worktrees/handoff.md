@@ -15,3 +15,10 @@ produced: user answered the Gate 1 batch question "approve the specs of dev-17, 
 checks: none
 open: none
 next: /opsx:apply dev-17-worktrees
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 9cbf293
+produced: task 1.1 done (3 tests in scripts/check-worktree-docs.test.mjs, red: module missing); tasks 1/14
+checks: red as intended (test-first)
+open: none
+next: task 1.2 implement checkCommands

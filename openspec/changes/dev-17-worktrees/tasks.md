@@ -8,7 +8,7 @@
 
 ## 1. Commands (AC-1) [docs]
 
-- [ ] 1.1 [docs] Test task (`test-writer`): `scripts/check-worktree-docs.test.mjs`, requirement "Worktree commands documented". Scenarios: Commands for both pairs documented; Missing remove command rejected; Pair without its add commands rejected. All fail first (module missing).
+- [x] 1.1 [docs] Test task (`test-writer`): `scripts/check-worktree-docs.test.mjs`, requirement "Worktree commands documented". Scenarios: Commands for both pairs documented; Missing remove command rejected; Pair without its add commands rejected. All fail first (module missing).
 - [ ] 1.2 [docs] Implement `checkCommands` in `scripts/check-worktree-docs.mjs` (turns 1.1 green; AC-1). Verify: `pnpm exec vitest run scripts/check-worktree-docs.test.mjs`.
 - [ ] 1.3 [docs] Checkpoint 1 (full, `checkpoint.md`; coverage on `scripts/check-worktree-docs.mjs`; database check n/a).
 
