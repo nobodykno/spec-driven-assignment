@@ -99,3 +99,10 @@ produced: task 3.5 done (2 failing tests in scripts/check-claude-settings.test.m
 checks: tests red as intended (test-first), 3 red in the file: the 2 new tests and NFR-MNT-001 current settings pass
 open: coverage provider missing (user decision pending); reviewer lows (readIfExists and run untested, Sequelize version wording, scope of hooks/commands/config.yaml changes)
 next: waiting for `commit` of task 3.5, then task 3.6 implement D6
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: a8d5233
+produced: task 3.6 done (RULE pattern in scripts/check-claude-settings.mjs accepts hyphens only for mcp__ names); tasks 12/14
+checks: settings tests 26/26; pnpm test 440 passed, 0 failed; pnpm lint exit 0 (24 existing warnings)
+open: coverage provider missing (user decision pending); reviewer lows
+next: waiting for `commit` of task 3.6, then task 3.7 (checkpoint 3, round 2)
