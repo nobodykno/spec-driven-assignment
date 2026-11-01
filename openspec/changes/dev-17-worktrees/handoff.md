@@ -8,3 +8,10 @@ produced: proposal.md, specs/worktree-evidence/spec.md (5 requirements, 15 scena
 checks: openspec validate dev-17-worktrees --strict valid
 open: OD-1 (conflicts from existing history), OD-2 (approving commit per pair found with git log; may become Open at apply if git shows none), OD-3 (terminal output, no screenshots) and OD-4 (checker verifies SHAs with git cat-file) are Assumed; Jira In Progress transition not asked (non-interactive run, left to the main session)
 next: /opsx:apply dev-17-worktrees after approval
+
+### gate-1 | 2026-11-01 | APPROVED
+head: 12de980
+produced: user answered the Gate 1 batch question "approve the specs of dev-17, dev-19, dev-20 and dev-21" with Approve the batch (Assumed decisions and the missing ASSIGNMENT.md accepted)
+checks: none
+open: none
+next: /opsx:apply dev-17-worktrees
