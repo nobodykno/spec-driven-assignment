@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
@@ -314,5 +314,45 @@ describe('Worktree log checked in lint', () => {
     } finally {
       rmSync(validRoot, { recursive: true, force: true });
     }
+  });
+});
+
+describe('Worktree log checked against the real repository', () => {
+  const root = resolve(import.meta.dirname, '..');
+  const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+
+  const realCommitExists = () => {
+    if (git(['rev-parse', '--is-shallow-repository']) === 'true') {
+      return () => true;
+    }
+    return (sha) => {
+      if (!/^[0-9a-f]+$/i.test(sha)) {
+        return false;
+      }
+      try {
+        execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], { cwd: root, stdio: 'ignore' });
+        return true;
+      } catch {
+        return false;
+      }
+    };
+  };
+
+  it('DEV-1014-AC-4: Repository worktree log passes the check', () => {
+    const doc = readFileSync(join(root, 'docs', 'worktrees.md'), 'utf8');
+    const findings = checkWorktreeDocs(doc, realCommitExists());
+
+    expect(findings).toEqual([]);
+  });
+
+  it('DEV-1014-AC-4: Lint chain runs the worktree check', () => {
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    const lint = pkg.scripts.lint;
+    const mcp = lint.indexOf('pnpm check:mcp-docs');
+    const worktree = lint.indexOf('pnpm check:worktree-docs');
+
+    expect(pkg.scripts['check:worktree-docs']).toBe('node scripts/check-worktree-docs.mjs');
+    expect(mcp).toBeGreaterThanOrEqual(0);
+    expect(worktree).toBeGreaterThan(mcp);
   });
 });
