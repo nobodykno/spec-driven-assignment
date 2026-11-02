@@ -1,5 +1,10 @@
-// DEV-1014: docs/worktrees.md must show the worktree commands for the two parallel pairs.
-// Pure functions return a list of findings; an empty list means the document is valid.
+// DEV-1014: docs/worktrees.md must show the worktree commands, merge conflicts, contract approvals
+// and integration evidence of parallel development. Pure functions return a list of findings; an
+// empty list means the document is valid. The CLI at the end reads the real file and git.
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const PREFIX = 'docs/worktrees.md: ';
 
@@ -162,4 +167,132 @@ export function checkContractApproval(doc, commitExists) {
     }
   }
   return findings;
+}
+
+/**
+ * @param {string} section section body
+ * @returns {string[][]} the lines of each fenced block, in order
+ */
+function fencedBlocks(section) {
+  const blocks = [];
+  let current = null;
+  for (const line of section.split('\n')) {
+    if (line.trim().startsWith('```')) {
+      if (current === null) {
+        current = [];
+      } else {
+        blocks.push(current);
+        current = null;
+      }
+    } else if (current !== null) {
+      current.push(line);
+    }
+  }
+  return blocks;
+}
+
+/**
+ * AC-4: a `git log --graph` excerpt that shows a merge, and the `git worktree list` output.
+ * @param {string} doc docs/worktrees.md text
+ * @returns {string[]} findings
+ */
+export function checkEvidence(doc) {
+  const section = getSection(doc, 'Evidence');
+  if (section === null) {
+    return [`${PREFIX}no "## Evidence" section`];
+  }
+  const blocks = fencedBlocks(section);
+  const findings = [];
+  const graph = blocks.find((lines) => (lines[0] ?? '').trim().startsWith('$ git log --graph'));
+  if (graph === undefined) {
+    findings.push(`${PREFIX}Evidence has no graph excerpt block starting with "$ git log --graph"`);
+  } else if (!graph.slice(1).some((line) => line.includes('Merge'))) {
+    findings.push(`${PREFIX}the graph excerpt shows no Merge commit`);
+  }
+  const list = blocks.find((lines) => (lines[0] ?? '').trim() === '$ git worktree list');
+  const paths = list === undefined ? [] : list.slice(1).filter((line) => /^\s*\//.test(line));
+  if (list === undefined || paths.length < 2) {
+    findings.push(
+      `${PREFIX}terminal output is missing: a "$ git worktree list" block with two worktree paths`,
+    );
+  }
+  return findings;
+}
+
+/**
+ * @param {string} doc docs/worktrees.md text
+ * @param {(sha: string) => boolean} commitExists predicate that tells whether a commit is in git
+ * @returns {string[]} the findings of every check
+ */
+export function checkWorktreeDocs(doc, commitExists) {
+  return [
+    ...checkCommands(doc),
+    ...checkConflicts(doc),
+    ...checkContractApproval(doc, commitExists),
+    ...checkEvidence(doc),
+  ];
+}
+
+/**
+ * Reads docs/worktrees.md under a root and checks it.
+ * @param {string} root repository root
+ * @param {{ commitExists: (sha: string) => boolean }} deps commit lookup
+ * @returns {{ code: number, lines: string[] }} exit code (1 with findings) and the lines to print
+ */
+export function run(root, { commitExists }) {
+  const doc = readFileSync(join(root, 'docs', 'worktrees.md'), 'utf8');
+  const lines = checkWorktreeDocs(doc, commitExists);
+  return { code: lines.length > 0 ? 1 : 0, lines };
+}
+
+/**
+ * @param {string} root repository root, used as the git working directory
+ * @returns {(sha: string) => boolean} true when `git cat-file -e <sha>^{commit}` succeeds
+ */
+function gitCommitExists(root) {
+  return (sha) => {
+    if (!/^[0-9a-f]{7,40}$/i.test(sha)) {
+      return false;
+    }
+    try {
+      execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], { cwd: root, stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+}
+
+/**
+ * @param {string} root repository root, used as the git working directory
+ * @returns {boolean} true when git history is shallow or cannot be read
+ */
+function isShallow(root) {
+  try {
+    const out = execFileSync('git', ['rev-parse', '--is-shallow-repository'], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    return out.trim() === 'true';
+  } catch {
+    return true;
+  }
+}
+
+if (
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
+  const root = process.cwd();
+  const shallow = isShallow(root);
+  if (shallow) {
+    console.error(
+      'check-worktree-docs: shallow or unreadable git history, commit existence not checked',
+    );
+  }
+  const { code, lines } = run(root, { commitExists: shallow ? () => true : gitCommitExists(root) });
+  for (const line of lines) {
+    console.error(line);
+  }
+  process.exit(code);
 }

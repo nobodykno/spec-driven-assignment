@@ -64,3 +64,10 @@ produced: task 3.1 done (4 tests added, red: checkEvidence, checkWorktreeDocs, r
 checks: 4 red as intended, 9 existing pass
 open: none
 next: task 3.2 implement checkEvidence, checkWorktreeDocs, run and the CLI
+
+### apply | 2026-11-02 | IN_PROGRESS
+head: 4333a6c
+produced: task 3.2 done (checkEvidence, checkWorktreeDocs, run and the CLI with the git cat-file predicate and the shallow-clone notice); tasks 8/14
+checks: scripts/check-worktree-docs.test.mjs 13 passed; lint 0 errors
+open: none
+next: checkpoint 3 (task 3.3)
