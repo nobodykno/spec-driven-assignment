@@ -1,6 +1,8 @@
 // DEV-1014: docs/worktrees.md must show the worktree commands for the two parallel pairs.
 // Pure functions return a list of findings; an empty list means the document is valid.
 
+const PREFIX = 'docs/worktrees.md: ';
+
 const PAIRS = [
   { label: 'DEV-1007 || DEV-1008', branches: ['feature/DEV-10-', 'feature/DEV-11-'] },
   { label: 'DEV-1011 || DEV-1012', branches: ['feature/DEV-14-', 'feature/DEV-15-'] },
@@ -54,7 +56,7 @@ function pairBody(section, label) {
 export function checkCommands(doc) {
   const section = getSection(doc, 'Commands');
   if (section === null) {
-    return ['docs/worktrees.md: no "## Commands" section'];
+    return [`${PREFIX}no "## Commands" section`];
   }
   const findings = [];
   for (const pair of PAIRS) {
@@ -64,20 +66,18 @@ export function checkCommands(doc) {
     const named = pair.branches.every((branch) => adds.some((line) => line.includes(branch)));
     if (adds.length < 2 || !named) {
       findings.push(
-        `docs/worktrees.md: ${pair.label} needs two "git worktree add" lines naming ${pair.branches.join(' and ')}`,
+        `${PREFIX}${pair.label} needs two "git worktree add" lines naming ${pair.branches.join(' and ')}`,
       );
     }
   }
   for (const command of ['git worktree list', 'git worktree remove']) {
     const present = section.split('\n').some((line) => line.trim().startsWith(command));
     if (!present) {
-      findings.push(`docs/worktrees.md: the Commands section has no "${command}" command`);
+      findings.push(`${PREFIX}the Commands section has no "${command}" command`);
     }
   }
   return findings;
 }
-
-const PREFIX = 'docs/worktrees.md: ';
 
 /**
  * @param {string} section body of a section that holds one markdown table
@@ -154,7 +154,7 @@ export function checkContractApproval(doc, commitExists) {
       findings.push(`${PREFIX}${pair.label} has no approval row`);
       continue;
     }
-    const sha = /\b[0-9a-f]{7,40}\b/i.exec((row[1] ?? '').replace(/`/g, ''))?.[0];
+    const sha = /\b(?=[0-9a-f]*\d)[0-9a-f]{7,40}\b/i.exec((row[1] ?? '').replace(/`/g, ''))?.[0];
     if (sha === undefined) {
       findings.push(`${PREFIX}${pair.label} has no commit SHA`);
     } else if (!commitExists(sha)) {
