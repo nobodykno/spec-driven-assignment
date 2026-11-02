@@ -50,3 +50,10 @@ produced: task 2.2 done (checkConflicts, checkContractApproval); tasks 5/14
 checks: scripts/check-worktree-docs.test.mjs 9 passed; lint 0 errors
 open: none
 next: checkpoint 2 (task 2.3)
+
+### apply | 2026-11-01 | IN_PROGRESS
+head: 4c830b8
+produced: group 2 done (tasks 2.1 to 2.3), tasks 6/14
+checks: PASS, see review.md "2026-11-01 | apply | group 2: Conflicts and contract approval (AC-2, AC-3)"; reviewer: PASS
+open: none
+next: task 3.1 test task for evidence and the CLI
