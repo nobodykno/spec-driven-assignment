@@ -279,5 +279,40 @@ describe('Worktree log checked in lint', () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+
+    const validDoc = [
+      commandsDoc(),
+      CONFLICT_HEADER.join('\n'),
+      VALID_CONFLICT_ROW,
+      '',
+      '## Shared contracts approved before parallel work',
+      '',
+      '| Pair | Commit | What was approved |',
+      '|------|--------|-------------------|',
+      ...validApprovalRows,
+      '',
+      '## Evidence',
+      '',
+      fenced(GRAPH_LINES),
+      fenced(LIST_LINES),
+      '',
+    ].join('\n');
+    const validRoot = mkdtempSync(join(tmpdir(), 'wt-docs-ok-'));
+    try {
+      mkdirSync(join(validRoot, 'docs'));
+      writeFileSync(join(validRoot, 'docs', 'worktrees.md'), validDoc);
+
+      expect(checkWorktreeDocs(validDoc, () => true)).toEqual([]);
+      expect(run(validRoot, { commitExists: () => true }).code).toBe(0);
+
+      const stdout = execFileSync(process.execPath, [SCRIPT], {
+        cwd: validRoot,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+      expect(stdout).toContain('check-worktree-docs: docs/worktrees.md OK');
+    } finally {
+      rmSync(validRoot, { recursive: true, force: true });
+    }
   });
 });
