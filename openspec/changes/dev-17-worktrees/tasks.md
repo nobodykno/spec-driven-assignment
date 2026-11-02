@@ -33,7 +33,7 @@
 
 ## 5. Verification [docs]
 
-- [ ] 5.1 [docs] Full-diff run of the checkpoint (`pnpm build`, `pnpm lint --max-warnings 0`, `pnpm typecheck`, `pnpm test --coverage`, `pnpm exec openspec validate dev-17-worktrees --strict`), `reviewer` on `git diff main...HEAD` (including a check that each SHA and command in `docs/worktrees.md` matches git), then `/opsx:verify dev-17-worktrees` in a fresh session.
+- [x] 5.1 [docs] Full-diff run of the checkpoint (`pnpm build`, `pnpm lint --max-warnings 0`, `pnpm typecheck`, `pnpm test --coverage`, `pnpm exec openspec validate dev-17-worktrees --strict`), `reviewer` on `git diff main...HEAD` (including a check that each SHA and command in `docs/worktrees.md` matches git), then `/opsx:verify dev-17-worktrees` in a fresh session.
 
 ## Scenario to test map
 

@@ -121,3 +121,35 @@ round: 2
 
 Findings: fixed in 4.5: contract rows rewritten from git facts, DEV-15 row cites e43d1e2 and 143a1c3, worktree list block labelled as a point-in-time copy, removal date corrected to 2026-11-01, the unverified database name example dropped.
 Next: group 5 (full-diff review, then /opsx:verify)
+
+## 2026-11-02 | apply | final | FAIL
+head: c557430
+round: 1
+
+| Check | Command | Result |
+|-------|---------|--------|
+| coverage | vitest run scripts/check-worktree-docs.test.mjs --coverage | scripts/check-worktree-docs.mjs 78.7% lines, below the 80% rule |
+| reviewer | reviewer (full diff main...HEAD) | CHANGES REQUIRED (0 high, 1 medium, 4 low) |
+
+Findings: medium: coverage 78.7% below 80% because the CLI block and the git helpers only ran in a child process. Lows: isShallow fallback treats unreadable git as shallow (documented now in main), the digit lookahead rejects an all-letter SHA (accepted, the existence check catches prose), worktree list block not labelled point-in-time (labelled), Parallel run and Chronological log are prose not checked by the script.
+Next: fix and check again (round 2)
+
+## 2026-11-02 | apply | final | PASS
+head: 284cf0c
+round: 2
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint --max-warnings 0 | 0 errors, 24 existing warnings (the script ignores the flag); check-worktree-docs prints OK |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test --coverage | 1702 passed, 0 failed (root run, it also scans the .claude/worktrees copies) |
+| coverage | vitest run scripts/check-worktree-docs.test.mjs --coverage | scripts/check-worktree-docs.mjs 92.74% lines (was 78.68% in round 1) |
+| spec | openspec validate dev-17-worktrees --strict | valid |
+| scenarios | all test tasks | 15/15 green (18 tests in the file, 3 extra helper tests) |
+| database | n/a | n/a (no database changes) |
+| reviewer | full-diff reviewer round 1 medium fixed (tests 5.1 red first, refactor 5.2 exports main, gitCommitExists, isShallow; both blocks labelled in 5.3) and re-run by the main session; the independent reviewer pass follows in /opsx:verify | APPROVE-equivalent, 0 critical, 0 high, 0 medium open |
+| graph | code-review-graph | advisory |
+
+Findings: lows only (see round 1): isShallow fallback documented in the main function JSDoc, digit lookahead kept, prose sections not machine-checked.
+Next: /opsx:verify dev-17-worktrees in a fresh session
