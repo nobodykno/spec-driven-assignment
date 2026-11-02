@@ -249,7 +249,7 @@ export function run(root, { commitExists }) {
  * @param {string} root repository root, used as the git working directory
  * @returns {(sha: string) => boolean} true when `git cat-file -e <sha>^{commit}` succeeds
  */
-function gitCommitExists(root) {
+export function gitCommitExists(root) {
   return (sha) => {
     if (!/^[0-9a-f]{7,40}$/i.test(sha)) {
       return false;
@@ -267,7 +267,7 @@ function gitCommitExists(root) {
  * @param {string} root repository root, used as the git working directory
  * @returns {boolean} true when git history is shallow or cannot be read
  */
-function isShallow(root) {
+export function isShallow(root) {
   try {
     const out = execFileSync('git', ['rev-parse', '--is-shallow-repository'], {
       cwd: root,
@@ -279,23 +279,41 @@ function isShallow(root) {
   }
 }
 
+/**
+ * CLI body: prints findings (stderr) or the OK line (stdout) and returns the exit code.
+ * When git history is shallow or unreadable the commit existence check is skipped with a notice
+ * (design Risks): the other checks still run.
+ * @param {string} root repository root
+ * @param {{ commitExists: (sha: string) => boolean, shallow: boolean, log: (line: string) => void, error: (line: string) => void }} deps
+ *   injected commit lookup, history state and output functions
+ * @returns {number} the exit code
+ */
+export function main(root, { commitExists, shallow, log, error }) {
+  if (shallow) {
+    error('check-worktree-docs: shallow or unreadable git history, commit existence not checked');
+  }
+  const { code, lines } = run(root, { commitExists });
+  for (const line of lines) {
+    error(line);
+  }
+  if (code === 0) {
+    log('check-worktree-docs: docs/worktrees.md OK');
+  }
+  return code;
+}
+
 if (
   process.argv[1] !== undefined &&
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
   const root = process.cwd();
   const shallow = isShallow(root);
-  if (shallow) {
-    console.error(
-      'check-worktree-docs: shallow or unreadable git history, commit existence not checked',
-    );
-  }
-  const { code, lines } = run(root, { commitExists: shallow ? () => true : gitCommitExists(root) });
-  for (const line of lines) {
-    console.error(line);
-  }
-  if (code === 0) {
-    console.log('check-worktree-docs: docs/worktrees.md OK');
-  }
-  process.exit(code);
+  process.exit(
+    main(root, {
+      commitExists: shallow ? () => true : gitCommitExists(root),
+      shallow,
+      log: console.log,
+      error: console.error,
+    }),
+  );
 }
