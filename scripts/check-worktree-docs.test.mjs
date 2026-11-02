@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { checkCommands, checkConflicts, checkContractApproval } from './check-worktree-docs.mjs';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import {
+  checkCommands,
+  checkConflicts,
+  checkContractApproval,
+  checkEvidence,
+  checkWorktreeDocs,
+  run,
+} from './check-worktree-docs.mjs';
 
 const PAIR_A = 'DEV-1007 || DEV-1008';
 const PAIR_B = 'DEV-1011 || DEV-1012';
@@ -178,5 +189,95 @@ describe('Contract approval referenced by commit', () => {
     expect(text).toContain(SHA_B);
     expect(text).not.toContain(PAIR_A);
     expect(text).not.toContain(SHA_A);
+  });
+});
+
+const GRAPH_LINES = [
+  '$ git log --graph --oneline -8',
+  '*   a1b2c3d Merge branch feature/DEV-15-web-board',
+  '|\\',
+  '| * 9f8e7d6 feat(web): add board',
+  '* | 5c4b3a2 feat(web): add tasks',
+  '|/',
+  '* 1234567 chore: base',
+];
+const GRAPH_NO_MERGE = [
+  '$ git log --graph --oneline -3',
+  '* 9f8e7d6 feat(web): add board',
+  '* 5c4b3a2 feat(web): add tasks',
+  '* 1234567 chore: base',
+];
+const LIST_LINES = [
+  '$ git worktree list',
+  '/Users/dev/repo                        a1b2c3d [main]',
+  '/Users/dev/repo/.claude/worktrees/wt-a 9f8e7d6 [feature/DEV-14-web-tasks]',
+];
+
+const evidenceDoc = (...blocks) =>
+  ['# Worktrees', '', '## Evidence', '', ...blocks.map((b) => fenced(b)), ''].join('\n');
+
+describe('Integration evidence recorded', () => {
+  it('DEV-1014-AC-4: Graph excerpt and terminal output present', () => {
+    expect(checkEvidence(evidenceDoc(GRAPH_LINES, LIST_LINES))).toEqual([]);
+  });
+
+  it('DEV-1014-AC-4: Graph excerpt without a merge commit rejected', () => {
+    const findings = checkEvidence(evidenceDoc(GRAPH_NO_MERGE, LIST_LINES));
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(findings.every((f) => f.startsWith(PREFIX))).toBe(true);
+    expect(text).toContain('Merge');
+    expect(text).not.toContain('git worktree list');
+  });
+
+  it('DEV-1014-AC-4: Evidence without terminal output rejected', () => {
+    const findings = checkEvidence(evidenceDoc(GRAPH_LINES));
+    const text = findings.join('\n');
+
+    expect(findings.length).toBeGreaterThan(0);
+    expect(findings.every((f) => f.startsWith(PREFIX))).toBe(true);
+    expect(text).toContain('git worktree list');
+    expect(text).not.toContain('git log --graph');
+  });
+});
+
+describe('Worktree log checked in lint', () => {
+  const SCRIPT = resolve(import.meta.dirname, 'check-worktree-docs.mjs');
+  const brokenDoc = '# Worktrees\n\n## Commands\n\nnothing here\n';
+
+  const makeRoot = () => {
+    const root = mkdtempSync(join(tmpdir(), 'wt-docs-'));
+    mkdirSync(join(root, 'docs'));
+    writeFileSync(join(root, 'docs', 'worktrees.md'), brokenDoc);
+    return root;
+  };
+
+  it('DEV-1014-AC-2: Findings make the CLI exit 1', () => {
+    const root = makeRoot();
+    try {
+      const findings = checkWorktreeDocs(brokenDoc, () => true);
+      expect(findings.length).toBeGreaterThan(0);
+      expect(findings.every((f) => f.startsWith(PREFIX))).toBe(true);
+
+      const result = run(root, { commitExists: () => true });
+      expect(result.code).toBe(1);
+      expect(result.lines.length).toBeGreaterThan(0);
+      expect(result.lines.every((l) => l.startsWith(PREFIX))).toBe(true);
+
+      let status;
+      let output = '';
+      try {
+        execFileSync(process.execPath, [SCRIPT], { cwd: root, encoding: 'utf8', stdio: 'pipe' });
+        status = 0;
+      } catch (error) {
+        status = error.status;
+        output = `${error.stdout}${error.stderr}`;
+      }
+      expect(status).toBe(1);
+      expect(output).toContain(PREFIX);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

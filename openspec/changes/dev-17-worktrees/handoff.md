@@ -57,3 +57,10 @@ produced: group 2 done (tasks 2.1 to 2.3), tasks 6/14
 checks: PASS, see review.md "2026-11-01 | apply | group 2: Conflicts and contract approval (AC-2, AC-3)"; reviewer: PASS
 open: none
 next: task 3.1 test task for evidence and the CLI
+
+### apply | 2026-11-02 | IN_PROGRESS
+head: 1649b97
+produced: task 3.1 done (4 tests added, red: checkEvidence, checkWorktreeDocs, run missing); tasks 7/14
+checks: 4 red as intended, 9 existing pass
+open: none
+next: task 3.2 implement checkEvidence, checkWorktreeDocs, run and the CLI

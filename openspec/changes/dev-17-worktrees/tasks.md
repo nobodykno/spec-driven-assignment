@@ -20,7 +20,7 @@
 
 ## 3. Evidence and CLI (AC-4) [docs]
 
-- [ ] 3.1 [docs] Test task (`test-writer`): same file, requirement "Integration evidence recorded" and the CLI part of "Worktree log checked in lint". Scenarios: Graph excerpt and terminal output present; Graph excerpt without a merge commit rejected; Evidence without terminal output rejected; Findings make the CLI exit 1.
+- [x] 3.1 [docs] Test task (`test-writer`): same file, requirement "Integration evidence recorded" and the CLI part of "Worktree log checked in lint". Scenarios: Graph excerpt and terminal output present; Graph excerpt without a merge commit rejected; Evidence without terminal output rejected; Findings make the CLI exit 1.
 - [ ] 3.2 [docs] Implement `checkEvidence`, `checkWorktreeDocs`, `run` and the CLI entry, including the `git cat-file -e` predicate with `execFileSync` and the hex-only guard (turns 3.1 green; AC-2, AC-4). `package.json` is not changed yet. Verify: `pnpm exec vitest run scripts/check-worktree-docs.test.mjs`.
 - [ ] 3.3 [docs] Checkpoint 3.
 
