@@ -206,7 +206,7 @@ export function checkEvidence(doc) {
   const graph = blocks.find((lines) => (lines[0] ?? '').trim().startsWith('$ git log --graph'));
   if (graph === undefined) {
     findings.push(`${PREFIX}Evidence has no graph excerpt block starting with "$ git log --graph"`);
-  } else if (!graph.slice(1).some((line) => line.includes('Merge'))) {
+  } else if (!graph.slice(1).some((line) => /\b[0-9a-f]{7,40}\s+Merge\b/.test(line))) {
     findings.push(`${PREFIX}the graph excerpt shows no Merge commit`);
   }
   const list = blocks.find((lines) => (lines[0] ?? '').trim() === '$ git worktree list');
@@ -293,6 +293,9 @@ if (
   const { code, lines } = run(root, { commitExists: shallow ? () => true : gitCommitExists(root) });
   for (const line of lines) {
     console.error(line);
+  }
+  if (code === 0) {
+    console.log('check-worktree-docs: docs/worktrees.md OK');
   }
   process.exit(code);
 }
