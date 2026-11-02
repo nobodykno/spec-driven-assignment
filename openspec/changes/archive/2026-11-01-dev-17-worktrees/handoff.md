@@ -120,3 +120,24 @@ produced: PR https://github.com/nobodykno/spec-driven-assignment/pull/45; Jira D
 checks: build 0 errors, lint 0 errors (24 existing warnings, check-worktree-docs OK), typecheck 0 errors, test 1704 passed, coverage checker 92.36% lines, validate --strict valid
 open: lows only, see review.md
 next: Gate 2: human review and merge, then on a follow-up branch from main: /opsx:sync dev-17-worktrees then /opsx:archive dev-17-worktrees
+
+### pr | 2026-11-01 | MERGED
+head: 47fe698
+produced: PR #45 merged into main (retroactive verification record)
+checks: PASS, see review.md latest review section
+open: none
+next: /opsx:sync dev-17-worktrees
+
+### sync | 2026-11-01 | DONE
+head: 47fe698
+produced: new capabilities worktree-evidence created in openspec/specs
+checks: openspec validate --specs valid
+open: none
+next: /opsx:archive dev-17-worktrees
+
+### archive | 2026-11-01 | DONE
+head: 47fe698
+produced: archive/2026-11-01-dev-17-worktrees, specs synced
+checks: validate --specs valid
+open: none
+next: merge the follow-up PR, then Jira Done
