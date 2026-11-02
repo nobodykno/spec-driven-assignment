@@ -71,3 +71,10 @@ produced: task 3.2 done (checkEvidence, checkWorktreeDocs, run and the CLI with 
 checks: scripts/check-worktree-docs.test.mjs 13 passed; lint 0 errors
 open: none
 next: checkpoint 3 (task 3.3)
+
+### apply | 2026-11-02 | IN_PROGRESS
+head: d06ef04
+produced: group 3 done (tasks 3.1 to 3.3, plus fix tasks 3.4 and 3.5), tasks 9/14
+checks: PASS, see review.md "2026-11-02 | apply | group 3: Evidence and CLI (AC-4)" (round 2); reviewer: PASS
+open: lows only
+next: task 4.1 test task for the real-repository scenarios
