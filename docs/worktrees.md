@@ -29,7 +29,7 @@ git worktree add ../spec-driven-assignment-wt/DEV-15 feature/DEV-15-web-tasks
 
 ```bash
 git worktree list
-git worktree remove --force .claude/worktrees/agent-ac1632ffd31c231c2   # 2026-11-02, a finished agent worktree
+git worktree remove --force .claude/worktrees/agent-ac1632ffd31c231c2   # 2026-11-01, a finished agent worktree
 ```
 
 ## Merge conflicts
@@ -46,8 +46,8 @@ Both conflicts are the same file: two parallel branches added their routers and 
 
 | Pair | Commit | What was approved |
 | --- | --- | --- |
-| DEV-1007 || DEV-1008 | `45f1e37` | the shared auth and domain contracts (`feat(shared): 1.1-1.2 add auth and domain contracts`), approved with the DEV-9 spec at 18:10 IST on 2026-10-30, 4 minutes before the proposals of the web pair and before DEV-10 and DEV-11 started coding |
-| DEV-1011 || DEV-1012 | `45f1e37` | the same contracts; DEV-14 and DEV-15 consume them (approval of dev-14 recorded in `c3d5294`) |
+| DEV-1007 || DEV-1008 | `45f1e37` | the shared auth and domain contracts (`feat(shared): 1.1-1.2 add auth and domain contracts`), committed 18:11:52 IST on 2026-10-30, before the DEV-9 approval `f5db3c7` (18:14:44) and before the DEV-10 and DEV-11 approvals `f05837a` and `2ec4eaf` (18:29:46) and their first code commits |
+| DEV-1011 || DEV-1012 | `45f1e37` | the same contracts; DEV-9 (with them) was merged into the two branches in `e43d1e2` (DEV-14, 18:32:35) and `143a1c3` (DEV-15, 18:32:47) before they started coding; the dev-14 approval is `c3d5294` |
 
 ## Evidence
 
@@ -69,6 +69,8 @@ $ git log --graph --format='%h %s' b646409^..0a1b874
 * | ccd87b4 feat(database): 2.4 type model associations, add uuid param helper
 ```
 
+The block is a point-in-time copy taken when this section was written (commit 4.3 of the change).
+
 ```text
 $ git worktree list
 /Users/paramjitj/Documents/spec-driven-assignment                                            86b7374 [feature/docs/DEV-17-worktrees]
@@ -81,7 +83,7 @@ $ git worktree list
 
 Five agents worked at the same time, each in its own worktree under `.claude/worktrees/` on its own branch, for
 DEV-12 to DEV-16 (retroactive verification). Each used its own PostgreSQL test database (name must match
-`[a-z0-9_]+_test`: `tracker_dev12_test` and so on) and `npm_config_workspace_concurrency=2` for pushes. Incidents
+`[a-z0-9_]+_test`) and `npm_config_workspace_concurrency=2` for pushes. Incidents
 (details in `docs/progress.md`): `core.bare` in the shared `.git/config` became `true`; the guard tests ran inside a
 worktree pre-push hook, inherited `GIT_DIR`, and wrote two junk `init` commits to the DEV-12 branch, which was
 rebuilt from the last good commit, the polluted remote branch deleted and the clean branch pushed under a new name;
