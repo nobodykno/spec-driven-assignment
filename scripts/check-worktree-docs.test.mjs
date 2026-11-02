@@ -308,10 +308,12 @@ describe('Worktree log checked in lint', () => {
       expect(checkWorktreeDocs(validDoc, () => true)).toEqual([]);
       expect(run(validRoot, { commitExists: () => true }).code).toBe(0);
 
+      // The temp root is not a git checkout, so the git lookup is skipped explicitly (fail closed otherwise).
       const stdout = execFileSync(process.execPath, [SCRIPT], {
         cwd: validRoot,
         encoding: 'utf8',
         stdio: 'pipe',
+        env: { ...process.env, WORKTREE_DOCS_SKIP_GIT: '1' },
       });
       expect(stdout).toContain('check-worktree-docs: docs/worktrees.md OK');
     } finally {

@@ -2,9 +2,9 @@
 // and integration evidence of parallel development. Pure functions return a list of findings; an
 // empty list means the document is valid. The CLI at the end reads the real file and git.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { readFileSync, realpathSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const PREFIX = 'docs/worktrees.md: ';
 
@@ -281,37 +281,54 @@ export function isShallow(root) {
 
 /**
  * CLI body: prints findings (stderr) or the OK line (stdout) and returns the exit code.
- * When git history is shallow or unreadable the commit existence check is skipped with a notice
- * (design Risks): the other checks still run.
+ * Shallow or unreadable git history fails closed: the commit existence check cannot run, so the
+ * run exits 1 unless skipping is requested explicitly (`WORKTREE_DOCS_SKIP_GIT=1`, then a notice
+ * is printed and the other checks still run).
  * @param {string} root repository root
- * @param {{ commitExists: (sha: string) => boolean, shallow: boolean, log: (line: string) => void, error: (line: string) => void }} deps
- *   injected commit lookup, history state and output functions
+ * @param {{ commitExists: (sha: string) => boolean, shallow: boolean, skipGit?: boolean, log: (line: string) => void, error: (line: string) => void }} deps
+ *   injected commit lookup, history state, opt-out flag and output functions
  * @returns {number} the exit code
  */
-export function main(root, { commitExists, shallow, log, error }) {
-  if (shallow) {
+export function main(root, { commitExists, shallow, skipGit = false, log, error }) {
+  let blocked = false;
+  if (shallow && skipGit) {
     error('check-worktree-docs: shallow or unreadable git history, commit existence not checked');
+  } else if (shallow) {
+    error(
+      'check-worktree-docs: shallow or unreadable git history; set WORKTREE_DOCS_SKIP_GIT=1 to skip the commit existence check',
+    );
+    blocked = true;
   }
   const { code, lines } = run(root, { commitExists });
   for (const line of lines) {
     error(line);
   }
-  if (code === 0) {
+  if (code === 0 && !blocked) {
     log('check-worktree-docs: docs/worktrees.md OK');
   }
-  return code;
+  return blocked ? 1 : code;
 }
 
-if (
-  process.argv[1] !== undefined &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-) {
+/**
+ * @param {string} script path of the script given to node
+ * @returns {boolean} true when this module is the file node was asked to run (symlinks resolved)
+ */
+function isEntryPoint(script) {
+  try {
+    return realpathSync(script) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (process.argv[1] !== undefined && isEntryPoint(process.argv[1])) {
   const root = process.cwd();
   const shallow = isShallow(root);
   process.exit(
     main(root, {
       commitExists: shallow ? () => true : gitCommitExists(root),
       shallow,
+      skipGit: process.env.WORKTREE_DOCS_SKIP_GIT === '1',
       log: console.log,
       error: console.error,
     }),
