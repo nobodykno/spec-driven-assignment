@@ -69,7 +69,7 @@ $ git log --graph --format='%h %s' b646409^..0a1b874
 * | ccd87b4 feat(database): 2.4 type model associations, add uuid param helper
 ```
 
-The block is a point-in-time copy taken when this section was written (commit 4.3 of the change).
+Both blocks above and below are point-in-time copies taken when this section was written (commit 4.3 of the change); the worktree list shows the checkout state of that moment.
 
 ```text
 $ git worktree list
