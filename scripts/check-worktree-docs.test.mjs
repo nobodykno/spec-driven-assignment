@@ -9,6 +9,9 @@ import {
   checkContractApproval,
   checkEvidence,
   checkWorktreeDocs,
+  gitCommitExists,
+  isShallow,
+  main,
   run,
 } from './check-worktree-docs.mjs';
 
@@ -354,5 +357,109 @@ describe('Worktree log checked against the real repository', () => {
     expect(pkg.scripts['check:worktree-docs']).toBe('node scripts/check-worktree-docs.mjs');
     expect(mcp).toBeGreaterThanOrEqual(0);
     expect(worktree).toBeGreaterThan(mcp);
+  });
+});
+
+describe('Worktree check helpers and entry point', () => {
+  const root = resolve(import.meta.dirname, '..');
+
+  const VALID_DOC = [
+    commandsDoc(),
+    CONFLICT_HEADER.join('\n'),
+    VALID_CONFLICT_ROW,
+    '',
+    '## Shared contracts approved before parallel work',
+    '',
+    '| Pair | Commit | What was approved |',
+    '|------|--------|-------------------|',
+    ...validApprovalRows,
+    '',
+    '## Evidence',
+    '',
+    fenced(GRAPH_LINES),
+    fenced(LIST_LINES),
+    '',
+  ].join('\n');
+
+  const rootWith = (doc) => {
+    const dir = mkdtempSync(join(tmpdir(), 'wt-main-'));
+    mkdirSync(join(dir, 'docs'));
+    writeFileSync(join(dir, 'docs', 'worktrees.md'), doc);
+    return dir;
+  };
+
+  it('DEV-1014-AC-4: gitCommitExists tells real commits from unknown ones', () => {
+    const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+    const exists = gitCommitExists(root);
+
+    expect(exists(head)).toBe(true);
+    expect(exists('0000000000000000000000000000000000000000')).toBe(false);
+    expect(exists('0000000')).toBe(false);
+    expect(exists('zzzzzzz')).toBe(false);
+    expect(exists('; echo hi')).toBe(false);
+  });
+
+  it('DEV-1014-AC-4: isShallow reads the git history state', () => {
+    expect(typeof isShallow(root)).toBe('boolean');
+
+    const notRepo = mkdtempSync(join(tmpdir(), 'wt-norepo-'));
+    try {
+      expect(isShallow(notRepo)).toBe(true);
+    } finally {
+      rmSync(notRepo, { recursive: true, force: true });
+    }
+  });
+
+  it('DEV-1014-AC-4: main prints the findings or the OK line and returns the exit code', () => {
+    const broken = rootWith('# Worktrees\n\n## Commands\n\nnothing here\n');
+    const valid = rootWith(VALID_DOC);
+    try {
+      const log = [];
+      const error = [];
+      const code = main(broken, {
+        commitExists: () => true,
+        shallow: false,
+        log: (line) => log.push(line),
+        error: (line) => error.push(line),
+      });
+      const expected = checkWorktreeDocs(
+        '# Worktrees\n\n## Commands\n\nnothing here\n',
+        () => true,
+      );
+      expect(code).toBe(1);
+      expect(expected.length).toBeGreaterThan(0);
+      expect(error).toEqual(expected);
+      expect(log).toEqual([]);
+
+      const okLog = [];
+      const okError = [];
+      const okCode = main(valid, {
+        commitExists: () => true,
+        shallow: false,
+        log: (line) => okLog.push(line),
+        error: (line) => okError.push(line),
+      });
+      expect(okCode).toBe(0);
+      expect(okLog).toEqual(['check-worktree-docs: docs/worktrees.md OK']);
+      expect(okError).toEqual([]);
+
+      const shLog = [];
+      const shError = [];
+      const shCode = main(valid, {
+        commitExists: () => true,
+        shallow: true,
+        log: (line) => shLog.push(line),
+        error: (line) => shError.push(line),
+      });
+      expect(shCode).toBe(0);
+      expect(shError).toHaveLength(1);
+      expect(shError[0].startsWith('check-worktree-docs: shallow or unreadable git history')).toBe(
+        true,
+      );
+      expect(shLog).toEqual(['check-worktree-docs: docs/worktrees.md OK']);
+    } finally {
+      rmSync(broken, { recursive: true, force: true });
+      rmSync(valid, { recursive: true, force: true });
+    }
   });
 });
