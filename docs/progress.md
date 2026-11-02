@@ -231,3 +231,5 @@ Deferred findings (medium or low, no ticket yet):
 | 2026-11-01 | DEV-13 and earlier changes merged with deferred medium findings | Rule 24 allows only low findings to be deferred | The mediums are listed above as follow-up changes after DEV-21 |
 
 Correction (2026-11-01): the review records of dev-8 to dev-15 say "coverage waived by the user (no provider installed)". The user waived coverage only for DEV-7. `@vitest/coverage-v8` 5.0.5 is now installed (root, pinned, `docs/versions.md`), and `pnpm --filter <package> test --coverage` runs per package (root `pnpm test --coverage` covers `scripts/` and `.claude/hooks/` only). Those changes touched only test files and docs (plus the small fixes noted in their records, whose tests cover them), so the 80% rule had no new production file to measure. From DEV-15 onward the coverage step runs.
+
+DEV-17 (worktrees): `docs/worktrees.md` now has the Commands, Merge conflicts, Shared contracts and Evidence sections that `pnpm check:worktree-docs` verifies in `pnpm lint`; the 2026-11-01 parallel run and its incidents are in the same file.

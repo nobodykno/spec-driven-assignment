@@ -85,3 +85,10 @@ produced: task 4.1 done (2 real-repository tests added, red: no real sections, n
 checks: 2 red as intended, 13 existing pass
 open: none
 next: task 4.2 collect evidence from git, then 4.3 write docs/worktrees.md and wire lint
+
+### apply | 2026-11-02 | IN_PROGRESS
+head: 86b7374
+produced: tasks 4.2 and 4.3 done (evidence read from git: merge commits 7abf11f and 369d5ca, contract commit 45f1e37, git worktree list and graph excerpt; docs/worktrees.md restructured; check:worktree-docs added to the lint chain); tasks 12/14
+checks: scripts/check-worktree-docs.test.mjs 15 passed; node scripts/check-worktree-docs.mjs prints OK against the real log and git; pnpm lint 0 errors
+open: none (no evidence gap, so no new open decision)
+next: checkpoint 4 (task 4.4)

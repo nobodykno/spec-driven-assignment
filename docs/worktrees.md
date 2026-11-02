@@ -1,8 +1,94 @@
 # Worktrees
 
-Log of parallel development in git worktrees for the `[PARALLEL]` pairs (DEV-10 ‖ DEV-11,
-DEV-12 ‖ DEV-13, DEV-14 ‖ DEV-15): commands, conflicts, resolutions and gate results. The
-`coordinator` agent plans and records here; the main session runs the commands.
+Log of parallel development in git worktrees for the `[PARALLEL]` pairs DEV-1007 || DEV-1008 (DEV-10 and
+DEV-11) and DEV-1011 || DEV-1012 (DEV-14 and DEV-15), plus the later pairs DEV-12 || DEV-13 and the 2026-11-01
+run: commands, conflicts, resolutions, gate results and evidence. The `coordinator` agent plans and records here;
+the main session runs the commands. `scripts/check-worktree-docs.mjs` (run by `pnpm lint`) checks the sections
+below. Every command, SHA and graph line is copied from git, not retyped (change `dev-17-worktrees`, DEV-1014).
+
+## Commands
+
+Paths are the historical ones; `git worktree list` under Evidence shows the current state.
+
+### DEV-1007 || DEV-1008
+
+```bash
+git worktree add ../spec-driven-assignment-wt/DEV-10 feature/DEV-10-projects
+git worktree add ../spec-driven-assignment-wt/DEV-11 feature/DEV-11-tasks
+git merge feature/DEV-9-auth   # run in each worktree so both start from DEV-9
+```
+
+### DEV-1011 || DEV-1012
+
+```bash
+git worktree add ../spec-driven-assignment-wt/DEV-14 feature/DEV-14-web-auth-projects
+git worktree add ../spec-driven-assignment-wt/DEV-15 feature/DEV-15-web-tasks
+```
+
+### List and remove
+
+```bash
+git worktree list
+git worktree remove --force .claude/worktrees/agent-ac1632ffd31c231c2   # 2026-11-02, a finished agent worktree
+```
+
+## Merge conflicts
+
+Both conflicts are the same file: two parallel branches added their routers and services at the same lines of
+`services/tracker/src/app.ts`. The merge commits are `7abf11f` (DEV-11) and `369d5ca` (DEV-13).
+
+| Date | Branch | File | Cause | Resolution | Re-verified |
+| --- | --- | --- | --- | --- | --- |
+| 2026-10-30 | feature/DEV-11-tasks | services/tracker/src/app.ts | DEV-10 and DEV-11 both added controller and router imports, an `AppDependencies` entry and router mounts at the same lines | kept both sides (imports sorted, both optional services in `AppDependencies`, tasks routers then projects router), merge commit 7abf11f | `pnpm --filter tracker test` 37 passed, then the gates on push |
+| 2026-10-30 | feature/DEV-13-comments-activity | services/tracker/src/app.ts | DEV-13 wired `ActivityService` and `CommentService` and passed the activity service into `TaskService`; main had gained the projects wiring | kept both; the import block combines `ActivityService`, `CommentService` and `ProjectService`, `TaskService` keeps the real `ActivityService` (FR-ACT-001), merge commit 369d5ca | `pnpm --filter tracker test` 60 passed |
+
+## Shared contracts approved before parallel work
+
+| Pair | Commit | What was approved |
+| --- | --- | --- |
+| DEV-1007 || DEV-1008 | `45f1e37` | the shared auth and domain contracts (`feat(shared): 1.1-1.2 add auth and domain contracts`), approved with the DEV-9 spec at 18:10 IST on 2026-10-30, 4 minutes before the proposals of the web pair and before DEV-10 and DEV-11 started coding |
+| DEV-1011 || DEV-1012 | `45f1e37` | the same contracts; DEV-14 and DEV-15 consume them (approval of dev-14 recorded in `c3d5294`) |
+
+## Evidence
+
+```text
+$ git log --graph --format='%h %s' b646409^..0a1b874
+*   0a1b874 Merge pull request #7 from nobodykno/feature/DEV-10-projects
+|\  
+| *   7be1c92 Merge remote-tracking branch 'origin/main' into feature/DEV-10-projects
+| |\  
+| |/  
+|/|   
+* | b646409 Merge pull request #6 from nobodykno/feature/DEV-9-auth
+| * 5ea3919 feat(tracker): 2.1-2.5 add project endpoints and access control
+| * 45218f0 feat(database): 1.1 add projects and members migration
+| *   e6d0e1b Merge branch 'feature/DEV-9-auth' into feature/DEV-10-projects
+| |\  
+| |/  
+|/|   
+* | ccd87b4 feat(database): 2.4 type model associations, add uuid param helper
+```
+
+```text
+$ git worktree list
+/Users/paramjitj/Documents/spec-driven-assignment                                            86b7374 [feature/docs/DEV-17-worktrees]
+/Users/paramjitj/Documents/spec-driven-assignment-wt/DEV-10                                  7be1c92 [feature/DEV-10-projects]
+/Users/paramjitj/Documents/spec-driven-assignment-wt/DEV-10-fix                              bea493a [feature/DEV-10-owner-race]
+/Users/paramjitj/Documents/spec-driven-assignment-wt/DEV-11                                  7abf11f [feature/DEV-11-tasks]
+```
+
+## Parallel run 2026-11-01
+
+Five agents worked at the same time, each in its own worktree under `.claude/worktrees/` on its own branch, for
+DEV-12 to DEV-16 (retroactive verification). Each used its own PostgreSQL test database (name must match
+`[a-z0-9_]+_test`: `tracker_dev12_test` and so on) and `npm_config_workspace_concurrency=2` for pushes. Incidents
+(details in `docs/progress.md`): `core.bare` in the shared `.git/config` became `true`; the guard tests ran inside a
+worktree pre-push hook, inherited `GIT_DIR`, and wrote two junk `init` commits to the DEV-12 branch, which was
+rebuilt from the last good commit, the polluted remote branch deleted and the clean branch pushed under a new name;
+DB-backed tests timed out under load (load average 10 to 24). Rule learned: push from the main checkout, never from
+a linked worktree.
+
+## Chronological log
 
 | Date (IST) | Pair | Step | Command / event | Result |
 | --- | --- | --- | --- | --- |
