@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import {
@@ -443,22 +443,109 @@ describe('Worktree check helpers and entry point', () => {
       expect(okLog).toEqual(['check-worktree-docs: docs/worktrees.md OK']);
       expect(okError).toEqual([]);
 
+      const failLog = [];
+      const failError = [];
+      const failCode = main(valid, {
+        commitExists: () => true,
+        shallow: true,
+        log: (line) => failLog.push(line),
+        error: (line) => failError.push(line),
+      });
+      expect(failCode).toBe(1);
+      expect(failError.some((l) => l.includes('WORKTREE_DOCS_SKIP_GIT'))).toBe(true);
+      expect(failError.some((l) => l.includes('shallow or unreadable git history'))).toBe(true);
+      expect(failLog).toEqual([]);
+
+      const brokenError = [];
+      const brokenCode = main(broken, {
+        commitExists: () => true,
+        shallow: true,
+        log: () => {},
+        error: (line) => brokenError.push(line),
+      });
+      expect(brokenCode).toBe(1);
+      for (const finding of expected) {
+        expect(brokenError).toContain(finding);
+      }
+
       const shLog = [];
       const shError = [];
       const shCode = main(valid, {
         commitExists: () => true,
         shallow: true,
+        skipGit: true,
         log: (line) => shLog.push(line),
         error: (line) => shError.push(line),
       });
       expect(shCode).toBe(0);
       expect(shError).toHaveLength(1);
-      expect(shError[0].startsWith('check-worktree-docs: shallow or unreadable git history')).toBe(
-        true,
-      );
+      expect(
+        shError[0].startsWith(
+          'check-worktree-docs: shallow or unreadable git history, commit existence not checked',
+        ),
+      ).toBe(true);
       expect(shLog).toEqual(['check-worktree-docs: docs/worktrees.md OK']);
     } finally {
       rmSync(broken, { recursive: true, force: true });
+      rmSync(valid, { recursive: true, force: true });
+    }
+  });
+
+  it('DEV-1014-AC-4: the CLI runs when the script is reached through a symlink', () => {
+    const script = resolve(import.meta.dirname, 'check-worktree-docs.mjs');
+    const linkDir = mkdtempSync(join(tmpdir(), 'wt-link-'));
+    const broken = rootWith('# Worktrees\n\n## Commands\n\nnothing here\n');
+    try {
+      const link = join(linkDir, 'link.mjs');
+      symlinkSync(script, link);
+
+      let status = 0;
+      let output = '';
+      try {
+        execFileSync(process.execPath, [link], { cwd: broken, encoding: 'utf8', stdio: 'pipe' });
+      } catch (error) {
+        status = error.status;
+        output = `${error.stdout}${error.stderr}`;
+      }
+      expect(status).toBe(1);
+      expect(output).toContain('docs/worktrees.md: ');
+    } finally {
+      rmSync(linkDir, { recursive: true, force: true });
+      rmSync(broken, { recursive: true, force: true });
+    }
+  });
+
+  it('DEV-1014-AC-4: the CLI fails closed outside a git checkout unless skipping is requested', () => {
+    const script = resolve(import.meta.dirname, 'check-worktree-docs.mjs');
+    const valid = rootWith(VALID_DOC);
+    try {
+      const env = { ...process.env };
+      delete env.WORKTREE_DOCS_SKIP_GIT;
+
+      let status = 0;
+      let output = '';
+      try {
+        execFileSync(process.execPath, [script], {
+          cwd: valid,
+          env,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        });
+      } catch (error) {
+        status = error.status;
+        output = `${error.stdout}${error.stderr}`;
+      }
+      expect(status).toBe(1);
+      expect(output).toContain('WORKTREE_DOCS_SKIP_GIT');
+
+      const stdout = execFileSync(process.execPath, [script], {
+        cwd: valid,
+        env: { ...env, WORKTREE_DOCS_SKIP_GIT: '1' },
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+      expect(stdout).toContain('check-worktree-docs: docs/worktrees.md OK');
+    } finally {
       rmSync(valid, { recursive: true, force: true });
     }
   });
