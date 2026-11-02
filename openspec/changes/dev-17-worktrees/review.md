@@ -153,3 +153,37 @@ round: 2
 
 Findings: lows only (see round 1): isShallow fallback documented in the main function JSDoc, digit lookahead kept, prose sections not machine-checked.
 Next: /opsx:verify dev-17-worktrees in a fresh session
+
+## 2026-11-01 | review | fresh-session review | FAIL
+head: 7efb50d
+round: 1
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build, typecheck, test | pnpm build, typecheck, test --coverage | 0 errors, 1702 passed, checker coverage 92.74% lines |
+| spec | openspec validate dev-17-worktrees --strict | valid |
+| reviewer | reviewer (isolated subagent review, Rule 23) | APPROVE (0 critical, 0 high, 0 medium, 4 low) |
+| security | read-only general-purpose agent with a security brief (no security-auditor agent exists) | CHANGES REQUIRED (0 critical, 0 high, 2 medium, 4 low) |
+
+Findings: medium: the SHA existence check failed open on shallow or unreadable git (lint stayed green with fabricated SHAs); medium: the entry-point guard compared a realpath with a non-realpath so the CLI silently did nothing and exited 0 when reached through a symlink. Lows: absolute home paths in evidence, shallow of evidence quality.
+Next: fix test-first and verify again
+
+## 2026-11-01 | review | fresh-session review | PASS
+head: 2339856
+round: 2
+
+| Check | Command | Result |
+|-------|---------|--------|
+| build | pnpm build | 0 errors |
+| lint | pnpm lint --max-warnings 0 | 0 errors, 24 existing warnings (the script ignores the flag); check-worktree-docs prints OK |
+| typecheck | pnpm typecheck | 0 errors |
+| test | pnpm test --coverage | 1704 passed, 0 failed (20 tests in scripts/check-worktree-docs.test.mjs) |
+| coverage | vitest run scripts/check-worktree-docs.test.mjs --coverage | scripts/check-worktree-docs.mjs 92.36% lines |
+| spec | openspec validate dev-17-worktrees --strict | valid |
+| reviewer | round 1 APPROVE stands (no scenario or document change since, only the checker hardening) | APPROVE |
+| security | round 1 mediums fixed: tests 5.5 red first (symlink run, fail closed outside a git checkout), fix 5.6 (realpath entry guard, main fails closed unless WORKTREE_DOCS_SKIP_GIT=1); verified by the new tests and the gates, no second audit run | 0 critical, 0 high, 0 medium open |
+| database | database | n/a (no database changes) |
+| graph | code-review-graph | advisory, risk 0.60 at group 1 |
+
+Findings: Fixed in 5.5 and 5.6. Deviation from design Risks: the CLI no longer skips the SHA existence check silently on shallow or unreadable git; it exits 1 and names WORKTREE_DOCS_SKIP_GIT=1 as the explicit opt-out (which prints a notice and still runs the other checks). A CI job with a shallow checkout therefore needs either fetch-depth 0 or the opt-out. Lows accepted.
+Next: /create-pr dev-17-worktrees
