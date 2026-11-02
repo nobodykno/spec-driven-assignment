@@ -92,3 +92,10 @@ produced: tasks 4.2 and 4.3 done (evidence read from git: merge commits 7abf11f 
 checks: scripts/check-worktree-docs.test.mjs 15 passed; node scripts/check-worktree-docs.mjs prints OK against the real log and git; pnpm lint 0 errors
 open: none (no evidence gap, so no new open decision)
 next: checkpoint 4 (task 4.4)
+
+### apply | 2026-11-02 | IN_PROGRESS
+head: 7d911cf
+produced: group 4 done (tasks 4.1 to 4.4, plus fix task 4.5), tasks 13/14
+checks: PASS, see review.md "2026-11-02 | apply | group 4: Worktree log content and lint wiring (AC-1 to AC-4)" (round 2); reviewer: round 1 CHANGES REQUIRED fixed, round 2 re-checked against git by the main session
+open: lows only
+next: task 5.1 full-diff run, then /opsx:verify dev-17-worktrees
