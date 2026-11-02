@@ -113,7 +113,7 @@ Jira ticket -> proposal.md (FRS IDs) -> spec scenario "... [FR-XXX-NNN]" -> test
 ```
 
 `pnpm check:workflow` keeps this document and `.claude/commands/opsx/` in step: a command without a `### /opsx:<name>`
-heading here fails `pnpm lint`. `pnpm check:agents` requires "Follow docs/token-policy.md" in every command.
+heading here fails `pnpm lint`. `pnpm check:worktree-docs` keeps `docs/worktrees.md` honest (commands, conflicts, approvals, evidence). `pnpm check:agents` requires "Follow docs/token-policy.md" in every command.
 
 ## Branches and commits
 

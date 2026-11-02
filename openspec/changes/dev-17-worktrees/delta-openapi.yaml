@@ -1,0 +1,8 @@
+openapi: 3.1.0
+info:
+  title: Team Task Tracker API
+  version: 0.0.0-dev-17
+  description: Delta for DEV-17 (DEV-1014), git worktrees evidence. No endpoint is added, changed or removed; this change touches documentation (docs/worktrees.md) and one lint script only.
+paths: {}
+x-service-exercises: {}
+x-web-consumes: {}
