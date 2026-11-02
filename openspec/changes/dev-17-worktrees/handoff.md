@@ -113,3 +113,10 @@ produced: gates green (build, typecheck, tests, validate --strict, lint 0 errors
 checks: PASS, coverage waived by the user
 open: lows: isShallow/unreadable git now fails closed unless WORKTREE_DOCS_SKIP_GIT=1 (stricter than design Risks, recorded as a deviation), digit lookahead in the SHA regex, absolute home paths in the evidence blocks, Parallel run and Chronological log prose not machine-checked, reviewer rows of the group 4 and final round 2 are main-session re-checks (this section holds the independent verdicts)
 next: /create-pr dev-17-worktrees
+
+### pr | 2026-11-02 | OPENED
+head: cc7da23
+produced: PR https://github.com/nobodykno/spec-driven-assignment/pull/45; Jira DEV-17 moved to In Review with the PR link as a comment
+checks: build 0 errors, lint 0 errors (24 existing warnings, check-worktree-docs OK), typecheck 0 errors, test 1704 passed, coverage checker 92.36% lines, validate --strict valid
+open: lows only, see review.md
+next: Gate 2: human review and merge, then on a follow-up branch from main: /opsx:sync dev-17-worktrees then /opsx:archive dev-17-worktrees
